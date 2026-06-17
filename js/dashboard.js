@@ -423,8 +423,9 @@ async function updateBooking(bookingId, status) {
     try {
       const booking = await PickleBookings.getById(bookingId);
       let courtName = 'Court';
+      let court = null;
       try {
-        const court = await PickleCourts.getById(booking.courtId);
+        court = await PickleCourts.getById(booking.courtId);
         if (court) courtName = court.name;
       } catch {}
       if (booking && booking.chatId) {
