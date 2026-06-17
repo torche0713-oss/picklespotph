@@ -400,13 +400,20 @@ const PickleChat = {
   onMessages(chatId, callback) {
     return db.collection(COLLECTIONS.MESSAGES)
       .where('chatId', '==', chatId)
-      .orderBy('timestamp', 'asc')
       .onSnapshot(snapshot => {
         const msgs = snapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data()
         }));
+        // Sort client-side to avoid needing a composite index
+        msgs.sort((a, b) => {
+          const ta = a.timestamp?.toMillis ? a.timestamp.toMillis() : 0;
+          const tb = b.timestamp?.toMillis ? b.timestamp.toMillis() : 0;
+          return ta - tb;
+        });
         callback(msgs);
+      }, err => {
+        console.error('Chat listener error:', err);
       });
   },
 

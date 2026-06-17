@@ -624,10 +624,13 @@ document.getElementById('bookingForm').addEventListener('submit', async (e) => {
   // Store chat access in localStorage for the customer
   if (chatId) {
     const chats = JSON.parse(localStorage.getItem('psp_chats') || '[]');
-    if (!chats.find(c => c.id === chatId)) {
+    if (!chats.find(c => c.id == chatId)) {
       chats.push({ id: chatId, name: court.name, customerName, customerContact });
       localStorage.setItem('psp_chats', JSON.stringify(chats));
     }
+    // Show chat widget immediately
+    document.getElementById('customerChatWidget').style.display = 'block';
+    renderChatThreadsList();
   }
 
   showToast('✅ Inquiry sent! Check your Messages below to chat with the owner.');
@@ -953,6 +956,11 @@ function initCustomerChatWidget() {
 function renderChatThreadsList() {
   const stored = JSON.parse(localStorage.getItem('psp_chats') || '[]');
   const container = document.getElementById('chatThreadsList');
+  if (!container) return;
+
+  container.style.display = '';
+  container.style.flexDirection = '';
+  container.style.gap = '';
 
   if (stored.length === 0) {
     container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-muted);font-size:13px">No conversations</div>';
@@ -970,7 +978,8 @@ function renderChatThreadsList() {
 window.openCustomerChat = async function(chatId) {
   customerChatId = chatId;
 
-  document.getElementById('chatThreadsList').innerHTML = '';
+  const threadsEl = document.getElementById('chatThreadsList');
+  if (threadsEl) threadsEl.innerHTML = '';
   document.getElementById('chatPopupInputArea').style.display = 'flex';
 
   // Get chat info
@@ -989,8 +998,11 @@ window.openCustomerChat = async function(chatId) {
 
 function renderCustomerMessages(msgs) {
   const container = document.getElementById('chatThreadsList');
-  container.id = 'chatPopupMessages';
+  if (!container) return;
 
+  container.style.display = 'flex';
+  container.style.flexDirection = 'column';
+  container.style.gap = '8px';
   container.innerHTML = msgs.map(m => {
     const isCustomer = m.senderId === 'customer';
     const time = m.timestamp?.toDate ? m.timestamp.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
@@ -1039,5 +1051,4 @@ document.getElementById('chatPopupClose').addEventListener('click', () => {
   document.getElementById('chatPopup').style.display = 'none';
   if (customerChatUnsub) { customerChatUnsub(); customerChatUnsub = null; }
   customerChatId = null;
-  document.getElementById('chatThreadsList').id = 'chatThreadsList';
 });
