@@ -304,9 +304,14 @@ const PickleReviews = {
   async getByCourt(courtId) {
     const snapshot = await db.collection(COLLECTIONS.REVIEWS)
       .where('courtId', '==', courtId)
-      .orderBy('createdAt', 'desc')
       .get();
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const reviews = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    reviews.sort((a, b) => {
+      const ta = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
+      const tb = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
+      return tb - ta;
+    });
+    return reviews;
   },
 
   // Get average rating for a court
@@ -348,17 +353,27 @@ const PicklePayments = {
   async getByUser(uid) {
     const snapshot = await db.collection(COLLECTIONS.PAYMENTS)
       .where('userId', '==', uid)
-      .orderBy('createdAt', 'desc')
       .get();
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const payments = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    payments.sort((a, b) => {
+      const ta = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
+      const tb = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
+      return tb - ta;
+    });
+    return payments;
   },
 
   // Get all payments (admin view)
   async getAll() {
     const snapshot = await db.collection(COLLECTIONS.PAYMENTS)
-      .orderBy('createdAt', 'desc')
       .get();
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const payments = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    payments.sort((a, b) => {
+      const ta = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
+      const tb = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
+      return tb - ta;
+    });
+    return payments;
   }
 };
 
@@ -428,13 +443,20 @@ const PickleChat = {
   onOwnerChats(ownerId, callback) {
     return db.collection(COLLECTIONS.CHATS)
       .where('ownerId', '==', ownerId)
-      .orderBy('updatedAt', 'desc')
       .onSnapshot(snapshot => {
         const chats = snapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data()
         }));
+        // Sort client-side to avoid needing a composite index
+        chats.sort((a, b) => {
+          const ta = a.updatedAt?.toMillis ? a.updatedAt.toMillis() : 0;
+          const tb = b.updatedAt?.toMillis ? b.updatedAt.toMillis() : 0;
+          return tb - ta;
+        });
         callback(chats);
+      }, err => {
+        console.error('Owner chats listener error:', err);
       });
   },
 
