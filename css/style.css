@@ -72,6 +72,12 @@ body {
   color: var(--accent-light);
 }
 
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 /* ===========================
    HERO SECTION
    =========================== */
