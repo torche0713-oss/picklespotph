@@ -405,6 +405,7 @@ const PickleChat = {
       ownerId: data.ownerId,
       customerName: data.customerName,
       customerContact: data.customerContact,
+      customerEmail: data.customerEmail || '',
       lastMessage: data.lastMessage || '',
       lastSender: data.lastSender || '',
       unreadOwner: 0,
@@ -506,6 +507,13 @@ const PickleChat = {
       .orderBy('updatedAt', 'desc')
       .get();
     return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  },
+
+  // Get a single chat room by ID
+  async getById(chatId) {
+    const doc = await db.collection(COLLECTIONS.CHATS).doc(chatId).get();
+    if (!doc.exists) return null;
+    return { id: doc.id, ...doc.data() };
   }
 };
 
@@ -547,6 +555,18 @@ const PickleNotifications = {
     const label = status.charAt(0).toUpperCase() + status.slice(1);
     const body = `${emoji} Your booking at ${courtName} has been ${label}.\n\nCourt: ${courtName}\nStatus: ${label}`;
     await this.send(customerEmail, customerName, `Booking ${label}: ${courtName}`, body);
+  },
+
+  async notifyOwnerNewMessage(chatId, senderName, text) {
+    try {
+      const chat = await PickleChat.getById(chatId);
+      if (!chat || !chat.ownerId) return;
+      const owner = await PickleAuth.getUserProfile(chat.ownerId);
+      if (!owner || !owner.email) return;
+      const courtName = chat.courtName || 'Court';
+      const body = `New message from ${senderName} regarding ${courtName}:\n\n"${text}"\n\nOpen your dashboard to reply.`;
+      await this.send(owner.email, owner.displayName || 'Owner', `New Message: ${courtName}`, body);
+    } catch {}
   }
 };
 

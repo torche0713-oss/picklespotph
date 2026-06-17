@@ -806,6 +806,15 @@ async function sendChatMessage() {
       userProfile?.displayName || 'Owner',
       text
     );
+    // Notify customer via email
+    try {
+      if (typeof PickleNotifications !== 'undefined') {
+        const chat = await PickleChat.getById(activeChatId);
+        if (chat && chat.customerEmail) {
+          PickleNotifications.send(chat.customerEmail, chat.customerName, `New Message: ${chat.courtName}`, `You have a new reply from ${chat.courtName}:\n\n"${text}"`);
+        }
+      }
+    } catch {}
   } catch (err) {
     showToast('Error sending message: ' + err.message, 4000);
   }

@@ -608,6 +608,7 @@ document.getElementById('bookingForm').addEventListener('submit', async (e) => {
         ownerId: court.ownerId || 'unknown',
         customerName,
         customerContact,
+        customerEmail,
         lastMessage: bookingData.message || 'Inquiry sent',
         lastSender: customerName
       });
@@ -1038,6 +1039,12 @@ async function sendCustomerMessage() {
   input.value = '';
   try {
     await PickleChat.sendMessage(customerChatId, 'customer', 'You', text);
+    // Notify the owner via email
+    try {
+      if (typeof PickleNotifications !== 'undefined') {
+        PickleNotifications.notifyOwnerNewMessage(customerChatId, 'You', text);
+      }
+    } catch {}
   } catch (err) {
     showToast('Error sending message');
   }
