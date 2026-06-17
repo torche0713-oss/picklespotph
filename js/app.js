@@ -145,7 +145,7 @@ function renderSidebarList(courts) {
 
   container.innerHTML = courts.map(court => `
     <div class="sidebar-court-item" data-id="${court.id}"
-         onclick="handleSidebarCourtClick(${court.id})">
+         onclick="handleSidebarCourtClick('${court.id}')">
       <div class="court-item-name">
         ${court.name}
         ${court.verified ? '<i class="fas fa-check-circle" style="color:var(--primary);font-size:12px" title="Verified"></i>' : ''}
@@ -214,7 +214,7 @@ function renderCourtsList(courts) {
       court.access === 'Paid' ? 'tag-paid' : 'tag-members';
 
     return `
-      <div class="court-card" onclick="openCourtModal(${court.id})">
+      <div class="court-card" onclick="openCourtModal('${court.id}')">
         <div class="court-card-header">
           <div class="court-number">${String(idx + 1).padStart(2, '0')}</div>
           <div class="court-card-name">
@@ -284,7 +284,7 @@ function renderCourtsList(courts) {
 // COURT MODAL
 // ============================================================
 window.openCourtModal = function(courtId) {
-  const court = allCourts.find(c => c.id === courtId);
+  const court = allCourts.find(c => c.id == courtId);
   if (!court) return;
 
   const modal = document.getElementById('courtModal');
@@ -413,7 +413,7 @@ window.openCourtModal = function(courtId) {
 
   footer.innerHTML = `
     <div class="modal-action-btns">
-      <button class="btn-modal-map" onclick="viewOnMap(${court.id})">
+      <button class="btn-modal-map" onclick="viewOnMap('${court.id}')">
         <i class="fas fa-map-marked-alt"></i> View on Map
       </button>
       ${court.lat && court.lng ? `
@@ -424,10 +424,10 @@ window.openCourtModal = function(courtId) {
       ` : ''}
     </div>
     <div style="display:flex;gap:8px;margin-top:8px">
-      <button class="btn-submit" style="flex:1" onclick="openBookingModal(${court.id})">
+      <button class="btn-submit" style="flex:1" onclick="openBookingModal('${court.id}')">
         <i class="fas fa-calendar-check"></i> Book / Inquire
       </button>
-      <button class="btn-submit" style="flex:1;background:var(--accent)" onclick="openReviewModal(${court.id})">
+      <button class="btn-submit" style="flex:1;background:var(--accent)" onclick="openReviewModal('${court.id}')">
         <i class="fas fa-star"></i> Write Review
       </button>
     </div>
@@ -464,7 +464,7 @@ function closeModal(modalId) {
 let bookingCourtId = null;
 
 window.openBookingModal = function(courtId) {
-  const court = allCourts.find(c => c.id === courtId);
+  const court = allCourts.find(c => c.id == courtId);
   if (!court) return;
   bookingCourtId = courtId;
   document.getElementById('bookingCourtName').textContent = `Send a booking request to ${court.name}`;
@@ -645,7 +645,7 @@ let reviewCourtId = null;
 let selectedRating = 0;
 
 window.openReviewModal = function(courtId) {
-  const court = allCourts.find(c => c.id === courtId);
+  const court = allCourts.find(c => c.id == courtId);
   if (!court) return;
   reviewCourtId = courtId;
   selectedRating = 0;

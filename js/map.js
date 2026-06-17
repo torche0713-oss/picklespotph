@@ -119,7 +119,7 @@ function createPopupContent(court) {
           ${court.verified ? '<span class="tag" style="background:#e3f2fd;color:#1565c0">✓ Verified</span>' : ''}
         </div>
         ${amenityIcons ? `<div style="margin:6px 0;display:flex;gap:6px">${amenityIcons}</div>` : ''}
-        <button class="popup-btn" onclick="window.openCourtModal(${court.id})">
+        <button class="popup-btn" onclick="window.openCourtModal('${court.id}')">
           View Details
         </button>
       </div>
@@ -155,7 +155,7 @@ function renderMarkers(courts) {
 
 function highlightSidebarItem(courtId) {
   document.querySelectorAll('.sidebar-court-item').forEach(el => {
-    el.classList.toggle('active', parseInt(el.dataset.id) === courtId);
+    el.classList.toggle('active', el.dataset.id == courtId);
   });
 
   const activeItem = document.querySelector(`.sidebar-court-item[data-id="${courtId}"]`);
@@ -165,7 +165,7 @@ function highlightSidebarItem(courtId) {
 }
 
 function flyToMarker(courtId) {
-  const marker = markers.find(m => m.courtId === courtId);
+  const marker = markers.find(m => m.courtId == courtId);
   if (marker) {
     map.flyTo(marker.getLatLng(), 16, { duration: 1 });
     setTimeout(() => marker.openPopup(), 1000);
