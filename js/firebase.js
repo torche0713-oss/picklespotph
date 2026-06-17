@@ -548,6 +548,24 @@ const PickleChat = {
 // ============================================================
 // EMAIL NOTIFICATION SERVICE
 // ============================================================
+function generateCalendarUrl(title, dateStr, timeStr, location) {
+  // dateStr: "YYYY-MM-DD", timeStr: "HH:MM" (24h)
+  if (!dateStr || !timeStr) return '';
+  const [h, m] = timeStr.split(':').map(Number);
+  const start = `${dateStr.replace(/-/g, '')}T${String(h).padStart(2,'0')}${String(m).padStart(2,'0')}00`;
+  const endH = h + 1;
+  const end = `${dateStr.replace(/-/g, '')}T${String(endH).padStart(2,'0')}${String(m).padStart(2,'0')}00`;
+  const params = new URLSearchParams({
+    action: 'TEMPLATE',
+    text: title,
+    dates: `${start}/${end}`,
+    location: location || '',
+    sf: 'true',
+    output: 'xml'
+  });
+  return `https://www.google.com/calendar/render?${params.toString()}`;
+}
+
 const PickleNotifications = {
   async send(toEmail, toName, subject, body) {
     if (!EMAILJS_CONFIG.PUBLIC_KEY || !EMAILJS_CONFIG.SERVICE_ID || !EMAILJS_CONFIG.TEMPLATE_ID) return;
@@ -577,11 +595,15 @@ const PickleNotifications = {
     await this.send('torche0713@gmail.com', 'Admin', 'New Pro Upgrade Payment', body);
   },
 
-  async notifyCustomerBookingStatus(customerEmail, customerName, courtName, status) {
+  async notifyCustomerBookingStatus(customerEmail, customerName, courtName, status, date, time, location) {
     if (!customerEmail) return;
     const emoji = status === 'confirmed' ? '✅' : status === 'rejected' ? '❌' : '⏳';
     const label = status.charAt(0).toUpperCase() + status.slice(1);
-    const body = `${emoji} Your booking at ${courtName} has been ${label}.\n\nCourt: ${courtName}\nStatus: ${label}`;
+    let body = `${emoji} Your booking at ${courtName} has been ${label}.\n\nCourt: ${courtName}\nStatus: ${label}`;
+    if (status === 'confirmed' && date && time) {
+      const calUrl = generateCalendarUrl(`Pickleball at ${courtName}`, date, time, location);
+      body += `\n\nAdd to Google Calendar: ${calUrl}`;
+    }
     await this.send(customerEmail, customerName, `Booking ${label}: ${courtName}`, body);
   },
 

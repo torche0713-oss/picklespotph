@@ -411,11 +411,22 @@ async function updateBooking(bookingId, status) {
       if (booking && booking.chatId) {
         const emoji = status === 'confirmed' ? '✅' : status === 'rejected' ? '❌' : '⏳';
         const label = status.charAt(0).toUpperCase() + status.slice(1);
-        await PickleChat.sendMessage(booking.chatId, 'system', courtName, `${emoji} Your booking at ${courtName} has been ${label}.`);
+        let msg = `${emoji} Your booking at ${courtName} has been ${label}.`;
+        if (status === 'confirmed' && booking.date && booking.time) {
+          const calUrl = generateCalendarUrl(`Pickleball at ${courtName}`, booking.date, booking.time, court?.address || '');
+          msg += `\n\n📅 Add to Calendar: ${calUrl}`;
+        }
+        await PickleChat.sendMessage(booking.chatId, 'system', courtName, msg);
       }
       // Email notification to customer
       if (booking && booking.email) {
-        await PickleNotifications.notifyCustomerBookingStatus(booking.email, booking.name, courtName, status);
+        await PickleNotifications.notifyCustomerBookingStatus(booking.email, booking.name, courtName, status, booking.date, booking.time, court?.address || '');
+      }
+      // Email notification to owner with calendar link when confirmed
+      if (status === 'confirmed' && currentUser && currentUser.email) {
+        const ownerBody = `✅ Booking confirmed at ${courtName}!\n\nCustomer: ${booking.name}\nContact: ${booking.contact}\nDate: ${booking.date}\nTime: ${booking.time}\nPlayers: ${booking.players}`;
+        const ownerCalUrl = generateCalendarUrl(`Pickleball at ${courtName}`, booking.date, booking.time, court?.address || '');
+        await PickleNotifications.send(currentUser.email, currentUser.displayName || 'Owner', `Booking Confirmed: ${courtName}`, ownerBody + `\n\nAdd to Google Calendar: ${ownerCalUrl}`);
       }
     } catch {}
 

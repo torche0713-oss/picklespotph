@@ -1298,6 +1298,35 @@ body {
   resize: vertical;
 }
 
+/* Slot picker grid */
+#slotPickerGroup { display: none; }
+.slot-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+.slot-btn {
+  padding: 8px 16px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  background: var(--white);
+  transition: var(--transition);
+  user-select: none;
+}
+.slot-btn:hover:not(.taken) { border-color: var(--primary); color: var(--primary); }
+.slot-btn.selected { background: var(--primary); color: var(--white); border-color: var(--primary); }
+.slot-btn.taken {
+  background: #f5f5f5;
+  color: #bbb;
+  border-color: #eee;
+  cursor: not-allowed;
+  text-decoration: line-through;
+}
+
 .form-actions {
   display: flex;
   gap: 12px;

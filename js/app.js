@@ -528,6 +528,7 @@ async function loadAvailableSlots() {
 
   if (slots.length === 0) {
     slotGrid.innerHTML = '<p style="font-size:12px;color:var(--text-muted);grid-column:1/-1">No available slots for this day.</p>';
+    slotGroup.style.display = 'block';
     return;
   }
 
@@ -547,6 +548,7 @@ async function loadAvailableSlots() {
       ${s}
     </div>
   `).join('');
+  slotGroup.style.display = 'block';
 }
 
 window.selectSlot = function(slot) {
