@@ -1393,6 +1393,7 @@ body {
 
   .sidebar.mobile-open {
     height: 60vh;
+    overflow-y: auto;
   }
 
   .sidebar.mobile-open + .main-content {
