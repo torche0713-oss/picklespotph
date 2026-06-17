@@ -485,6 +485,9 @@ async function loadAvailableSlots() {
   const slotGrid = document.getElementById('slotGrid');
   const slotStatus = document.getElementById('slotStatus');
 
+  selectedSlots = [];
+  document.getElementById('bookingTime').value = '';
+
   if (!dateVal || !bookingCourtId) {
     slotGrid.innerHTML = '';
     if (slotStatus) slotStatus.textContent = 'Select a date to see available times';
@@ -551,11 +554,73 @@ async function loadAvailableSlots() {
   slotGroup.style.display = 'block';
 }
 
+let selectedSlots = [];
+
 window.selectSlot = function(slot) {
+  const allSlots = [...document.querySelectorAll('.slot-btn:not(.taken)')].map(b => b.dataset.slot);
+  const idx = selectedSlots.indexOf(slot);
+
+  if (idx !== -1) {
+    // Already selected
+    if (idx === 0 || idx === selectedSlots.length - 1) {
+      selectedSlots.splice(idx, 1); // deselect edge slot
+    } else {
+      selectedSlots = [slot]; // middle slot → reset to just this one
+    }
+  } else {
+    if (selectedSlots.length === 0) {
+      selectedSlots = [slot];
+    } else {
+      const clickIdx = allSlots.indexOf(slot);
+      const firstIdx = allSlots.indexOf(selectedSlots[0]);
+      const lastIdx = allSlots.indexOf(selectedSlots[selectedSlots.length - 1]);
+
+      if (clickIdx === lastIdx + 1 || clickIdx === firstIdx - 1) {
+        selectedSlots.push(slot);
+        selectedSlots.sort((a, b) => allSlots.indexOf(a) - allSlots.indexOf(b));
+      } else {
+        selectedSlots = [slot];
+      }
+    }
+  }
+
+  // Update UI
   document.querySelectorAll('.slot-btn').forEach(b => b.classList.remove('selected'));
-  document.querySelector(`.slot-btn[data-slot="${slot}"]`).classList.add('selected');
-  document.getElementById('bookingTime').value = slot;
+  selectedSlots.forEach(s => {
+    document.querySelector(`.slot-btn[data-slot="${s}"]`)?.classList.add('selected');
+  });
+
+  // Set time range (e.g. "08:00-10:00")
+  if (selectedSlots.length > 0) {
+    const start = selectedSlots[0];
+    const last = selectedSlots[selectedSlots.length - 1];
+    const [sh, sm] = last.split(':').map(Number);
+    const endM = sh * 60 + sm + 60;
+    const endStr = `${String(Math.floor(endM / 60)).padStart(2, '0')}:${String(endM % 60).padStart(2, '0')}`;
+    document.getElementById('bookingTime').value = `${start}-${endStr}`;
+  } else {
+    document.getElementById('bookingTime').value = '';
+  }
 };
+
+function toMinutes(s) {
+  const [h, m] = s.split(':').map(Number);
+  return h * 60 + m;
+}
+
+function timeOverlap(timeA, timeB) {
+  const parse = (t) => {
+    if (t.includes('-')) {
+      const [s, e] = t.split('-');
+      return [toMinutes(s), toMinutes(e)];
+    }
+    const m = toMinutes(t);
+    return [m, m + 60];
+  };
+  const [aStart, aEnd] = parse(timeA);
+  const [bStart, bEnd] = parse(timeB);
+  return aStart < bEnd && bStart < aEnd;
+}
 
 document.getElementById('bookingForm').addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -583,17 +648,17 @@ document.getElementById('bookingForm').addEventListener('submit', async (e) => {
     status: 'pending'
   };
 
-  // Double-booking check: look for confirmed bookings on same court + date + time
+  // Double-booking check: look for confirmed bookings on same court + date with overlapping time
   if (bookingDate && typeof PickleBookings !== 'undefined') {
     try {
       const existing = await PickleBookings.getByCourt(bookingCourtId);
       const conflict = existing.find(b =>
         b.status === 'confirmed' &&
         b.date === bookingDate &&
-        b.time === bookingTime
+        b.time && timeOverlap(b.time, bookingTime)
       );
       if (conflict) {
-        showToast('⚠️ This time slot is already booked. Please choose a different date or time.', 5000);
+        showToast('⚠️ This time slot overlaps with an existing booking. Please choose a different date or time.', 5000);
         return;
       }
     } catch {}

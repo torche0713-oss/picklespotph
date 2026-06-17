@@ -549,12 +549,21 @@ const PickleChat = {
 // EMAIL NOTIFICATION SERVICE
 // ============================================================
 function generateCalendarUrl(title, dateStr, timeStr, location) {
-  // dateStr: "YYYY-MM-DD", timeStr: "HH:MM" (24h)
   if (!dateStr || !timeStr) return '';
-  const [h, m] = timeStr.split(':').map(Number);
-  const start = `${dateStr.replace(/-/g, '')}T${String(h).padStart(2,'0')}${String(m).padStart(2,'0')}00`;
-  const endH = h + 1;
-  const end = `${dateStr.replace(/-/g, '')}T${String(endH).padStart(2,'0')}${String(m).padStart(2,'0')}00`;
+  let startTime, endTime;
+  if (timeStr.includes('-')) {
+    const [s, e] = timeStr.split('-');
+    startTime = s;
+    endTime = e;
+  } else {
+    startTime = timeStr;
+    const [h, m] = timeStr.split(':').map(Number);
+    const endM = h * 60 + m + 60;
+    endTime = `${String(Math.floor(endM / 60)).padStart(2,'0')}:${String(endM % 60).padStart(2,'0')}`;
+  }
+  const d = dateStr.replace(/-/g, '');
+  const start = `${d}T${startTime.replace(':', '')}00`;
+  const end = `${d}T${endTime.replace(':', '')}00`;
   const params = new URLSearchParams({
     action: 'TEMPLATE',
     text: title,

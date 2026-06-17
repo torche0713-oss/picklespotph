@@ -376,6 +376,24 @@ async function loadBookings() {
   }
 }
 
+function toMinutes(s) {
+  const [h, m] = s.split(':').map(Number);
+  return h * 60 + m;
+}
+function timeOverlap(timeA, timeB) {
+  const parse = (t) => {
+    if (t.includes('-')) {
+      const [s, e] = t.split('-');
+      return [toMinutes(s), toMinutes(e)];
+    }
+    const m = toMinutes(t);
+    return [m, m + 60];
+  };
+  const [aStart, aEnd] = parse(timeA);
+  const [bStart, bEnd] = parse(timeB);
+  return aStart < bEnd && bStart < aEnd;
+}
+
 async function updateBooking(bookingId, status) {
   // If confirming, check for double-booking first
   if (status === 'confirmed') {
@@ -387,10 +405,11 @@ async function updateBooking(bookingId, status) {
         b.status === 'confirmed' &&
         b.courtId === thisBooking.courtId &&
         b.date === thisBooking.date &&
-        b.time === thisBooking.time
+        b.time && thisBooking.time &&
+        timeOverlap(b.time, thisBooking.time)
       );
       if (conflict) {
-        showToast('⚠️ Conflict! Another confirmed booking already exists for this date/time.', 5000);
+        showToast('⚠️ Conflict! Another confirmed booking overlaps this time slot.', 5000);
         return;
       }
     }
