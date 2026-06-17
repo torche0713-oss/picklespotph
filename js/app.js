@@ -750,6 +750,10 @@ function updateStats(courts) {
     getUniqueCities(courts).length;
   document.getElementById('totalRegions').textContent =
     getUniqueRegions(courts).length;
+
+  // Hero stats
+  const heroCourts = document.getElementById('statCourts');
+  if (heroCourts) heroCourts.textContent = courts.length;
 }
 
 // ============================================================
@@ -855,11 +859,14 @@ function setupEventListeners() {
   document.getElementById('sidebarToggle').addEventListener('click', toggleSidebar);
 
   // Add court
-  document.getElementById('addCourtBtn').addEventListener('click', () => {
+  document.getElementById('addCourtBtn').addEventListener('click', openAddCourtModal);
+  document.getElementById('heroAddBtn').addEventListener('click', openAddCourtModal);
+
+  function openAddCourtModal() {
     document.getElementById('addCourtModal').style.display = 'flex';
     document.body.style.overflow = 'hidden';
     initMainAddCourtMap();
-  });
+  }
 
   document.getElementById('mobileAddCourt').addEventListener('click', (e) => {
     e.preventDefault();

@@ -55,6 +55,37 @@
     <a href="dashboard.html" class="mobile-link"><i class="fas fa-user-circle"></i> Owner Login</a>
   </div>
 
+  <!-- ===== HERO SECTION ===== -->
+  <section class="hero">
+    <div class="hero-content">
+      <span class="hero-badge">🇵🇭 Find Your Court</span>
+      <h1>Discover Pickleball Courts<br/>Across the Philippines</h1>
+      <p class="hero-sub">Browse indoor and outdoor courts by city, book a slot, read reviews, and join the fastest-growing sport in the country.</p>
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <span class="hero-stat-num" id="statCourts">15</span>
+          <span class="hero-stat-label">Courts Listed</span>
+        </div>
+        <div class="hero-stat">
+          <span class="hero-stat-num">10</span>
+          <span class="hero-stat-label">Cities</span>
+        </div>
+        <div class="hero-stat">
+          <span class="hero-stat-num">4.8★</span>
+          <span class="hero-stat-label">Avg. Rating</span>
+        </div>
+      </div>
+      <div class="hero-actions">
+        <button class="btn-hero btn-hero-primary" onclick="showView('map');document.getElementById('searchInput')?.focus()">
+          <i class="fas fa-search"></i> Find Courts
+        </button>
+        <button class="btn-hero btn-hero-secondary" id="heroAddBtn">
+          <i class="fas fa-plus"></i> Add a Court
+        </button>
+      </div>
+    </div>
+  </section>
+
   <!-- ===== MAIN APP ===== -->
   <div class="app-container">
 
