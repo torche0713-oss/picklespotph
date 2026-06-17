@@ -17,6 +17,22 @@ const FIREBASE_CONFIG = {
   appId: "1:847121039089:web:b4cda36838300d33b83350"
 };
 
+// ============================================================
+// EMAIL NOTIFICATIONS (via EmailJS - free tier: 200/mo)
+// ============================================================
+// To set up:
+//   1. Sign up at https://emailjs.com (free)
+//   2. Go to Email Services → Add New Service → connect Gmail
+//   3. Go to Email Templates → Create Template with variables:
+//      {{to_email}} {{to_name}} {{subject}} {{body}}
+//   4. Copy Service ID, Template ID, and Public Key below
+// ============================================================
+const EMAILJS_CONFIG = {
+  PUBLIC_KEY: 'ZqwVgBW5afMAIEWtS',
+  SERVICE_ID: 'service_xh12jr3',
+  TEMPLATE_ID: 'template_zbaoqpb'
+};
+
 // Initialize Firebase
 if (!firebase.apps.length) {
   firebase.initializeApp(FIREBASE_CONFIG);
@@ -492,6 +508,52 @@ const PickleChat = {
     return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
   }
 };
+
+// ============================================================
+// EMAIL NOTIFICATION SERVICE
+// ============================================================
+const PickleNotifications = {
+  async send(toEmail, toName, subject, body) {
+    if (!EMAILJS_CONFIG.PUBLIC_KEY || !EMAILJS_CONFIG.SERVICE_ID || !EMAILJS_CONFIG.TEMPLATE_ID) return;
+    try {
+      await emailjs.send(EMAILJS_CONFIG.SERVICE_ID, EMAILJS_CONFIG.TEMPLATE_ID, {
+        to_email: toEmail,
+        to_name: toName,
+        subject: subject,
+        body: body
+      });
+    } catch (err) {
+      console.error('Email send failed:', err);
+    }
+  },
+
+  async notifyOwnerNewBooking(ownerId, bookingData, courtName) {
+    try {
+      const owner = await PickleAuth.getUserProfile(ownerId);
+      if (!owner || !owner.email) return;
+      const body = `New booking inquiry at ${courtName}!\n\nCustomer: ${bookingData.name}\nContact: ${bookingData.contact}\nDate: ${bookingData.date}\nTime: ${bookingData.time}\nPlayers: ${bookingData.players}\nMessage: ${bookingData.message || 'None'}`;
+      await this.send(owner.email, owner.displayName || 'Owner', `New Booking: ${courtName}`, body);
+    } catch {}
+  },
+
+  async notifyAdminNewPayment(userEmail, userName, paymentData) {
+    const body = `New Pro upgrade payment!\n\nUser: ${userName}\nEmail: ${userEmail}\nAmount: ₱${paymentData.amount}\nMethod: ${paymentData.method}\nReference: ${paymentData.reference}`;
+    await this.send('torche0713@gmail.com', 'Admin', 'New Pro Upgrade Payment', body);
+  },
+
+  async notifyCustomerBookingStatus(customerEmail, customerName, courtName, status) {
+    if (!customerEmail) return;
+    const emoji = status === 'confirmed' ? '✅' : status === 'rejected' ? '❌' : '⏳';
+    const label = status.charAt(0).toUpperCase() + status.slice(1);
+    const body = `${emoji} Your booking at ${courtName} has been ${label}.\n\nCourt: ${courtName}\nStatus: ${label}`;
+    await this.send(customerEmail, customerName, `Booking ${label}: ${courtName}`, body);
+  }
+};
+
+// Init EmailJS if configured
+if (typeof emailjs !== 'undefined' && EMAILJS_CONFIG.PUBLIC_KEY) {
+  emailjs.init(EMAILJS_CONFIG.PUBLIC_KEY);
+}
 
 // ============================================================
 // HELPER: Check if user is Pro

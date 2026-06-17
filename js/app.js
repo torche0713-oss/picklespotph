@@ -564,6 +564,7 @@ document.getElementById('bookingForm').addEventListener('submit', async (e) => {
 
   const customerName = document.getElementById('bookingName').value;
   const customerContact = document.getElementById('bookingContact').value;
+  const customerEmail = document.getElementById('bookingEmail').value;
 
   const bookingDate = document.getElementById('bookingDate').value;
   const bookingTime = document.getElementById('bookingTime').value;
@@ -572,6 +573,7 @@ document.getElementById('bookingForm').addEventListener('submit', async (e) => {
     courtId: bookingCourtId,
     name: customerName,
     contact: customerContact,
+    email: customerEmail,
     date: bookingDate,
     time: bookingTime,
     players: document.getElementById('bookingPlayers').value,
@@ -632,6 +634,13 @@ document.getElementById('bookingForm').addEventListener('submit', async (e) => {
     document.getElementById('customerChatWidget').style.display = 'block';
     renderChatThreadsList();
   }
+
+  // Notify the court owner via email
+  try {
+    if (typeof PickleNotifications !== 'undefined' && court.ownerId) {
+      await PickleNotifications.notifyOwnerNewBooking(court.ownerId, bookingData, court.name);
+    }
+  } catch {}
 
   showToast('✅ Inquiry sent! Check your Messages below to chat with the owner.');
   document.getElementById('bookingForm').reset();

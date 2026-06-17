@@ -402,15 +402,19 @@ async function updateBooking(bookingId, status) {
     // Send chat notification to the customer
     try {
       const booking = await PickleBookings.getById(bookingId);
+      let courtName = 'Court';
+      try {
+        const court = await PickleCourts.getById(booking.courtId);
+        if (court) courtName = court.name;
+      } catch {}
       if (booking && booking.chatId) {
-        let courtName = 'Court';
-        try {
-          const court = await PickleCourts.getById(booking.courtId);
-          if (court) courtName = court.name;
-        } catch {}
         const emoji = status === 'confirmed' ? '✅' : status === 'rejected' ? '❌' : '⏳';
         const label = status.charAt(0).toUpperCase() + status.slice(1);
         await PickleChat.sendMessage(booking.chatId, 'system', courtName, `${emoji} Your booking at ${courtName} has been ${label}.`);
+      }
+      // Email notification to customer
+      if (booking && booking.email) {
+        await PickleNotifications.notifyCustomerBookingStatus(booking.email, booking.name, courtName, status);
       }
     } catch {}
 
@@ -840,6 +844,13 @@ document.getElementById('paymentSubmitBtn').addEventListener('click', async () =
     });
     showToast('Payment submitted! Your Pro account will be verified within 24 hours.');
     closeModal('paymentModal');
+
+    // Notify admin via email
+    try {
+      if (typeof PickleNotifications !== 'undefined') {
+        await PickleNotifications.notifyAdminNewPayment(currentUser.email, currentUser.displayName || 'Owner', { amount: 399, method, reference: ref });
+      }
+    } catch {}
   } catch (err) {
     showToast('Error: ' + err.message, 4000);
   }
