@@ -277,6 +277,13 @@ const PickleBookings = {
   // Update booking status
   async updateStatus(bookingId, status) {
     await db.collection(COLLECTIONS.BOOKINGS).doc(bookingId).update({ status });
+  },
+
+  // Get a single booking by ID
+  async getById(bookingId) {
+    const doc = await db.collection(COLLECTIONS.BOOKINGS).doc(bookingId).get();
+    if (!doc.exists) return null;
+    return { id: doc.id, ...doc.data() };
   }
 };
 

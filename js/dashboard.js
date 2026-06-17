@@ -398,6 +398,22 @@ async function updateBooking(bookingId, status) {
   try {
     await PickleBookings.updateStatus(bookingId, status);
     showToast(`Booking ${status}!`);
+
+    // Send chat notification to the customer
+    try {
+      const booking = await PickleBookings.getById(bookingId);
+      if (booking && booking.chatId) {
+        let courtName = 'Court';
+        try {
+          const court = await PickleCourts.getById(booking.courtId);
+          if (court) courtName = court.name;
+        } catch {}
+        const emoji = status === 'confirmed' ? '✅' : status === 'rejected' ? '❌' : '⏳';
+        const label = status.charAt(0).toUpperCase() + status.slice(1);
+        await PickleChat.sendMessage(booking.chatId, 'system', courtName, `${emoji} Your booking at ${courtName} has been ${label}.`);
+      }
+    } catch {}
+
     loadBookings();
   } catch (err) {
     showToast('Error: ' + err.message, 4000);

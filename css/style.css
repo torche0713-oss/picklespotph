@@ -1395,6 +1395,11 @@ body {
     height: 60vh;
   }
 
+  .sidebar.mobile-open + .main-content {
+    height: 40vh !important;
+    flex: none !important;
+  }
+
   .main-content {
     height: calc(100vh - var(--navbar-height));
   }
