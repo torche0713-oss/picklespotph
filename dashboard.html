@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Owner Dashboard - PickleSpot PH</title>
+  <meta name="description" content="Manage your pickleball court listings on PickleSpot PH"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/style.css"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    .dashboard-layout {
+      margin-top: var(--navbar-height);
+      display: flex;
+      min-height: calc(100vh - var(--navbar-height));
+    }
+    .dashboard-sidebar {
+      width: 260px;
+      background: var(--white);
+      border-right: 1px solid #eee;
+      padding: 20px 0;
+      flex-shrink: 0;
+    }
+    .dashboard-sidebar .user-info {
+      padding: 0 20px 16px;
+      border-bottom: 1px solid #eee;
+      margin-bottom: 12px;
+    }
+    .dashboard-sidebar .user-name {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .dashboard-sidebar .user-email {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .dashboard-sidebar .plan-badge {
+      display: inline-block;
+      margin-top: 6px;
+      padding: 2px 10px;
+      border-radius: 10px;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .plan-basic { background: #f5f5f5; color: #757575; }
+    .plan-pro { background: #fff3e0; color: #e65100; }
+    .dash-nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 20px;
+      color: var(--text);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: var(--transition);
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+      font-family: 'Poppins', sans-serif;
+    }
+    .dash-nav-item:hover { background: #f5f5f5; color: var(--primary); }
+    .dash-nav-item.active { background: #e8f5e9; color: var(--primary); border-right: 3px solid var(--primary); }
+    .dash-nav-item i { width: 20px; text-align: center; }
+    .dash-nav-item.logout { color: #d32f2f; margin-top: auto; }
+    .dash-nav-item.logout:hover { background: #ffebee; }
+
+    .dashboard-content {
+      flex: 1;
+      padding: 30px;
+      background: var(--bg);
+      overflow-y: auto;
+    }
+    .dash-section { display: none; }
+    .dash-section.active { display: block; }
+    .dash-section h1 {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--primary-dark);
+      margin-bottom: 4px;
+    }
+    .dash-section .subtitle {
+      color: var(--text-muted);
+      font-size: 14px;
+      margin-bottom: 24px;
+    }
+
+    .court-card-owner {
+      background: var(--white);
+      border-radius: var(--radius);
+      box-shadow: var(--card-shadow);
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+    .court-card-owner .card-header {
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    .court-card-owner .card-header h3 { font-size: 16px; font-weight: 700; }
+    .court-card-owner .card-body { padding: 16px 20px; }
+    .court-card-owner .card-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      padding: 12px 20px;
+      border-top: 1px solid #f0f0f0;
+      background: #fafafa;
+    }
+
+    .btn-dash {
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      font-family: 'Poppins', sans-serif;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-dash-primary { background: var(--primary); color: var(--white); }
+    .btn-dash-primary:hover { background: var(--primary-dark); }
+    .btn-dash-outline { background: none; border: 1px solid #ddd; color: var(--text); }
+    .btn-dash-outline:hover { background: #f5f5f5; }
+    .btn-dash-danger { background: #d32f2f; color: var(--white); }
+    .btn-dash-danger:hover { background: #b71c1c; }
+    .btn-dash-accent { background: var(--accent); color: var(--white); }
+    .btn-dash-accent:hover { background: #e65100; }
+
+    .status-badge {
+      padding: 3px 10px;
+      border-radius: 10px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .status-approved { background: #e8f5e9; color: #2e7d32; }
+    .status-pending { background: #fff3e0; color: #e65100; }
+
+    .photo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .photo-grid img {
+      width: 100%;
+      height: 120px;
+      object-fit: cover;
+      border-radius: 8px;
+    }
+    .photo-upload-area {
+      border: 2px dashed #ddd;
+      border-radius: 8px;
+      padding: 30px;
+      text-align: center;
+      cursor: pointer;
+      transition: var(--transition);
+      margin-top: 10px;
+    }
+    .photo-upload-area:hover { border-color: var(--primary-light); background: #f9f9f9; }
+    .photo-upload-area i { font-size: 32px; color: var(--text-muted); margin-bottom: 8px; }
+
+    .booking-item {
+      padding: 12px 16px;
+      border: 1px solid #eee;
+      border-radius: 8px;
+      margin-bottom: 10px;
+    }
+    .booking-item .booking-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+    .booking-item .booking-name { font-weight: 600; font-size: 14px; }
+    .booking-item .booking-detail { font-size: 12px; color: var(--text-muted); }
+    .booking-actions { display: flex; gap: 6px; margin-top: 8px; }
+
+    /* Chat styles */
+    .chat-list { margin-top: 16px; }
+    .chat-thread {
+      background: var(--white);
+      border-radius: var(--radius);
+      box-shadow: var(--card-shadow);
+      margin-bottom: 12px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .chat-thread:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.12); }
+    .chat-thread-header {
+      padding: 14px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #f0f0f0;
+    }
+    .chat-thread-header .chat-name { font-weight: 600; font-size: 14px; }
+    .chat-thread-header .chat-court { font-size: 12px; color: var(--text-muted); }
+    .chat-preview {
+      padding: 10px 18px;
+      font-size: 13px;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .chat-unread {
+      background: var(--accent);
+      color: white;
+      border-radius: 50%;
+      width: 22px;
+      height: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .chat-messages {
+      max-height: 400px;
+      overflow-y: auto;
+      padding: 16px;
+      background: #f9f9f9;
+    }
+    .chat-msg {
+      margin-bottom: 10px;
+      display: flex;
+      flex-direction: column;
+    }
+    .chat-msg.owner { align-items: flex-end; }
+    .chat-msg.customer { align-items: flex-start; }
+    .chat-bubble {
+      max-width: 75%;
+      padding: 8px 14px;
+      border-radius: 14px;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    .chat-msg.owner .chat-bubble {
+      background: var(--primary);
+      color: white;
+      border-bottom-right-radius: 4px;
+    }
+    .chat-msg.customer .chat-bubble {
+      background: var(--white);
+      color: var(--text);
+      border: 1px solid #eee;
+      border-bottom-left-radius: 4px;
+    }
+    .chat-msg .chat-time {
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+    .chat-input-area {
+      display: flex;
+      gap: 8px;
+      padding: 12px 16px;
+      border-top: 1px solid #eee;
+      background: var(--white);
+    }
+    .chat-input-area input {
+      flex: 1;
+      padding: 10px 14px;
+      border: 1px solid #ddd;
+      border-radius: 20px;
+      font-size: 13px;
+      font-family: 'Poppins', sans-serif;
+      outline: none;
+    }
+    .chat-input-area input:focus { border-color: var(--primary-light); }
+    .chat-input-area button {
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 38px;
+      height: 38px;
+      cursor: pointer;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition);
+    }
+    .chat-input-area button:hover { background: var(--primary-dark); }
+    .chat-back-btn {
+      background: none;
+      border: none;
+      color: var(--primary);
+      font-size: 14px;
+      cursor: pointer;
+      padding: 8px 0;
+      font-family: 'Poppins', sans-serif;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .chat-view { display: none; }
+    .chat-view.active { display: block; }
+
+    /* Availability editor */
+    .avail-day {
+      background: var(--white);
+      border-radius: var(--radius);
+      box-shadow: var(--card-shadow);
+      padding: 16px 20px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .avail-day .day-name {
+      font-weight: 700;
+      font-size: 14px;
+      min-width: 100px;
+      color: var(--text);
+    }
+    .avail-day .day-toggle {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    .avail-day .day-time {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .avail-day .day-time input[type="time"] {
+      padding: 6px 10px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 13px;
+      font-family: 'Poppins', sans-serif;
+      outline: none;
+    }
+    .avail-day .day-time input[type="time"]:focus { border-color: var(--primary-light); }
+    .avail-day .day-time span { font-size: 13px; color: var(--text-muted); }
+    .avail-slot-disabled { opacity: 0.4; pointer-events: none; }
+
+    .avail-court-select {
+      padding: 10px 14px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: 'Poppins', sans-serif;
+      outline: none;
+      margin-bottom: 16px;
+      width: 100%;
+      max-width: 400px;
+    }
+    .avail-court-select:focus { border-color: var(--primary-light); }
+
+    /* Time slot picker for customers */
+    .slot-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .slot-btn {
+      padding: 8px 4px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      background: var(--white);
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+      font-family: 'Poppins', sans-serif;
+      transition: var(--transition);
+      text-align: center;
+    }
+    .slot-btn:hover { border-color: var(--primary); color: var(--primary); }
+    .slot-btn.selected { background: var(--primary); color: white; border-color: var(--primary); }
+    .slot-btn.taken { background: #f5f5f5; color: #ccc; cursor: not-allowed; border-color: #eee; text-decoration: line-through; }
+
+    .upgrade-banner {
+      background: linear-gradient(135deg, var(--accent), #e65100);
+      color: white;
+      border-radius: var(--radius);
+      padding: 24px;
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    .upgrade-banner h2 { font-size: 20px; margin-bottom: 8px; }
+    .upgrade-banner p { font-size: 14px; opacity: 0.9; margin-bottom: 16px; }
+
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      max-width: 700px;
+    }
+    .pricing-card {
+      background: var(--white);
+      border-radius: var(--radius);
+      box-shadow: var(--card-shadow);
+      padding: 24px;
+      text-align: center;
+      border: 2px solid transparent;
+      transition: var(--transition);
+    }
+    .pricing-card.pro {
+      border-color: var(--accent);
+      position: relative;
+    }
+    .pricing-card.pro .popular-tag {
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--accent);
+      color: white;
+      padding: 4px 16px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .pricing-card h3 { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+    .pricing-card .price {
+      font-size: 36px;
+      font-weight: 700;
+      color: var(--primary-dark);
+      margin-bottom: 16px;
+    }
+    .pricing-card .price span { font-size: 16px; color: var(--text-muted); font-weight: 400; }
+    .pricing-card ul { list-style: none; text-align: left; margin-bottom: 20px; }
+    .pricing-card ul li { padding: 6px 0; font-size: 13px; display: flex; align-items: center; gap: 8px; }
+    .pricing-card ul li i.fa-check { color: var(--primary); }
+    .pricing-card ul li i.fa-times { color: #d32f2f; }
+
+    .payment-modal {
+      max-width: 450px;
+    }
+    .gcash-info {
+      background: #f5f5f5;
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin: 12px 0;
+      text-align: center;
+    }
+    .gcash-info strong { display: block; font-size: 18px; color: var(--text); }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-muted);
+    }
+    .empty-state i { font-size: 48px; margin-bottom: 12px; }
+    .empty-state h3 { font-size: 18px; margin-bottom: 8px; color: var(--text); }
+
+    @media (max-width: 768px) {
+      .dashboard-sidebar { width: 100%; border-right: none; border-bottom: 1px solid #eee; padding: 10px 0; }
+      .dashboard-layout { flex-direction: column; }
+      .dash-nav-item { padding: 10px 16px; }
+      .pricing-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ===== NAVBAR ===== -->
+  <nav class="navbar">
+    <div class="nav-brand" onclick="window.location='index.html'">
+      <span class="logo-icon">📍</span>
+      <span class="logo-text">PickleSpot<span class="ph">.ph</span></span>
+    </div>
+    <div class="nav-links">
+      <a href="index.html" class="nav-link"><i class="fas fa-arrow-left"></i> Back to Courts</a>
+      <button class="btn-add-court" id="dashLogout"><i class="fas fa-sign-out-alt"></i> Logout</button>
+    </div>
+    <button class="nav-hamburger" id="dashHamburger">
+      <i class="fas fa-bars"></i>
+    </button>
+  </nav>
+
+  <!-- ===== DASHBOARD LAYOUT ===== -->
+  <div class="dashboard-layout">
+
+    <!-- Sidebar -->
+    <aside class="dashboard-sidebar">
+      <div class="user-info">
+        <div class="user-name" id="dashUserName">Loading...</div>
+        <div class="user-email" id="dashUserEmail"></div>
+        <span class="plan-badge plan-basic" id="dashPlanBadge">Basic</span>
+      </div>
+
+      <button class="dash-nav-item active" data-section="my-courts">
+        <i class="fas fa-map-pin"></i> My Courts
+      </button>
+      <button class="dash-nav-item" data-section="add-court">
+        <i class="fas fa-plus-circle"></i> Add Court
+      </button>
+      <button class="dash-nav-item" data-section="bookings">
+        <i class="fas fa-calendar-check"></i> Bookings
+      </button>
+      <button class="dash-nav-item" data-section="availability">
+        <i class="fas fa-clock"></i> Availability
+      </button>
+      <button class="dash-nav-item" data-section="chat">
+        <i class="fas fa-comments"></i> Messages <span id="chatUnreadBadge" style="background:var(--accent);color:white;border-radius:10px;padding:1px 7px;font-size:10px;display:none">0</span>
+      </button>
+      <button class="dash-nav-item" data-section="reviews">
+        <i class="fas fa-star"></i> Reviews
+      </button>
+      <button class="dash-nav-item" data-section="upgrade">
+        <i class="fas fa-crown"></i> Upgrade to Pro
+      </button>
+      <button class="dash-nav-item" data-section="payments" style="display:none">
+        <i class="fas fa-credit-card"></i> Payments
+      </button>
+      <button class="dash-nav-item logout" id="dashLogoutBtn">
+        <i class="fas fa-sign-out-alt"></i> Sign Out
+      </button>
+    </aside>
+
+    <!-- Content -->
+    <div class="dashboard-content">
+
+      <!-- My Courts -->
+      <div class="dash-section active" id="section-my-courts">
+        <h1>My Courts</h1>
+        <p class="subtitle">Manage your pickleball court listings</p>
+        <div id="myCourtsList"></div>
+      </div>
+
+      <!-- Add Court -->
+      <div class="dash-section" id="section-add-court">
+        <h1>Add a New Court</h1>
+        <p class="subtitle">List your court on PickleSpot PH</p>
+        <form id="dashAddCourtForm">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Court Name *</label>
+              <input type="text" id="dashCourtName" required placeholder="e.g. Rizal Sports Complex"/>
+            </div>
+            <div class="form-group">
+              <label>City/Municipality *</label>
+              <input type="text" id="dashCourtCity" required placeholder="e.g. Manila"/>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Region *</label>
+              <select id="dashCourtRegion" required>
+                <option value="">Select Region</option>
+                <option value="NCR">NCR (Metro Manila)</option>
+                <option value="Luzon">Luzon</option>
+                <option value="Visayas">Visayas</option>
+                <option value="Mindanao">Mindanao</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Court Type *</label>
+              <select id="dashCourtType" required>
+                <option value="">Select Type</option>
+                <option value="Indoor">Indoor</option>
+                <option value="Outdoor">Outdoor</option>
+                <option value="Covered">Covered</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Access Type *</label>
+              <select id="dashCourtAccess" required>
+                <option value="">Select Access</option>
+                <option value="Free">Free</option>
+                <option value="Paid">Paid</option>
+                <option value="Members Only">Members Only</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Rate per Hour</label>
+              <input type="text" id="dashCourtRate" placeholder="e.g. ₱200"/>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Number of Courts</label>
+              <input type="number" id="dashCourtCount" min="1" max="50" placeholder="e.g. 4"/>
+            </div>
+            <div class="form-group">
+              <label>Contact Number</label>
+              <input type="text" id="dashCourtContact" placeholder="Phone or Facebook page"/>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Address / Directions</label>
+            <textarea id="dashCourtAddress" rows="2" placeholder="Full address or landmark directions"></textarea>
+          </div>
+          <div class="form-group">
+            <label>Operating Hours</label>
+            <input type="text" id="dashCourtHours" placeholder="e.g. Mon-Sun 6:00 AM - 10:00 PM"/>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Latitude</label>
+              <input type="number" id="dashCourtLat" step="any" placeholder="e.g. 14.5995"/>
+            </div>
+            <div class="form-group">
+              <label>Longitude</label>
+              <input type="number" id="dashCourtLng" step="any" placeholder="e.g. 120.9842"/>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--text-muted);margin-bottom:6px">Click the map to pin your court's location:</p>
+          <div id="addCourtMap" style="height:300px;border-radius:8px;border:1px solid #ddd;margin-bottom:16px"></div>
+          <div class="form-group">
+            <label>Amenities</label>
+            <div class="checkbox-group horizontal">
+              <label class="checkbox-label"><input type="checkbox" value="parking" class="dash-amenity"/> Parking</label>
+              <label class="checkbox-label"><input type="checkbox" value="lights" class="dash-amenity"/> Night Lights</label>
+              <label class="checkbox-label"><input type="checkbox" value="rental" class="dash-amenity"/> Equipment Rental</label>
+              <label class="checkbox-label"><input type="checkbox" value="shower" class="dash-amenity"/> Shower/Locker</label>
+              <label class="checkbox-label"><input type="checkbox" value="cafe" class="dash-amenity"/> Cafe/Food</label>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Notes</label>
+            <textarea id="dashCourtNotes" rows="2" placeholder="Any other info"></textarea>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn-submit"><i class="fas fa-save"></i> Save Court</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Bookings -->
+      <div class="dash-section" id="section-bookings">
+        <h1>Bookings & Inquiries</h1>
+        <p class="subtitle">Manage booking requests from players</p>
+        <div id="bookingsList"></div>
+      </div>
+
+      <!-- Reviews -->
+      <div class="dash-section" id="section-reviews">
+        <h1>Reviews</h1>
+        <p class="subtitle">See what players are saying about your courts</p>
+        <div id="reviewsList"></div>
+      </div>
+
+      <!-- Chat / Messages -->
+      <div class="dash-section" id="section-chat">
+        <h1>Messages</h1>
+        <p class="subtitle">Chat with players inquiring about your courts</p>
+        <div id="chatContainer">
+          <div class="chat-view active" id="chatListView">
+            <div class="chat-list" id="chatList"></div>
+          </div>
+          <div class="chat-view" id="chatThreadView">
+            <button class="chat-back-btn" id="chatBackBtn"><i class="fas fa-arrow-left"></i> Back to Messages</button>
+            <div style="background:var(--white);border-radius:var(--radius);box-shadow:var(--card-shadow);margin-top:12px;overflow:hidden">
+              <div style="padding:14px 18px;border-bottom:1px solid #f0f0f0">
+                <strong id="chatThreadName">Customer</strong>
+                <span style="font-size:12px;color:var(--text-muted);margin-left:8px" id="chatThreadCourt">Court</span>
+              </div>
+              <div class="chat-messages" id="chatMessages"></div>
+              <div class="chat-input-area">
+                <input type="text" id="chatInput" placeholder="Type a message..." autocomplete="off"/>
+                <button id="chatSendBtn"><i class="fas fa-paper-plane"></i></button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Availability -->
+      <div class="dash-section" id="section-availability">
+        <h1>Availability</h1>
+        <p class="subtitle">Set your weekly schedule for each court. Customers will only see available time slots.</p>
+        <div id="availabilityCourtSelector"></div>
+        <div id="availabilityEditor"></div>
+      </div>
+
+      <!-- Upgrade to Pro -->
+      <div class="dash-section" id="section-upgrade">
+        <div class="upgrade-banner">
+          <h2><i class="fas fa-crown"></i> Upgrade to PickleSpot Pro</h2>
+          <p>Get more visibility, accept bookings, and grow your pickleball business</p>
+        </div>
+        <div class="pricing-grid">
+          <div class="pricing-card">
+            <h3>Basic</h3>
+            <div class="price">₱0 <span>/ month</span></div>
+            <ul>
+              <li><i class="fas fa-check"></i> Court listing on map</li>
+              <li><i class="fas fa-check"></i> Up to 3 photos</li>
+              <li><i class="fas fa-check"></i> Contact info & hours</li>
+              <li><i class="fas fa-times"></i> Verified badge</li>
+              <li><i class="fas fa-times"></i> Bookings & inquiries</li>
+              <li><i class="fas fa-times"></i> Priority placement</li>
+              <li><i class="fas fa-times"></i> Unlimited photos</li>
+              <li><i class="fas fa-times"></i> Listing analytics</li>
+            </ul>
+            <button class="btn-dash btn-dash-outline" disabled style="width:100%">Current Plan</button>
+          </div>
+          <div class="pricing-card pro">
+            <div class="popular-tag">Popular</div>
+            <h3>Pro</h3>
+            <div class="price">₱399 <span>/ month</span></div>
+            <ul>
+              <li><i class="fas fa-check"></i> Everything in Basic</li>
+              <li><i class="fas fa-check"></i> Verified badge</li>
+              <li><i class="fas fa-check"></i> Accept bookings & inquiries</li>
+              <li><i class="fas fa-check"></i> Priority placement in search</li>
+              <li><i class="fas fa-check"></i> Unlimited photos</li>
+              <li><i class="fas fa-check"></i> Listing analytics</li>
+              <li><i class="fas fa-check"></i> Featured spotlight option</li>
+              <li><i class="fas fa-check"></i> Priority support</li>
+            </ul>
+            <button class="btn-dash btn-dash-accent" id="upgradeNowBtn" style="width:100%">Upgrade Now</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Payments -->
+      <div class="dash-section" id="section-payments">
+        <h1>Payments</h1>
+        <p class="subtitle">Pro upgrade submissions from owners</p>
+        <div id="paymentsList"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===== EDIT COURT MODAL ===== -->
+  <div class="modal-overlay" id="editCourtModal" style="display:none">
+    <div class="modal modal-lg">
+      <button class="modal-close" id="editModalClose"><i class="fas fa-times"></i></button>
+      <div class="modal-header">
+        <h2><i class="fas fa-edit"></i> Edit Court</h2>
+      </div>
+      <div class="modal-body">
+        <form id="editCourtForm">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Court Name</label>
+              <input type="text" id="editCourtName"/>
+            </div>
+            <div class="form-group">
+              <label>City</label>
+              <input type="text" id="editCourtCity"/>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Region</label>
+              <select id="editCourtRegion">
+                <option value="NCR">NCR (Metro Manila)</option>
+                <option value="Luzon">Luzon</option>
+                <option value="Visayas">Visayas</option>
+                <option value="Mindanao">Mindanao</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Type</label>
+              <select id="editCourtType">
+                <option value="Indoor">Indoor</option>
+                <option value="Outdoor">Outdoor</option>
+                <option value="Covered">Covered</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Access</label>
+              <select id="editCourtAccess">
+                <option value="Free">Free</option>
+                <option value="Paid">Paid</option>
+                <option value="Members Only">Members Only</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Rate</label>
+              <input type="text" id="editCourtRate"/>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Contact</label>
+            <input type="text" id="editCourtContact"/>
+          </div>
+          <div class="form-group">
+            <label>Address</label>
+            <textarea id="editCourtAddress" rows="2"></textarea>
+          </div>
+          <div class="form-group">
+            <label>Hours</label>
+            <input type="text" id="editCourtHours"/>
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn-cancel" id="editCancelBtn">Cancel</button>
+            <button type="submit" class="btn-submit"><i class="fas fa-save"></i> Save Changes</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== PHOTO UPLOAD MODAL ===== -->
+  <div class="modal-overlay" id="photoModal" style="display:none">
+    <div class="modal">
+      <button class="modal-close" id="photoModalClose"><i class="fas fa-times"></i></button>
+      <div class="modal-header">
+        <h2><i class="fas fa-images"></i> Manage Photos</h2>
+        <p id="photoLimitInfo">Free: up to 3 photos | Pro: unlimited</p>
+      </div>
+      <div class="modal-body">
+        <div class="photo-grid" id="photoGrid"></div>
+        <div class="photo-upload-area" id="photoUploadArea">
+          <i class="fas fa-cloud-upload-alt"></i>
+          <p>Click to upload photos</p>
+          <input type="file" id="photoFileInput" accept="image/*" multiple style="display:none"/>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== UPGRADE PAYMENT MODAL ===== -->
+  <div class="modal-overlay" id="paymentModal" style="display:none">
+    <div class="modal payment-modal">
+      <button class="modal-close" id="paymentModalClose"><i class="fas fa-times"></i></button>
+      <div class="modal-header">
+        <h2><i class="fas fa-crown"></i> Upgrade to Pro</h2>
+        <p>₱399 / month</p>
+      </div>
+      <div class="modal-body">
+        <p style="font-size:14px;margin-bottom:16px">
+          Pay via GCash or PayMaya to activate your Pro account.
+        </p>
+        <div class="gcash-info">
+          <strong>GCash: 0999-883-0291</strong>
+          <span style="font-size:12px;color:var(--text-muted)">PickleSpot PH</span>
+        </div>
+        <div style="text-align:center;margin:16px 0">
+          <img src="https://chart.googleapis.com/chart?chs=200x200&cht=qr&chl=09998830291&choe=UTF-8" alt="GCash QR" style="width:200px;height:200px;border-radius:12px"/>
+        </div>
+        <p style="font-size:12px;color:var(--text-muted);text-align:center;margin-bottom:16px">
+          After payment, enter your reference number below
+        </p>
+        <div class="form-group">
+          <label>Payment Method</label>
+          <select id="paymentMethod">
+            <option value="gcash">GCash</option>
+            <option value="paymaya">PayMaya</option>
+            <option value="bank">Bank Transfer</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Reference Number</label>
+          <input type="text" id="paymentRef" placeholder="Enter GCash/PayMaya reference #"/>
+        </div>
+        <div class="form-group">
+          <label>Amount</label>
+          <input type="text" id="paymentAmount" value="399" readonly style="background:#f5f5f5"/>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn-cancel" id="paymentCancelBtn">Cancel</button>
+          <button type="button" class="btn-submit" id="paymentSubmitBtn">
+            <i class="fas fa-paper-plane"></i> Submit Payment
+          </button>
+        </div>
+        <p style="font-size:11px;color:var(--text-muted);text-align:center;margin-top:12px">
+          Your Pro account will be activated after payment verification (usually within 24 hours).
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== LOGIN MODAL ===== -->
+  <div class="modal-overlay" id="loginModal" style="display:none">
+    <div class="modal" style="max-width:400px">
+      <button class="modal-close" id="loginModalClose"><i class="fas fa-times"></i></button>
+      <div class="modal-header">
+        <h2><i class="fas fa-sign-in-alt"></i> Owner Login</h2>
+        <p>Sign in to manage your courts</p>
+      </div>
+      <div class="modal-body">
+        <form id="loginForm">
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" id="loginEmail" required placeholder="you@email.com"/>
+          </div>
+          <div class="form-group">
+            <label>Password</label>
+            <input type="password" id="loginPassword" required placeholder="Your password"/>
+          </div>
+          <button type="submit" class="btn-submit" style="width:100%">
+            <i class="fas fa-sign-in-alt"></i> Sign In
+          </button>
+        </form>
+        <div style="margin:16px 0;text-align:center;color:var(--text-muted);font-size:12px">or</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <button id="googleLoginBtn" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;background:white;cursor:pointer;font-size:13px;font-weight:600;font-family:'Poppins',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px">
+            <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" style="width:18px" alt=""/> Sign in with Google
+          </button>
+          <button id="facebookLoginBtn" style="width:100%;padding:10px;border:none;border-radius:8px;background:#1877f2;color:white;cursor:pointer;font-size:13px;font-weight:600;font-family:'Poppins',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px">
+            <i class="fab fa-facebook"></i> Sign in with Facebook
+          </button>
+        </div>
+        <p style="text-align:center;margin-top:16px;font-size:13px;color:var(--text-muted)">
+          Don't have an account? <a href="#" id="showRegisterLink" style="color:var(--primary);font-weight:600">Register</a>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== REGISTER MODAL ===== -->
+  <div class="modal-overlay" id="registerModal" style="display:none">
+    <div class="modal" style="max-width:400px">
+      <button class="modal-close" id="registerModalClose"><i class="fas fa-times"></i></button>
+      <div class="modal-header">
+        <h2><i class="fas fa-user-plus"></i> Create Account</h2>
+        <p>Register as a court owner</p>
+      </div>
+      <div class="modal-body">
+        <form id="registerForm">
+          <div class="form-group">
+            <label>Full Name</label>
+            <input type="text" id="regName" required placeholder="Your name"/>
+          </div>
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" id="regEmail" required placeholder="you@email.com"/>
+          </div>
+          <div class="form-group">
+            <label>Password</label>
+            <input type="password" id="regPassword" required minlength="6" placeholder="At least 6 characters"/>
+          </div>
+          <button type="submit" class="btn-submit" style="width:100%">
+            <i class="fas fa-user-plus"></i> Register
+          </button>
+        </form>
+        <p style="text-align:center;margin-top:16px;font-size:13px;color:var(--text-muted)">
+          Already have an account? <a href="#" id="showLoginLink" style="color:var(--primary);font-weight:600">Sign In</a>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== TOAST ===== -->
+  <div class="toast" id="dashToast"></div>
+
+  <!-- Leaflet (free map) -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
+  <script src="js/firebase.js"></script>
+  <script src="js/dashboard.js"></script>
+</body>
+</html>

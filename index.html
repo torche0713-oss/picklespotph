@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PickleSpot PH - Find Pickleball Courts in the Philippines</title>
+  <meta name="description" content="Find pickleball courts near you across the Philippines. PickleSpot PH is your go-to court finder for Filipino pickleball players."/>
+  <meta name="keywords" content="pickleball courts philippines, pickleball PH, find pickleball court, pickleball manila, pickleball cebu, pickleball davao"/>
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+
+  <link rel="stylesheet" href="css/style.css"/>
+</head>
+<body>
+
+  <!-- ===== NAVBAR ===== -->
+  <nav class="navbar">
+    <div class="nav-brand">
+      <span class="logo-icon">📍</span>
+      <span class="logo-text">PickleSpot<span class="ph">.ph</span></span>
+    </div>
+    <div class="nav-links">
+      <a href="#" class="nav-link active" data-view="map">
+        <i class="fas fa-map-marked-alt"></i> Map
+      </a>
+      <a href="#" class="nav-link" data-view="list">
+        <i class="fas fa-list"></i> Courts
+      </a>
+      <a href="#" class="nav-link" data-view="about">
+        <i class="fas fa-info-circle"></i> About
+      </a>
+      <a href="dashboard.html" class="nav-link">
+        <i class="fas fa-user-circle"></i> Owner Login
+      </a>
+      <button class="btn-add-court" id="addCourtBtn">
+        <i class="fas fa-plus"></i> Add Court
+      </button>
+    </div>
+    <button class="nav-hamburger" id="hamburger">
+      <i class="fas fa-bars"></i>
+    </button>
+  </nav>
+
+  <!-- ===== MOBILE MENU ===== -->
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="#" class="mobile-link" data-view="map"><i class="fas fa-map-marked-alt"></i> Map</a>
+    <a href="#" class="mobile-link" data-view="list"><i class="fas fa-list"></i> Courts</a>
+    <a href="#" class="mobile-link" data-view="about"><i class="fas fa-info-circle"></i> About</a>
+    <a href="#" class="mobile-link add" id="mobileAddCourt"><i class="fas fa-plus"></i> Add Court</a>
+    <a href="dashboard.html" class="mobile-link"><i class="fas fa-user-circle"></i> Owner Login</a>
+  </div>
+
+  <!-- ===== MAIN APP ===== -->
+  <div class="app-container">
+
+    <!-- ===== SIDEBAR ===== -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <h2>Find Courts</h2>
+        <button class="sidebar-toggle" id="sidebarToggle">
+          <i class="fas fa-chevron-left"></i>
+        </button>
+      </div>
+
+      <!-- Search -->
+      <div class="search-box">
+        <i class="fas fa-search search-icon"></i>
+        <input
+          type="text"
+          id="searchInput"
+          placeholder="Search courts or locations..."
+          autocomplete="off"
+        />
+        <button class="clear-search" id="clearSearch" style="display:none">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <!-- Filters -->
+      <div class="filters">
+        <h3 class="filter-title">Filters</h3>
+
+        <div class="filter-group">
+          <label>Region</label>
+          <select id="regionFilter">
+            <option value="">All Regions</option>
+            <option value="NCR">NCR (Metro Manila)</option>
+            <option value="Luzon">Luzon</option>
+            <option value="Visayas">Visayas</option>
+            <option value="Mindanao">Mindanao</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label>Court Type</label>
+          <div class="checkbox-group">
+            <label class="checkbox-label">
+              <input type="checkbox" value="Indoor" class="type-filter" checked/>
+              <span class="checkmark"></span> Indoor
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" value="Outdoor" class="type-filter" checked/>
+              <span class="checkmark"></span> Outdoor
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" value="Covered" class="type-filter" checked/>
+              <span class="checkmark"></span> Covered
+            </label>
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <label>Access</label>
+          <div class="checkbox-group">
+            <label class="checkbox-label">
+              <input type="checkbox" value="Free" class="access-filter" checked/>
+              <span class="checkmark"></span> Free
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" value="Paid" class="access-filter" checked/>
+              <span class="checkmark"></span> Paid
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" value="Members Only" class="access-filter" checked/>
+              <span class="checkmark"></span> Members Only
+            </label>
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <label>Amenities</label>
+          <div class="checkbox-group">
+            <label class="checkbox-label">
+              <input type="checkbox" value="parking" class="amenity-filter"/>
+              <span class="checkmark"></span> Parking
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" value="lights" class="amenity-filter"/>
+              <span class="checkmark"></span> Night Lights
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" value="rental" class="amenity-filter"/>
+              <span class="checkmark"></span> Equipment Rental
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" value="shower" class="amenity-filter"/>
+              <span class="checkmark"></span> Shower/Locker
+            </label>
+          </div>
+        </div>
+
+        <button class="btn-reset-filters" id="resetFilters">
+          <i class="fas fa-undo"></i> Reset Filters
+        </button>
+      </div>
+
+      <!-- Results Count -->
+      <div class="results-info">
+        <span id="resultsCount">0</span> courts found
+      </div>
+
+      <!-- Court List in Sidebar -->
+      <div class="sidebar-court-list" id="sidebarCourtList">
+        <!-- Dynamically populated -->
+      </div>
+    </aside>
+
+    <!-- ===== MAP VIEW ===== -->
+    <main class="main-content" id="mainContent">
+      <div id="map"></div>
+
+      <!-- Map Controls -->
+      <div class="map-controls">
+        <button class="map-btn" id="locateMe" title="Find my location">
+          <i class="fas fa-crosshairs"></i>
+        </button>
+        <button class="map-btn" id="toggleSidebar" title="Toggle sidebar">
+          <i class="fas fa-sliders-h"></i>
+        </button>
+      </div>
+
+      <!-- Stats Bar -->
+      <div class="stats-bar">
+        <div class="stat">
+          <span class="stat-number" id="totalCourts">0</span>
+          <span class="stat-label">Total Courts</span>
+        </div>
+        <div class="stat">
+          <span class="stat-number" id="totalCities">0</span>
+          <span class="stat-label">Cities</span>
+        </div>
+        <div class="stat">
+          <span class="stat-number" id="totalRegions">0</span>
+          <span class="stat-label">Regions</span>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- ===== LIST VIEW ===== -->
+  <div class="list-view" id="listView" style="display:none">
+    <div class="list-header">
+      <h1>Pickleball Courts in the Philippines</h1>
+      <p>Browse all <span id="listCourtCount">0</span> verified courts on PickleSpot PH</p>
+
+      <div class="list-search">
+        <i class="fas fa-search"></i>
+        <input type="text" id="listSearchInput" placeholder="Search courts..."/>
+      </div>
+
+      <div class="list-sort">
+        <label>Sort by:</label>
+        <select id="sortSelect">
+          <option value="name">Name (A-Z)</option>
+          <option value="region">Region</option>
+          <option value="type">Court Type</option>
+          <option value="newest">Newest First</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="courts-grid" id="courtsGrid">
+      <!-- Dynamically populated -->
+    </div>
+  </div>
+
+  <!-- ===== ABOUT VIEW ===== -->
+  <div class="about-view" id="aboutView" style="display:none">
+    <div class="about-container">
+      <div class="about-hero">
+        <span class="about-emoji">📍</span>
+        <h1>About PickleSpot PH</h1>
+        <p>Your go-to resource for finding pickleball courts across the Philippines</p>
+      </div>
+      <div class="about-grid">
+        <div class="about-card">
+          <i class="fas fa-map-marked-alt"></i>
+          <h3>Find Your Spot</h3>
+          <p>Discover pickleball courts near you with our interactive map. Filter by region, court type, and amenities.</p>
+        </div>
+        <div class="about-card">
+          <i class="fas fa-users"></i>
+          <h3>Community Driven</h3>
+          <p>Courts are added and verified by the Philippine pickleball community. Help us grow by adding courts!</p>
+        </div>
+        <div class="about-card">
+          <i class="fas fa-mobile-alt"></i>
+          <h3>Mobile Friendly</h3>
+          <p>Use PickleSpot PH on your phone while on the go to find courts wherever you are in the Philippines.</p>
+        </div>
+        <div class="about-card">
+          <i class="fas fa-heart"></i>
+          <h3>Made with Love</h3>
+          <p>Built by pickleball enthusiasts for the growing Filipino pickleball community. Dink responsibly! 🏓</p>
+        </div>
+      </div>
+
+      <!-- Mission Section -->
+      <div class="about-mission">
+        <h2>Our Mission</h2>
+        <p>
+          PickleSpot PH was created to help grow the pickleball community in the Philippines
+          by making it easy for players of all levels to find courts, connect with other players,
+          and enjoy the fastest growing sport in the world — right here in our own backyard! 🇵🇭
+        </p>
+      </div>
+
+      <div class="about-contact">
+        <h2>Get in Touch</h2>
+        <p>Found an error? Want to suggest a court? Reach out to us!</p>
+        <div class="social-links">
+          <a href="#" class="social-btn"><i class="fab fa-facebook"></i> Facebook</a>
+          <a href="#" class="social-btn"><i class="fab fa-instagram"></i> Instagram</a>
+          <a href="mailto:hello@picklespot.ph" class="social-btn"><i class="fas fa-envelope"></i> hello@picklespot.ph</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== COURT DETAIL MODAL ===== -->
+  <div class="modal-overlay" id="courtModal" style="display:none">
+    <div class="modal">
+      <button class="modal-close" id="modalClose">
+        <i class="fas fa-times"></i>
+      </button>
+      <div class="modal-header" id="modalHeader"></div>
+      <div class="modal-body" id="modalBody"></div>
+      <div class="modal-footer" id="modalFooter"></div>
+    </div>
+  </div>
+
+  <!-- ===== BOOKING INQUIRY MODAL ===== -->
+  <div class="modal-overlay" id="bookingModal" style="display:none">
+    <div class="modal" style="max-width:450px">
+      <button class="modal-close" id="bookingModalClose"><i class="fas fa-times"></i></button>
+      <div class="modal-header">
+        <h2><i class="fas fa-calendar-check"></i> Book / Inquire</h2>
+        <p id="bookingCourtName">Send a booking request to this court</p>
+      </div>
+      <div class="modal-body">
+        <form id="bookingForm">
+          <div class="form-group">
+            <label>Your Name *</label>
+            <input type="text" id="bookingName" required placeholder="e.g. Juan Dela Cruz"/>
+          </div>
+          <div class="form-group">
+            <label>Contact Number *</label>
+            <input type="text" id="bookingContact" required placeholder="e.g. 0917 XXX XXXX"/>
+          </div>
+          <div class="form-group">
+            <label>Preferred Date</label>
+            <input type="date" id="bookingDate"/>
+          </div>
+          <div class="form-group" id="slotPickerGroup" style="display:none">
+            <label>Available Time Slots</label>
+            <div class="slot-grid" id="slotGrid"></div>
+            <input type="hidden" id="bookingTime"/>
+          </div>
+          <div class="form-group">
+            <label>Number of Players</label>
+            <input type="number" id="bookingPlayers" min="1" max="20" placeholder="e.g. 4"/>
+          </div>
+          <div class="form-group">
+            <label>Message / Questions</label>
+            <textarea id="bookingMessage" rows="3" placeholder="Any questions or special requests..."></textarea>
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn-cancel" id="bookingCancelBtn">Cancel</button>
+            <button type="submit" class="btn-submit"><i class="fas fa-paper-plane"></i> Send Inquiry</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== REVIEW MODAL ===== -->
+  <div class="modal-overlay" id="reviewModal" style="display:none">
+    <div class="modal" style="max-width:400px">
+      <button class="modal-close" id="reviewModalClose"><i class="fas fa-times"></i></button>
+      <div class="modal-header">
+        <h2><i class="fas fa-star"></i> Rate This Court</h2>
+        <p id="reviewCourtName">Share your experience</p>
+      </div>
+      <div class="modal-body">
+        <form id="reviewForm">
+          <div class="form-group">
+            <label>Your Rating</label>
+            <div style="font-size:28px;display:flex;gap:4px;cursor:pointer" id="starRating">
+              <span data-star="1">☆</span>
+              <span data-star="2">☆</span>
+              <span data-star="3">☆</span>
+              <span data-star="4">☆</span>
+              <span data-star="5">☆</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Your Name</label>
+            <input type="text" id="reviewName" placeholder="e.g. Juan"/>
+          </div>
+          <div class="form-group">
+            <label>Comment</label>
+            <textarea id="reviewComment" rows="3" placeholder="What did you like? Any tips for other players?"></textarea>
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn-cancel" id="reviewCancelBtn">Cancel</button>
+            <button type="submit" class="btn-submit"><i class="fas fa-star"></i> Submit Review</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== ADD COURT MODAL ===== -->
+  <div class="modal-overlay" id="addCourtModal" style="display:none">
+    <div class="modal modal-lg">
+      <button class="modal-close" id="addModalClose">
+        <i class="fas fa-times"></i>
+      </button>
+      <div class="modal-header">
+        <h2><i class="fas fa-plus-circle"></i> Add a Court to PickleSpot PH</h2>
+        <p>Help the Filipino pickleball community by adding a court!</p>
+      </div>
+      <div class="modal-body">
+        <form id="addCourtForm">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Court Name *</label>
+              <input type="text" id="courtName" placeholder="e.g. Rizal Sports Complex" required/>
+            </div>
+            <div class="form-group">
+              <label>City/Municipality *</label>
+              <input type="text" id="courtCity" placeholder="e.g. Manila" required/>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Province/Region *</label>
+              <select id="courtRegion" required>
+                <option value="">Select Region</option>
+                <option value="NCR">NCR (Metro Manila)</option>
+                <option value="Luzon">Luzon</option>
+                <option value="Visayas">Visayas</option>
+                <option value="Mindanao">Mindanao</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Court Type *</label>
+              <select id="courtType" required>
+                <option value="">Select Type</option>
+                <option value="Indoor">Indoor</option>
+                <option value="Outdoor">Outdoor</option>
+                <option value="Covered">Covered</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Number of Courts</label>
+              <input type="number" id="courtCount" min="1" max="50" placeholder="e.g. 4"/>
+            </div>
+            <div class="form-group">
+              <label>Access Type *</label>
+              <select id="courtAccess" required>
+                <option value="">Select Access</option>
+                <option value="Free">Free</option>
+                <option value="Paid">Paid</option>
+                <option value="Members Only">Members Only</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Rate per Hour</label>
+            <input type="text" id="courtRate" placeholder="e.g. ₱200, Free, or By Donation"/>
+          </div>
+
+          <div class="form-group">
+            <label>Address / Directions</label>
+            <textarea id="courtAddress" rows="2" placeholder="Full address or landmark directions"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>Operating Hours</label>
+            <input type="text" id="courtHours" placeholder="e.g. Mon-Sun 6:00 AM - 10:00 PM"/>
+          </div>
+
+          <div class="form-group">
+            <label>Contact / Social Media</label>
+            <input type="text" id="courtContact" placeholder="Phone, Facebook page, or website"/>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Latitude</label>
+              <input type="number" id="courtLat" step="any" placeholder="e.g. 14.5995"/>
+            </div>
+            <div class="form-group">
+              <label>Longitude</label>
+              <input type="number" id="courtLng" step="any" placeholder="e.g. 120.9842"/>
+            </div>
+          </div>
+          <p style="font-size:12px;color:var(--text-muted);margin-bottom:6px">Click the map to pin the court's location:</p>
+          <div id="addCourtMap" style="height:280px;border-radius:8px;border:1px solid #ddd;margin-bottom:16px"></div>
+
+          <div class="form-group">
+            <label>Amenities</label>
+            <div class="checkbox-group horizontal">
+              <label class="checkbox-label">
+                <input type="checkbox" value="parking" class="court-amenity"/>
+                <span class="checkmark"></span> Parking
+              </label>
+              <label class="checkbox-label">
+                <input type="checkbox" value="lights" class="court-amenity"/>
+                <span class="checkmark"></span> Night Lights
+              </label>
+              <label class="checkbox-label">
+                <input type="checkbox" value="rental" class="court-amenity"/>
+                <span class="checkmark"></span> Equipment Rental
+              </label>
+              <label class="checkbox-label">
+                <input type="checkbox" value="shower" class="court-amenity"/>
+                <span class="checkmark"></span> Shower/Locker
+              </label>
+              <label class="checkbox-label">
+                <input type="checkbox" value="cafe" class="court-amenity"/>
+                <span class="checkmark"></span> Café/Food
+              </label>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Additional Notes</label>
+            <textarea id="courtNotes" rows="2" placeholder="Any other info (court surface, fees, etc.)"></textarea>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" class="btn-cancel" id="cancelAdd">Cancel</button>
+            <button type="submit" class="btn-submit">
+              <i class="fas fa-paper-plane"></i> Submit to PickleSpot PH
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="site-footer" id="siteFooter" style="display:none">
+    <div class="footer-content">
+      <div class="footer-brand">
+        <span>📍</span>
+        <span class="footer-logo">PickleSpot<span>.ph</span></span>
+      </div>
+      <p class="footer-tagline">Finding pickleball courts made easy 🇵🇭</p>
+      <p class="footer-copy">© 2024 PickleSpot PH · All rights reserved</p>
+    </div>
+  </footer>
+
+  <!-- ===== CUSTOMER CHAT WIDGET ===== -->
+  <div id="customerChatWidget" style="display:none">
+    <button id="chatWidgetBtn" style="position:fixed;bottom:80px;right:20px;z-index:9999;background:var(--primary);color:white;border:none;border-radius:50%;width:56px;height:56px;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,0.25);font-size:22px;display:flex;align-items:center;justify-content:center;transition:var(--transition)">
+      <i class="fas fa-comments"></i>
+      <span id="chatWidgetBadge" style="position:absolute;top:-2px;right:-2px;background:var(--accent);color:white;border-radius:50%;width:20px;height:20px;font-size:10px;display:none;align-items:center;justify-content:center;font-weight:700;border:2px solid white">0</span>
+    </button>
+  </div>
+
+  <!-- Chat Popup -->
+  <div id="chatPopup" style="display:none;position:fixed;bottom:150px;right:20px;width:340px;height:420px;background:white;border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,0.2);z-index:9999;overflow:hidden;flex-direction:column">
+    <div style="background:linear-gradient(135deg,#1b5e20,#2e7d32);color:white;padding:14px 18px;display:flex;justify-content:space-between;align-items:center">
+      <div><strong id="chatPopupTitle">Messages</strong></div>
+      <button id="chatPopupClose" style="background:none;border:none;color:white;font-size:18px;cursor:pointer"><i class="fas fa-times"></i></button>
+    </div>
+    <div id="chatPopupBody" style="flex:1;overflow-y:auto;padding:12px;background:#f9f9f9">
+      <div id="chatThreadsList"></div>
+    </div>
+    <div id="chatPopupInputArea" style="display:none;padding:10px 12px;border-top:1px solid #eee;background:white">
+      <div style="display:flex;gap:8px">
+        <input type="text" id="chatPopupInput" placeholder="Type a message..." style="flex:1;padding:8px 14px;border:1px solid #ddd;border-radius:20px;font-size:13px;font-family:'Poppins',sans-serif;outline:none"/>
+        <button id="chatPopupSend" style="background:var(--primary);color:white;border:none;border-radius:50%;width:36px;height:36px;cursor:pointer;font-size:14px"><i class="fas fa-paper-plane"></i></button>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    #chatThreadsList .cht-thread {
+      padding: 10px 14px;
+      background: white;
+      border-radius: 10px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+      transition: all 0.2s;
+    }
+    #chatThreadsList .cht-thread:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    #chatThreadsList .cht-name { font-weight: 600; font-size: 13px; color: var(--text); }
+    #chatThreadsList .cht-preview { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+    #chatPopupMessages { flex: 1; overflow-y: auto; padding: 12px; background: #f9f9f9; display: flex; flex-direction: column; gap: 8px; }
+    .cmsg { max-width: 80%; padding: 8px 14px; border-radius: 14px; font-size: 13px; line-height: 1.4; }
+    .cmsg.customer { align-self: flex-end; background: var(--primary); color: white; border-bottom-right-radius: 4px; }
+    .cmsg.owner { align-self: flex-start; background: white; color: var(--text); border: 1px solid #eee; border-bottom-left-radius: 4px; }
+    .cmsg .ctime { font-size: 9px; opacity: 0.7; margin-top: 2px; }
+    .cmsg.owner .ctime { color: var(--text-muted); }
+  </style>
+
+  <!-- ===== SUCCESS TOAST ===== -->
+  <div class="toast" id="toast"></div>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
+  <script src="js/firebase.js"></script>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="js/courts.js"></script>
+  <script src="js/map.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
