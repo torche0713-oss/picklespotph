@@ -456,7 +456,10 @@ window.openBookingModal = function(courtId) {
 };
 
 // Load available time slots when date changes
-document.getElementById('bookingDate').addEventListener('change', loadAvailableSlots);
+const bookingDateInput = document.getElementById('bookingDate');
+bookingDateInput.addEventListener('change', loadAvailableSlots);
+bookingDateInput.addEventListener('blur', loadAvailableSlots);
+bookingDateInput.addEventListener('input', loadAvailableSlots);
 
 async function loadAvailableSlots() {
   const dateVal = document.getElementById('bookingDate').value;
