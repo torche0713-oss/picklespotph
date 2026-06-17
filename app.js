@@ -465,17 +465,22 @@ async function loadAvailableSlots() {
   const dateVal = document.getElementById('bookingDate').value;
   const slotGroup = document.getElementById('slotPickerGroup');
   const slotGrid = document.getElementById('slotGrid');
-  const timeInput = document.getElementById('bookingTime');
+  const slotStatus = document.getElementById('slotStatus');
 
   if (!dateVal || !bookingCourtId) {
-    slotGroup.style.display = 'none';
+    slotGrid.innerHTML = '';
+    if (slotStatus) slotStatus.textContent = 'Select a date to see available times';
     return;
   }
 
   const court = allCourts.find(c => c.id === bookingCourtId);
-  if (!court) return;
+  if (!court) {
+    slotGrid.innerHTML = '';
+    if (slotStatus) slotStatus.textContent = 'Court not found';
+    return;
+  }
 
-  // Check if court has availability set (Pro feature)
+  // Check court availability (default to 6AM-10PM if not set)
   let dayAvail;
   if (court.availability) {
     const dayName = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][new Date(dateVal).getDay()];
@@ -483,7 +488,6 @@ async function loadAvailableSlots() {
   }
 
   if (!dayAvail || !dayAvail.enabled) {
-    // Default: 6AM-10PM if no availability set
     dayAvail = { start: '06:00', end: '22:00' };
   }
 
@@ -502,8 +506,7 @@ async function loadAvailableSlots() {
     );
   }
 
-  // Show slot picker
-  slotGroup.style.display = 'block';
+  if (slotStatus) slotStatus.textContent = '';
 
   if (slots.length === 0) {
     slotGrid.innerHTML = '<p style="font-size:12px;color:var(--text-muted);grid-column:1/-1">No available slots for this day.</p>';
