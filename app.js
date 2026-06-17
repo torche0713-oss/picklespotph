@@ -66,7 +66,25 @@ document.addEventListener('DOMContentLoaded', () => {
   setupEventListeners();
   showView('map');
   initCustomerChatWidget();
+  loadFirestoreCourts();
 });
+
+async function loadFirestoreCourts() {
+  try {
+    if (typeof PickleCourts === 'undefined') return;
+    const firestoreCourts = await PickleCourts.getAll();
+    if (!firestoreCourts.length) return;
+    for (const fc of firestoreCourts) {
+      if (!allCourts.find(c => c.id === fc.id)) {
+        allCourts.push(fc);
+      }
+    }
+    filteredCourts = [...allCourts];
+    renderMarkers(allCourts);
+    renderSidebarList(allCourts);
+    updateStats(allCourts);
+  } catch {}
+}
 
 // ============================================================
 // VIEW MANAGEMENT
