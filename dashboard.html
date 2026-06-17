@@ -518,6 +518,9 @@
       <button class="dash-nav-item" data-section="chat">
         <i class="fas fa-comments"></i> Messages <span id="chatUnreadBadge" style="background:var(--accent);color:white;border-radius:10px;padding:1px 7px;font-size:10px;display:none">0</span>
       </button>
+      <button class="dash-nav-item" data-section="mailing">
+        <i class="fas fa-mail-bulk"></i> Mailing List
+      </button>
       <button class="dash-nav-item" data-section="reviews">
         <i class="fas fa-star"></i> Reviews
       </button>
@@ -680,6 +683,16 @@
             </div>
           </div>
         </div>
+      </div>
+
+      <!-- Mailing List -->
+      <div class="dash-section" id="section-mailing">
+        <h1>Mailing List</h1>
+        <p class="subtitle">Emails collected from customer inquiries — use for announcements and events</p>
+        <div style="margin-bottom:16px">
+          <button class="btn-dash btn-dash-primary" onclick="exportMailingList()"><i class="fas fa-download"></i> Export CSV</button>
+        </div>
+        <div id="mailingListContainer"></div>
       </div>
 
       <!-- Availability -->

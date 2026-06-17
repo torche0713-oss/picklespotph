@@ -66,6 +66,7 @@ function switchSection(sectionId) {
   document.querySelector(`[data-section="${sectionId}"]`).classList.add('active');
 
   if (sectionId === 'availability') loadAvailabilitySection();
+  if (sectionId === 'mailing') loadMailingList();
   if (sectionId === 'add-court') initAddCourtMap();
   if (sectionId === 'payments') loadPayments();
 }
@@ -968,6 +969,69 @@ function setupEventListeners() {
 
   setupLogout();
 }
+
+// ============================================================
+// MAILING LIST
+// ============================================================
+async function loadMailingList() {
+  const container = document.getElementById('mailingListContainer');
+  try {
+    const subscribers = await PickleMailing.getAll();
+    if (subscribers.length === 0) {
+      container.innerHTML = '<div class="empty-state"><i class="fas fa-mail-bulk"></i><h3>No subscribers yet</h3><p>Customer emails will appear here when they submit booking inquiries.</p></div>';
+      return;
+    }
+    container.innerHTML = `
+      <div style="background:var(--white);border-radius:var(--radius);box-shadow:var(--card-shadow);overflow:hidden">
+        <table style="width:100%;border-collapse:collapse;font-size:13px">
+          <thead>
+            <tr style="background:var(--primary);color:white;text-align:left">
+              <th style="padding:12px 16px">Name</th>
+              <th style="padding:12px 16px">Email</th>
+              <th style="padding:12px 16px">Subscribed</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${subscribers.map(s => `
+              <tr style="border-bottom:1px solid #f0f0f0">
+                <td style="padding:10px 16px">${s.name || '—'}</td>
+                <td style="padding:10px 16px">${s.email}</td>
+                <td style="padding:10px 16px;color:var(--text-muted)">${s.subscribedAt?.toDate ? s.subscribedAt.toDate().toLocaleDateString() : '—'}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+      <p style="font-size:13px;color:var(--text-muted);margin-top:12px">${subscribers.length} subscriber${subscribers.length !== 1 ? 's' : ''}</p>
+    `;
+  } catch (err) {
+    container.innerHTML = `<p style="color:#d32f2f">Error: ${err.message}</p>`;
+  }
+}
+
+window.exportMailingList = async function() {
+  try {
+    const subscribers = await PickleMailing.getAll();
+    if (subscribers.length === 0) {
+      showToast('No subscribers to export.');
+      return;
+    }
+    const rows = [['Name', 'Email', 'Subscribed Date']];
+    subscribers.forEach(s => {
+      rows.push([s.name || '', s.email, s.subscribedAt?.toDate ? s.subscribedAt.toDate().toISOString().split('T')[0] : '']);
+    });
+    const csv = rows.map(r => r.map(v => `"${v}"`).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'mailing-list.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+  } catch (err) {
+    showToast('Error exporting: ' + err.message, 4000);
+  }
+};
 
 // ============================================================
 // HELPERS

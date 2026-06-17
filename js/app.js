@@ -643,6 +643,13 @@ document.getElementById('bookingForm').addEventListener('submit', async (e) => {
     }
   } catch {}
 
+  // Add to mailing list
+  try {
+    if (typeof PickleMailing !== 'undefined' && customerEmail) {
+      await PickleMailing.subscribe(customerEmail, customerName);
+    }
+  } catch {}
+
   showToast('✅ Inquiry sent! Check your Messages below to chat with the owner.');
   document.getElementById('bookingForm').reset();
   closeModal('bookingModal');

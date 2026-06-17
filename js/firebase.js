@@ -16,6 +16,33 @@ const FIREBASE_CONFIG = {
   messagingSenderId: "847121039089",
   appId: "1:847121039089:web:b4cda36838300d33b83350"
 };
+// ============================================================
+// EMAIL NOTIFICATIONS (via EmailJS - free tier: 200/mo)
+
+// ============================================================
+// MAILING LIST / SUBSCRIBERS
+// ============================================================
+const PickleMailing = {
+  async subscribe(email, name) {
+    if (!email) return;
+    const existing = await db.collection(COLLECTIONS.SUBSCRIBERS)
+      .where('email', '==', email)
+      .get();
+    if (!existing.empty) return;
+    await db.collection(COLLECTIONS.SUBSCRIBERS).add({
+      email,
+      name,
+      subscribedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+  },
+
+  async getAll() {
+    const snapshot = await db.collection(COLLECTIONS.SUBSCRIBERS)
+      .orderBy('subscribedAt', 'desc')
+      .get();
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  }
+};
 
 // ============================================================
 // EMAIL NOTIFICATIONS (via EmailJS - free tier: 200/mo)
@@ -54,7 +81,8 @@ const COLLECTIONS = {
   REVIEWS: 'reviews',
   PAYMENTS: 'payments',
   CHATS: 'chats',
-  MESSAGES: 'messages'
+  MESSAGES: 'messages',
+  SUBSCRIBERS: 'subscribers'
 };
 
 // ============================================================
