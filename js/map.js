@@ -117,6 +117,7 @@ function createPopupContent(court) {
           ${typeTag}
           ${accessTag}
           ${court.verified ? '<span class="tag" style="background:#e3f2fd;color:#1565c0">✓ Verified</span>' : ''}
+          ${typeof court.id === 'number' ? '<span class="tag" style="background:#f5f5f5;color:#999">Sample</span>' : ''}
         </div>
         ${amenityIcons ? `<div style="margin:6px 0;display:flex;gap:6px">${amenityIcons}</div>` : ''}
         <button class="popup-btn" onclick="window.openCourtModal('${court.id}')">

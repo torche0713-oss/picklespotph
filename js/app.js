@@ -226,6 +226,7 @@ function renderCourtsList(courts) {
           <div class="court-card-name">
             ${court.name}
             ${court.verified ? '<i class="fas fa-check-circle" style="color:#FFD700;font-size:14px" title="Verified"></i>' : ''}
+            ${typeof court.id === 'number' ? '<span style="font-size:9px;background:#f5f5f5;color:#999;padding:1px 6px;border-radius:8px;margin-left:4px;font-weight:500">Sample</span>' : ''}
           </div>
           ${court.featured ? '<div style="position:absolute;top:12px;left:12px;background:var(--accent);color:white;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700">★ Featured</div>' : ''}
           <div class="court-card-location">
@@ -258,6 +259,9 @@ function renderCourtsList(courts) {
             <span class="tag ${accessClass}">${court.access}</span>
             ${court.verified
               ? '<span class="tag" style="background:#e3f2fd;color:#1565c0">✓ Verified</span>'
+              : ''}
+            ${typeof court.id === 'number'
+              ? '<span class="tag" style="background:#f5f5f5;color:#999">Sample</span>'
               : ''}
           </div>
           ${court.amenities.length > 0 ? `
@@ -334,6 +338,7 @@ window.openCourtModal = function(courtId) {
             ${court.name}
             ${court.verified ? '<i class="fas fa-check-circle" style="color:#FFD700;font-size:16px" title="Verified"></i>' : ''}
             ${court.featured ? '<span style="font-size:12px;background:rgba(255,255,255,0.2);padding:2px 8px;border-radius:10px;margin-left:4px">★ Featured</span>' : ''}
+            ${typeof court.id === 'number' ? '<span style="font-size:10px;background:rgba(255,255,255,0.15);color:rgba(255,255,255,0.7);padding:2px 8px;border-radius:8px;margin-left:4px;font-weight:500">Sample Listing</span>' : ''}
           </h2>
           <p style="font-size:13px;color:rgba(255,255,255,0.85)">
             <i class="fas fa-map-marker-alt"></i>
@@ -371,7 +376,14 @@ window.openCourtModal = function(courtId) {
     ` : '';
   }).join('');
 
-  body.innerHTML = `
+  body.innerHTML = (typeof court.id === 'number' ? `
+    <div style="background:#fff8e1;border:1px solid #ffe082;border-radius:8px;padding:12px 14px;margin-bottom:16px;font-size:13px;color:var(--text)">
+      <i class="fas fa-info-circle" style="color:var(--accent)"></i>
+      <strong>Sample Listing</strong> — This court is shown as a preview. Once owners register and add their courts,
+      they will appear here with a verified badge.
+      <a href="dashboard.html" style="color:var(--accent);font-weight:600">Add your court now</a>.
+    </div>
+    ` : '') + `
     <div class="court-detail-section">
       <h3>Court Information</h3>
       <div class="detail-item">

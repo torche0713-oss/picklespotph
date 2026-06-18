@@ -19,7 +19,7 @@ const COURTS_DATA = [
     lng: 120.9936,
     amenities: ["parking", "lights", "shower"],
     notes: "Professional courts with hardwood flooring. Rates apply per hour.",
-    verified: true,
+    verified: false,
     featured: false,
     photos: [],
     dateAdded: "2024-01-15"
@@ -40,7 +40,7 @@ const COURTS_DATA = [
     lng: 121.0535,
     amenities: ["parking", "lights", "rental"],
     notes: "Newly built outdoor courts with LED lighting. Equipment rental available.",
-    verified: true,
+    verified: false,
     featured: false,
     photos: [],
     dateAdded: "2024-02-01"
@@ -61,7 +61,7 @@ const COURTS_DATA = [
     lng: 121.0504,
     amenities: ["parking", "lights", "rental", "cafe"],
     notes: "Premier pickleball facility in BGC. Lessons and clinics available.",
-    verified: true,
+    verified: false,
     featured: false,
     photos: [],
     dateAdded: "2024-01-20"
@@ -82,7 +82,7 @@ const COURTS_DATA = [
     lng: 121.0617,
     amenities: ["parking", "shower", "lights"],
     notes: "Members only facility. Inquire for guest passes.",
-    verified: true,
+    verified: false,
     featured: false,
     photos: [],
     dateAdded: "2024-01-28"
@@ -103,7 +103,7 @@ const COURTS_DATA = [
     lng: 121.0438,
     amenities: ["parking", "shower", "lights", "rental"],
     notes: "Part of multi-sport complex. Badminton and tennis also available.",
-    verified: true,
+    verified: false,
     featured: false,
     photos: [],
     dateAdded: "2024-02-10"
@@ -145,7 +145,7 @@ const COURTS_DATA = [
     lng: 120.5660,
     amenities: ["parking", "lights", "shower", "rental", "cafe"],
     notes: "State-of-the-art facility with air-conditioning. Tournaments hosted regularly.",
-    verified: true,
+    verified: false,
     featured: false,
     photos: [],
     dateAdded: "2024-01-10"
@@ -166,7 +166,7 @@ const COURTS_DATA = [
     lng: 123.9070,
     amenities: ["parking", "shower", "lights", "rental"],
     notes: "Largest pickleball facility in Visayas. A/C courts available.",
-    verified: true,
+    verified: false,
     featured: false,
     photos: [],
     dateAdded: "2024-01-05"
@@ -187,7 +187,7 @@ const COURTS_DATA = [
     lng: 125.6126,
     amenities: ["parking", "lights", "shower"],
     notes: "Members-based club. Regular tournaments and social games every weekend.",
-    verified: true,
+    verified: false,
     featured: false,
     photos: [],
     dateAdded: "2024-02-15"
@@ -229,7 +229,7 @@ const COURTS_DATA = [
     lng: 120.9626,
     amenities: ["parking", "shower", "cafe"],
     notes: "Scenic court with view of Taal Lake. Exclusive for Highlands members.",
-    verified: true,
+    verified: false,
     featured: false,
     photos: [],
     dateAdded: "2024-02-20"
@@ -250,7 +250,7 @@ const COURTS_DATA = [
     lng: 120.2716,
     amenities: ["parking", "lights", "rental"],
     notes: "Breezy courts near the bay. Great for morning games.",
-    verified: true,
+    verified: false,
     featured: false,
     photos: [],
     dateAdded: "2024-03-05"
@@ -271,7 +271,7 @@ const COURTS_DATA = [
     lng: 120.9822,
     amenities: ["parking", "lights", "rental"],
     notes: "Indoor sports facility within the MOA complex.",
-    verified: true,
+    verified: false,
     featured: false,
     photos: [],
     dateAdded: "2024-01-25"
@@ -313,7 +313,7 @@ const COURTS_DATA = [
     lng: 122.9511,
     amenities: ["parking", "shower", "lights", "cafe"],
     notes: "Full-service pickleball facility in the heart of Bacolod.",
-    verified: true,
+    verified: false,
     featured: false,
     photos: [],
     dateAdded: "2024-02-05"
