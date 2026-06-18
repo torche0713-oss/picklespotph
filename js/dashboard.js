@@ -1139,7 +1139,7 @@ document.getElementById('registerForm').addEventListener('submit', async (e) => 
   try {
     await PickleAuth.register(email, password, name);
     closeModal('registerModal');
-    showToast('Account created! Welcome to PickleSpot PH!');
+    showToast('Account created! Welcome to PickleSpotPH!');
   } catch (err) {
     showToast('Registration failed: ' + err.message, 4000);
   }

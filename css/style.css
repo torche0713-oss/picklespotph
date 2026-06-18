@@ -68,9 +68,6 @@ body {
   letter-spacing: -0.5px;
 }
 
-.logo-text .ph {
-  color: var(--accent-light);
-}
 
 .nav-links {
   display: flex;
@@ -1623,10 +1620,6 @@ body {
    =========================== */
 
 /* Updated logo color accent */
-.logo-text .ph {
-  color: #FFD700;
-}
-
 /* Updated navbar gradient */
 .navbar {
   background: linear-gradient(135deg, #1b5e20, #2e7d32);

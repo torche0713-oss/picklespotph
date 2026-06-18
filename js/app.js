@@ -429,7 +429,7 @@ window.openCourtModal = function(courtId) {
 
     <div class="court-detail-section" style="margin-bottom:0">
       <p style="font-size:11px;color:#999">
-        Added on PickleSpot PH:
+        Added on PickleSpotPH:
         ${new Date(court.dateAdded).toLocaleDateString('en-PH', {
           year: 'numeric', month: 'long', day: 'numeric'
         })}
@@ -493,7 +493,7 @@ function openDirections(lat, lng) {
 function shareCourt(platform, courtNameEncoded, courtId) {
   const url = `https://picklespotph.site/?court=${courtId}`;
   const name = decodeURIComponent(courtNameEncoded);
-  const text = `Check out ${name} on PickleSpot PH! 🏓`;
+  const text = `Check out ${name} on PickleSpotPH! 🏓`;
   const encodedText = encodeURIComponent(text);
   const encodedUrl = encodeURIComponent(url);
 
@@ -1016,7 +1016,7 @@ function submitCourtForm(e) {
   document.getElementById('addCourtForm').reset();
   document.getElementById('courtProvinceGroup').style.display = 'none';
   document.getElementById('courtCityGroup').style.display = 'none';
-  showToast('🎉 Court added to PickleSpot PH! Salamat! 🇵🇭');
+  showToast('🎉 Court added to PickleSpotPH! Salamat! 🇵🇭');
 }
 
 function populateAddCourtProvinces() {
