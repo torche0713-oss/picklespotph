@@ -468,6 +468,63 @@
     .empty-state i { font-size: 48px; margin-bottom: 12px; }
     .empty-state h3 { font-size: 18px; margin-bottom: 8px; color: var(--text); }
 
+    .admin-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .admin-card {
+      background: var(--white);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      box-shadow: var(--card-shadow);
+    }
+    .admin-card .admin-number {
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--primary-dark);
+    }
+    .admin-card .admin-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+    .admin-card .admin-icon {
+      font-size: 24px;
+      margin-bottom: 8px;
+      color: var(--primary-light);
+    }
+    .admin-card.accent .admin-number { color: var(--accent); }
+    .admin-card.accent .admin-icon { color: var(--accent); }
+    .admin-breakdown {
+      background: var(--white);
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: var(--card-shadow);
+      margin-bottom: 16px;
+    }
+    .admin-breakdown h3 {
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+    .admin-breakdown .bar {
+      display: flex;
+      height: 24px;
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+    .admin-breakdown .bar .bar-pro { background: var(--accent); }
+    .admin-breakdown .bar .bar-basic { background: #e0e0e0; }
+    .admin-breakdown .bar-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
     @media (max-width: 768px) {
       .dashboard-sidebar { width: 100%; border-right: none; border-bottom: 1px solid #eee; padding: 10px 0; }
       .dashboard-layout { flex-direction: column; }
@@ -533,6 +590,9 @@
       </button>
       <button class="dash-nav-item" data-section="payments" style="display:none">
         <i class="fas fa-credit-card"></i> Payments
+      </button>
+      <button class="dash-nav-item" data-section="admin-analytics" style="display:none">
+        <i class="fas fa-chart-pie"></i> Site Analytics
       </button>
       <button class="dash-nav-item logout" id="dashLogoutBtn">
         <i class="fas fa-sign-out-alt"></i> Sign Out
@@ -768,6 +828,13 @@
         <h1>Payments</h1>
         <p class="subtitle">Pro upgrade submissions from owners</p>
         <div id="paymentsList"></div>
+      </div>
+
+      <!-- Admin Analytics -->
+      <div class="dash-section" id="section-admin-analytics">
+        <h1>Site Analytics</h1>
+        <p class="subtitle">Overall platform statistics</p>
+        <div id="adminAnalyticsContainer"></div>
       </div>
 
     </div>
