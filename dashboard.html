@@ -559,12 +559,6 @@
               <input type="text" id="dashCourtName" required placeholder="e.g. Rizal Sports Complex"/>
             </div>
             <div class="form-group">
-              <label>City/Municipality *</label>
-              <input type="text" id="dashCourtCity" required placeholder="e.g. Manila"/>
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
               <label>Region *</label>
               <select id="dashCourtRegion" required>
                 <option value="">Select Region</option>
@@ -572,6 +566,20 @@
                 <option value="Luzon">Luzon</option>
                 <option value="Visayas">Visayas</option>
                 <option value="Mindanao">Mindanao</option>
+              </select>
+            </div>
+            <div class="form-group" id="dashCourtProvinceGroup" style="display:none">
+              <label>Province *</label>
+              <select id="dashCourtProvince" required>
+                <option value="">Select Province</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group" id="dashCourtCityGroup" style="display:none">
+              <label>City/Municipality *</label>
+              <select id="dashCourtCity" required>
+                <option value="">Select City</option>
               </select>
             </div>
             <div class="form-group">
@@ -779,20 +787,31 @@
               <input type="text" id="editCourtName"/>
             </div>
             <div class="form-group">
-              <label>City</label>
-              <input type="text" id="editCourtCity"/>
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
               <label>Region</label>
               <select id="editCourtRegion">
+                <option value="">Select Region</option>
                 <option value="NCR">NCR (Metro Manila)</option>
                 <option value="Luzon">Luzon</option>
                 <option value="Visayas">Visayas</option>
                 <option value="Mindanao">Mindanao</option>
               </select>
             </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group" id="editCourtProvinceGroup" style="display:none">
+              <label>Province</label>
+              <select id="editCourtProvince">
+                <option value="">Select Province</option>
+              </select>
+            </div>
+            <div class="form-group" id="editCourtCityGroup" style="display:none">
+              <label>City/Municipality</label>
+              <select id="editCourtCity">
+                <option value="">Select City</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
             <div class="form-group">
               <label>Type</label>
               <select id="editCourtType">
@@ -981,6 +1000,33 @@
   <!-- ===== TOAST ===== -->
   <div class="toast" id="dashToast"></div>
 
+  <!-- ===== FOOTER ===== -->
+  <footer class="site-footer">
+    <div class="footer-content">
+      <div class="footer-brand">
+        <span>📍</span>
+        <span class="footer-logo">PickleSpot<span>.ph</span></span>
+      </div>
+      <p class="footer-tagline">Finding pickleball courts made easy 🇵🇭</p>
+      <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-bottom:10px;font-size:13px">
+        <a href="about.html" target="_blank" style="color:rgba(255,255,255,0.8);text-decoration:none">About</a>
+        <a href="terms.html" target="_blank" style="color:rgba(255,255,255,0.8);text-decoration:none">Terms</a>
+        <a href="privacy.html" target="_blank" style="color:rgba(255,255,255,0.8);text-decoration:none">Privacy</a>
+        <a href="disclaimer.html" target="_blank" style="color:rgba(255,255,255,0.8);text-decoration:none">Disclaimer</a>
+        <a href="contact.html" target="_blank" style="color:rgba(255,255,255,0.8);text-decoration:none">Contact</a>
+      </div>
+      <div style="display:flex;gap:10px;justify-content:center;margin-bottom:10px">
+        <span style="font-size:12px;color:rgba(255,255,255,0.6);align-self:center">Share:</span>
+        <button onclick="window.open('https://www.facebook.com/sharer/sharer.php?u=https://picklespotph.vercel.app','_blank')" style="width:32px;height:32px;border-radius:50%;border:none;background:#1877f2;color:white;cursor:pointer;font-size:14px;display:inline-flex;align-items:center;justify-content:center" title="Share on Facebook"><i class="fab fa-facebook"></i></button>
+        <button onclick="window.open('https://twitter.com/intent/tweet?text=Find+pickleball+courts+in+the+Philippines+%F0%9F%8F%93&url=https://picklespotph.vercel.app','_blank')" style="width:32px;height:32px;border-radius:50%;border:none;background:#000;color:white;cursor:pointer;font-size:14px;display:inline-flex;align-items:center;justify-content:center" title="Share on X"><i class="fab fa-x-twitter"></i></button>
+        <button onclick="window.open('https://wa.me/?text=Find+pickleball+courts+in+the+Philippines+%F0%9F%8F%93+https://picklespotph.vercel.app','_blank')" style="width:32px;height:32px;border-radius:50%;border:none;background:#25d366;color:white;cursor:pointer;font-size:14px;display:inline-flex;align-items:center;justify-content:center" title="Share on WhatsApp"><i class="fab fa-whatsapp"></i></button>
+        <button onclick="window.open('https://t.me/share/url?url=https://picklespotph.vercel.app&text=Find+pickleball+courts+in+the+Philippines+%F0%9F%8F%93','_blank')" style="width:32px;height:32px;border-radius:50%;border:none;background:#0088cc;color:white;cursor:pointer;font-size:14px;display:inline-flex;align-items:center;justify-content:center" title="Share on Telegram"><i class="fab fa-telegram"></i></button>
+        <button onclick="navigator.clipboard.writeText('https://picklespotph.vercel.app').then(()=>{let t=document.getElementById('dashToast');t.textContent='Link copied!';t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2000)})" style="width:32px;height:32px;border-radius:50%;border:none;background:#757575;color:white;cursor:pointer;font-size:14px;display:inline-flex;align-items:center;justify-content:center" title="Copy link"><i class="fas fa-link"></i></button>
+      </div>
+      <p class="footer-copy">&copy; 2026 PickleSpot PH &middot; All rights reserved</p>
+    </div>
+  </footer>
+
   <!-- Leaflet (free map) -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <!-- Firebase -->
@@ -994,3 +1040,4 @@
   <script src="js/dashboard.js"></script>
 </body>
 </html>
+

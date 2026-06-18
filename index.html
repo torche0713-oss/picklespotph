@@ -6,6 +6,38 @@
   <title>PickleSpot PH - Find Pickleball Courts in the Philippines</title>
   <meta name="description" content="Find pickleball courts near you across the Philippines. PickleSpot PH is your go-to court finder for Filipino pickleball players."/>
   <meta name="keywords" content="pickleball courts philippines, pickleball PH, find pickleball court, pickleball manila, pickleball cebu, pickleball davao"/>
+  <meta property="og:title" content="PickleSpot PH - Find Pickleball Courts in the Philippines"/>
+  <meta property="og:description" content="Find pickleball courts near you across the Philippines. Interactive map, booking inquiries, and community-driven listings."/>
+  <meta property="og:url" content="https://picklespotph.vercel.app"/>
+  <meta property="og:type" content="website"/>
+  <meta property="og:site_name" content="PickleSpot PH"/>
+  <meta name="twitter:card" content="summary_large_image"/>
+  <meta name="twitter:title" content="PickleSpot PH - Find Pickleball Courts in the Philippines"/>
+  <meta name="twitter:description" content="Find pickleball courts near you across the Philippines. Interactive map, booking inquiries, and community-driven listings."/>
+  <link rel="canonical" href="https://picklespotph.vercel.app/"/>
+  <link rel="sitemap" type="application/xml" href="sitemap.xml"/>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "PickleSpot PH",
+    "url": "https://picklespotph.vercel.app",
+    "description": "Find pickleball courts near you across the Philippines. PickleSpot PH is your go-to court finder for Filipino pickleball players.",
+    "applicationCategory": "SportsApplication",
+    "operatingSystem": "All",
+    "author": {
+      "@type": "Organization",
+      "name": "PickleSpot PH"
+    },
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "PHP",
+      "description": "Free basic plan; Pro plan available at ₱399/month"
+    }
+  }
+  </script>
 
   <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
@@ -628,14 +660,29 @@
   </div>
 
   <!-- ===== FOOTER ===== -->
-  <footer class="site-footer" id="siteFooter" style="display:none">
+  <footer class="site-footer" id="siteFooter">
     <div class="footer-content">
       <div class="footer-brand">
         <span>📍</span>
         <span class="footer-logo">PickleSpot<span>.ph</span></span>
       </div>
       <p class="footer-tagline">Finding pickleball courts made easy 🇵🇭</p>
-      <p class="footer-copy">© 2024 PickleSpot PH · All rights reserved</p>
+      <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-bottom:10px;font-size:13px">
+        <a href="about.html" style="color:rgba(255,255,255,0.8);text-decoration:none">About</a>
+        <a href="terms.html" style="color:rgba(255,255,255,0.8);text-decoration:none">Terms</a>
+        <a href="privacy.html" style="color:rgba(255,255,255,0.8);text-decoration:none">Privacy</a>
+        <a href="disclaimer.html" style="color:rgba(255,255,255,0.8);text-decoration:none">Disclaimer</a>
+        <a href="contact.html" style="color:rgba(255,255,255,0.8);text-decoration:none">Contact</a>
+      </div>
+      <div style="display:flex;gap:10px;justify-content:center;margin-bottom:10px">
+        <span style="font-size:12px;color:rgba(255,255,255,0.6);align-self:center">Share:</span>
+        <button onclick="window.open('https://www.facebook.com/sharer/sharer.php?u=https://picklespotph.vercel.app','_blank')" style="width:32px;height:32px;border-radius:50%;border:none;background:#1877f2;color:white;cursor:pointer;font-size:14px;display:inline-flex;align-items:center;justify-content:center" title="Share on Facebook"><i class="fab fa-facebook"></i></button>
+        <button onclick="window.open('https://twitter.com/intent/tweet?text=Find+pickleball+courts+in+the+Philippines+%F0%9F%8F%93&url=https://picklespotph.vercel.app','_blank')" style="width:32px;height:32px;border-radius:50%;border:none;background:#000;color:white;cursor:pointer;font-size:14px;display:inline-flex;align-items:center;justify-content:center" title="Share on X"><i class="fab fa-x-twitter"></i></button>
+        <button onclick="window.open('https://wa.me/?text=Find+pickleball+courts+in+the+Philippines+%F0%9F%8F%93+https://picklespotph.vercel.app','_blank')" style="width:32px;height:32px;border-radius:50%;border:none;background:#25d366;color:white;cursor:pointer;font-size:14px;display:inline-flex;align-items:center;justify-content:center" title="Share on WhatsApp"><i class="fab fa-whatsapp"></i></button>
+        <button onclick="window.open('https://t.me/share/url?url=https://picklespotph.vercel.app&text=Find+pickleball+courts+in+the+Philippines+%F0%9F%8F%93','_blank')" style="width:32px;height:32px;border-radius:50%;border:none;background:#0088cc;color:white;cursor:pointer;font-size:14px;display:inline-flex;align-items:center;justify-content:center" title="Share on Telegram"><i class="fab fa-telegram"></i></button>
+        <button onclick="navigator.clipboard.writeText('https://picklespotph.vercel.app').then(()=>{let t=document.getElementById('toast');t.textContent='Link copied!';t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2000)})" style="width:32px;height:32px;border-radius:50%;border:none;background:#757575;color:white;cursor:pointer;font-size:14px;display:inline-flex;align-items:center;justify-content:center" title="Copy link"><i class="fas fa-link"></i></button>
+      </div>
+      <p class="footer-copy">&copy; 2026 PickleSpot PH &middot; All rights reserved</p>
     </div>
   </footer>
 

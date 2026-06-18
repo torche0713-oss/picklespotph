@@ -154,7 +154,7 @@ document.getElementById('dashAddCourtForm').addEventListener('submit', async (e)
   const courtData = {
     name: document.getElementById('dashCourtName').value,
     city: document.getElementById('dashCourtCity').value,
-    province: document.getElementById('dashCourtProvince')?.value || document.getElementById('dashCourtRegion').value,
+    province: document.getElementById('dashCourtProvince').value,
     region: document.getElementById('dashCourtRegion').value,
     featured: userProfile?.plan === 'pro',
     type: document.getElementById('dashCourtType').value,
@@ -171,8 +171,10 @@ document.getElementById('dashAddCourtForm').addEventListener('submit', async (e)
 
   try {
     await PickleCourts.add(courtData, currentUser.uid);
-    showToast('Court added successfully! It will appear after approval.');
+    showToast('Court added successfully!');
     e.target.reset();
+    document.getElementById('dashCourtProvinceGroup').style.display = 'none';
+    document.getElementById('dashCourtCityGroup').style.display = 'none';
     loadMyCourts();
     switchSection('my-courts');
   } catch (err) {
@@ -189,8 +191,34 @@ async function openEditCourt(courtId) {
 
   editingCourtId = courtId;
   document.getElementById('editCourtName').value = court.name;
-  document.getElementById('editCourtCity').value = court.city;
-  document.getElementById('editCourtRegion').value = court.region;
+  document.getElementById('editCourtRegion').value = court.region || '';
+
+  // Cascade: populate province + city selects
+  const region = court.region || '';
+  const provGroup = document.getElementById('editCourtProvinceGroup');
+  const provSelect = document.getElementById('editCourtProvince');
+  const cityGroup = document.getElementById('editCourtCityGroup');
+  const citySelect = document.getElementById('editCourtCity');
+
+  if (region && PH_LOCATIONS[region]) {
+    const provinces = Object.keys(PH_LOCATIONS[region]).sort();
+    provSelect.innerHTML = '<option value="">Select Province</option>' + provinces.map(p => `<option value="${p}">${p}</option>`).join('');
+    provSelect.value = court.province || '';
+    provGroup.style.display = 'block';
+
+    if (court.province && PH_LOCATIONS[region][court.province]) {
+      const cities = [...PH_LOCATIONS[region][court.province]].sort();
+      citySelect.innerHTML = '<option value="">Select City</option>' + cities.map(c => `<option value="${c}">${c}</option>`).join('');
+      citySelect.value = court.city || '';
+      cityGroup.style.display = 'block';
+    } else {
+      cityGroup.style.display = 'none';
+    }
+  } else {
+    provGroup.style.display = 'none';
+    cityGroup.style.display = 'none';
+  }
+
   document.getElementById('editCourtType').value = court.type;
   document.getElementById('editCourtAccess').value = court.access;
   document.getElementById('editCourtRate').value = court.rate || '';
@@ -209,6 +237,7 @@ document.getElementById('editCourtForm').addEventListener('submit', async (e) =>
     await PickleCourts.update(editingCourtId, {
       name: document.getElementById('editCourtName').value,
       city: document.getElementById('editCourtCity').value,
+      province: document.getElementById('editCourtProvince').value,
       region: document.getElementById('editCourtRegion').value,
       type: document.getElementById('editCourtType').value,
       access: document.getElementById('editCourtAccess').value,
@@ -1066,6 +1095,14 @@ function setupEventListeners() {
     sidebar.style.display = sidebar.style.display === 'none' ? 'block' : 'none';
   });
 
+  // Add court province/city cascade
+  document.getElementById('dashCourtRegion').addEventListener('change', populateDashAddCourtProvinces);
+  document.getElementById('dashCourtProvince').addEventListener('change', populateDashAddCourtCities);
+
+  // Edit court province/city cascade
+  document.getElementById('editCourtRegion').addEventListener('change', populateEditCourtProvinces);
+  document.getElementById('editCourtProvince').addEventListener('change', populateEditCourtCities);
+
   setupLogout();
 }
 
@@ -1149,6 +1186,84 @@ function showToast(message, duration = 3000) {
 // ============================================================
 // MAP PICKER FOR ADD COURT
 // ============================================================
+function populateDashAddCourtProvinces() {
+  const region = document.getElementById('dashCourtRegion').value;
+  const provGroup = document.getElementById('dashCourtProvinceGroup');
+  const provSelect = document.getElementById('dashCourtProvince');
+  const cityGroup = document.getElementById('dashCourtCityGroup');
+  const citySelect = document.getElementById('dashCourtCity');
+
+  citySelect.value = '';
+  cityGroup.style.display = 'none';
+  provSelect.value = '';
+
+  if (!region) {
+    provGroup.style.display = 'none';
+    return;
+  }
+
+  const provinces = PH_LOCATIONS[region] ? Object.keys(PH_LOCATIONS[region]).sort() : [];
+  provSelect.innerHTML = '<option value="">Select Province</option>' + provinces.map(p => `<option value="${p}">${p}</option>`).join('');
+  provGroup.style.display = 'block';
+}
+
+function populateDashAddCourtCities() {
+  const region = document.getElementById('dashCourtRegion').value;
+  const province = document.getElementById('dashCourtProvince').value;
+  const cityGroup = document.getElementById('dashCourtCityGroup');
+  const citySelect = document.getElementById('dashCourtCity');
+
+  citySelect.value = '';
+
+  if (!region || !province) {
+    cityGroup.style.display = 'none';
+    return;
+  }
+
+  const cities = PH_LOCATIONS[region] && PH_LOCATIONS[region][province] ? [...PH_LOCATIONS[region][province]].sort() : [];
+  citySelect.innerHTML = '<option value="">Select City</option>' + cities.map(c => `<option value="${c}">${c}</option>`).join('');
+  cityGroup.style.display = 'block';
+}
+
+function populateEditCourtProvinces() {
+  const region = document.getElementById('editCourtRegion').value;
+  const provGroup = document.getElementById('editCourtProvinceGroup');
+  const provSelect = document.getElementById('editCourtProvince');
+  const cityGroup = document.getElementById('editCourtCityGroup');
+  const citySelect = document.getElementById('editCourtCity');
+
+  citySelect.value = '';
+  cityGroup.style.display = 'none';
+  provSelect.value = '';
+
+  if (!region) {
+    provGroup.style.display = 'none';
+    return;
+  }
+
+  const provinces = PH_LOCATIONS[region] ? Object.keys(PH_LOCATIONS[region]).sort() : [];
+  provSelect.innerHTML = '<option value="">Select Province</option>' + provinces.map(p => `<option value="${p}">${p}</option>`).join('');
+  provGroup.style.display = 'block';
+}
+
+function populateEditCourtCities() {
+  const region = document.getElementById('editCourtRegion').value;
+  const province = document.getElementById('editCourtProvince').value;
+  const cityGroup = document.getElementById('editCourtCityGroup');
+  const citySelect = document.getElementById('editCourtCity');
+
+  citySelect.value = '';
+
+  if (!region || !province) {
+    cityGroup.style.display = 'none';
+    return;
+  }
+
+  const cities = PH_LOCATIONS[region] && PH_LOCATIONS[region][province] ? [...PH_LOCATIONS[region][province]].sort() : [];
+  citySelect.innerHTML = '<option value="">Select City</option>' + cities.map(c => `<option value="${c}">${c}</option>`).join('');
+  cityGroup.style.display = 'block';
+}
+
 function initAddCourtMap() {
   if (addCourtMapInitialized) {
     setTimeout(() => addCourtMap?.invalidateSize(), 100);

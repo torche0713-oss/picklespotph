@@ -459,6 +459,17 @@ window.openCourtModal = function(courtId) {
         <i class="fas fa-star"></i> Write Review
       </button>
     </div>
+    <div style="margin-top:12px;padding-top:12px;border-top:1px solid #eee">
+      <p style="font-size:11px;color:var(--text-muted);margin-bottom:6px">Share this court</p>
+      <div class="share-buttons">
+        <button class="share-btn share-fb" onclick="shareCourt('fb', '${encodeURIComponent(court.name)}', '${court.id}')" title="Share on Facebook"><i class="fab fa-facebook"></i></button>
+        <button class="share-btn share-x" onclick="shareCourt('x', '${encodeURIComponent(court.name)}', '${court.id}')" title="Share on X"><i class="fab fa-x-twitter"></i></button>
+        <button class="share-btn share-wa" onclick="shareCourt('wa', '${encodeURIComponent(court.name)}', '${court.id}')" title="Share on WhatsApp"><i class="fab fa-whatsapp"></i></button>
+        <button class="share-btn share-tg" onclick="shareCourt('tg', '${encodeURIComponent(court.name)}', '${court.id}')" title="Share on Telegram"><i class="fab fa-telegram"></i></button>
+        <button class="share-btn share-msg" onclick="shareCourt('msg', '${encodeURIComponent(court.name)}', '${court.id}')" title="Share on Messenger"><i class="fab fa-facebook-messenger"></i></button>
+        <button class="share-btn share-copy" onclick="shareCourt('copy', '${encodeURIComponent(court.name)}', '${court.id}')" title="Copy link"><i class="fas fa-link"></i></button>
+      </div>
+    </div>
   `;
 
   modal.style.display = 'flex';
@@ -479,6 +490,39 @@ function openDirections(lat, lng) {
     `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`,
     '_blank'
   );
+}
+
+function shareCourt(platform, courtNameEncoded, courtId) {
+  const url = `https://picklespotph.vercel.app/?court=${courtId}`;
+  const name = decodeURIComponent(courtNameEncoded);
+  const text = `Check out ${name} on PickleSpot PH! 🏓`;
+  const encodedText = encodeURIComponent(text);
+  const encodedUrl = encodeURIComponent(url);
+
+  switch (platform) {
+    case 'fb':
+      window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}&quote=${encodedText}`, '_blank', 'width=600,height=400');
+      break;
+    case 'x':
+      window.open(`https://twitter.com/intent/tweet?text=${encodedText}&url=${encodedUrl}`, '_blank', 'width=600,height=400');
+      break;
+    case 'wa':
+      window.open(`https://wa.me/?text=${encodedText}+${encodedUrl}`, '_blank');
+      break;
+    case 'tg':
+      window.open(`https://t.me/share/url?url=${encodedUrl}&text=${encodedText}`, '_blank');
+      break;
+    case 'msg':
+      window.open(`https://www.facebook.com/dialog/send?link=${encodedUrl}&app_id=&redirect_uri=${encodedUrl}`, '_blank', 'width=600,height=400');
+      break;
+    case 'copy':
+      navigator.clipboard.writeText(url).then(() => {
+        showToast('Link copied to clipboard!');
+      }).catch(() => {
+        showToast('Failed to copy link');
+      });
+      break;
+  }
 }
 
 function closeModal(modalId) {
