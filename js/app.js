@@ -905,7 +905,7 @@ function submitCourtForm(e) {
     id: allCourts.length + 1,
     name: document.getElementById('courtName').value,
     city: document.getElementById('courtCity').value,
-    province: document.getElementById('courtRegion').value,
+    province: document.getElementById('courtProvince').value,
     region: document.getElementById('courtRegion').value,
     type: document.getElementById('courtType').value,
     access: document.getElementById('courtAccess').value,
@@ -935,7 +935,48 @@ function submitCourtForm(e) {
 
   closeModal('addCourtModal');
   document.getElementById('addCourtForm').reset();
+  document.getElementById('courtProvinceGroup').style.display = 'none';
+  document.getElementById('courtCityGroup').style.display = 'none';
   showToast('🎉 Court added to PickleSpot PH! Salamat! 🇵🇭');
+}
+
+function populateAddCourtProvinces() {
+  const region = document.getElementById('courtRegion').value;
+  const provGroup = document.getElementById('courtProvinceGroup');
+  const provSelect = document.getElementById('courtProvince');
+  const cityGroup = document.getElementById('courtCityGroup');
+  const citySelect = document.getElementById('courtCity');
+
+  citySelect.value = '';
+  cityGroup.style.display = 'none';
+  provSelect.value = '';
+
+  if (!region) {
+    provGroup.style.display = 'none';
+    return;
+  }
+
+  const provinces = [...new Set(allCourts.filter(c => c.region === region).map(c => c.province).filter(Boolean))].sort();
+  provSelect.innerHTML = '<option value="">Select Province</option>' + provinces.map(p => `<option value="${p}">${p}</option>`).join('');
+  provGroup.style.display = 'block';
+}
+
+function populateAddCourtCities() {
+  const region = document.getElementById('courtRegion').value;
+  const province = document.getElementById('courtProvince').value;
+  const cityGroup = document.getElementById('courtCityGroup');
+  const citySelect = document.getElementById('courtCity');
+
+  citySelect.value = '';
+
+  if (!region || !province) {
+    cityGroup.style.display = 'none';
+    return;
+  }
+
+  const cities = [...new Set(allCourts.filter(c => c.region === region && c.province === province).map(c => c.city).filter(Boolean))].sort();
+  citySelect.innerHTML = '<option value="">Select City</option>' + cities.map(c => `<option value="${c}">${c}</option>`).join('');
+  cityGroup.style.display = 'block';
 }
 
 // ============================================================
@@ -1003,6 +1044,8 @@ function setupEventListeners() {
   function openAddCourtModal() {
     document.getElementById('addCourtModal').style.display = 'flex';
     document.body.style.overflow = 'hidden';
+    document.getElementById('courtProvinceGroup').style.display = 'none';
+    document.getElementById('courtCityGroup').style.display = 'none';
     initMainAddCourtMap();
   }
 
@@ -1011,6 +1054,8 @@ function setupEventListeners() {
     document.getElementById('addCourtModal').style.display = 'flex';
     document.body.style.overflow = 'hidden';
     document.getElementById('mobileMenu').classList.remove('open');
+    document.getElementById('courtProvinceGroup').style.display = 'none';
+    document.getElementById('courtCityGroup').style.display = 'none';
     initMainAddCourtMap();
   });
 
@@ -1032,6 +1077,10 @@ function setupEventListeners() {
   // Form submit
   document.getElementById('addCourtForm')
     .addEventListener('submit', submitCourtForm);
+
+  // Add court cascade
+  document.getElementById('courtRegion').addEventListener('change', populateAddCourtProvinces);
+  document.getElementById('courtProvince').addEventListener('change', populateAddCourtCities);
 
   // List search
   document.getElementById('listSearchInput')?.addEventListener('input', (e) => {

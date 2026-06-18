@@ -447,21 +447,32 @@
               <label>Court Name *</label>
               <input type="text" id="courtName" placeholder="e.g. Rizal Sports Complex" required/>
             </div>
-            <div class="form-group">
-              <label>City/Municipality *</label>
-              <input type="text" id="courtCity" placeholder="e.g. Manila" required/>
-            </div>
           </div>
 
           <div class="form-row">
             <div class="form-group">
-              <label>Province/Region *</label>
+              <label>Region *</label>
               <select id="courtRegion" required>
                 <option value="">Select Region</option>
                 <option value="NCR">NCR (Metro Manila)</option>
                 <option value="Luzon">Luzon</option>
                 <option value="Visayas">Visayas</option>
                 <option value="Mindanao">Mindanao</option>
+              </select>
+            </div>
+            <div class="form-group" id="courtProvinceGroup" style="display:none">
+              <label>Province *</label>
+              <select id="courtProvince" required>
+                <option value="">Select Province</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group" id="courtCityGroup" style="display:none">
+              <label>City/Municipality *</label>
+              <select id="courtCity" required>
+                <option value="">Select City</option>
               </select>
             </div>
             <div class="form-group">
