@@ -821,7 +821,7 @@ function populateProvinces() {
     return;
   }
 
-  const provinces = [...new Set(allCourts.filter(c => c.region === region).map(c => c.province).filter(Boolean))].sort();
+  const provinces = PH_LOCATIONS[region] ? Object.keys(PH_LOCATIONS[region]).sort() : [];
   provinceSelect.innerHTML = '<option value="">All Provinces</option>' + provinces.map(p => `<option value="${p}">${p}</option>`).join('');
   provinceGroup.style.display = 'block';
   applyFilters();
@@ -841,7 +841,7 @@ function populateCities() {
     return;
   }
 
-  const cities = [...new Set(allCourts.filter(c => c.region === region && c.province === province).map(c => c.city).filter(Boolean))].sort();
+  const cities = PH_LOCATIONS[region] && PH_LOCATIONS[region][province] ? [...PH_LOCATIONS[region][province]].sort() : [];
   citySelect.innerHTML = '<option value="">All Cities</option>' + cities.map(c => `<option value="${c}">${c}</option>`).join('');
   cityGroup.style.display = 'block';
   applyFilters();
@@ -956,7 +956,7 @@ function populateAddCourtProvinces() {
     return;
   }
 
-  const provinces = [...new Set(allCourts.filter(c => c.region === region).map(c => c.province).filter(Boolean))].sort();
+  const provinces = PH_LOCATIONS[region] ? Object.keys(PH_LOCATIONS[region]).sort() : [];
   provSelect.innerHTML = '<option value="">Select Province</option>' + provinces.map(p => `<option value="${p}">${p}</option>`).join('');
   provGroup.style.display = 'block';
 }
@@ -974,7 +974,7 @@ function populateAddCourtCities() {
     return;
   }
 
-  const cities = [...new Set(allCourts.filter(c => c.region === region && c.province === province).map(c => c.city).filter(Boolean))].sort();
+  const cities = PH_LOCATIONS[region] && PH_LOCATIONS[region][province] ? [...PH_LOCATIONS[region][province]].sort() : [];
   citySelect.innerHTML = '<option value="">Select City</option>' + cities.map(c => `<option value="${c}">${c}</option>`).join('');
   cityGroup.style.display = 'block';
 }
