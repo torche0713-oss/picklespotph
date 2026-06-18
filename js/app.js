@@ -96,13 +96,11 @@ function showView(view) {
   const mapContainer = document.querySelector('.app-container');
   const listView = document.getElementById('listView');
   const aboutView = document.getElementById('aboutView');
-  const footer = document.getElementById('siteFooter');
 
   // Hide all
   mapContainer.style.display = 'none';
   listView.style.display = 'none';
   aboutView.style.display = 'none';
-  footer.style.display = 'none';
 
   // Update nav active state
   document.querySelectorAll('.nav-link, .mobile-link').forEach(link => {
@@ -493,7 +491,7 @@ function openDirections(lat, lng) {
 }
 
 function shareCourt(platform, courtNameEncoded, courtId) {
-  const url = `https://picklespotph.vercel.app/?court=${courtId}`;
+  const url = `https://picklespotph.site/?court=${courtId}`;
   const name = decodeURIComponent(courtNameEncoded);
   const text = `Check out ${name} on PickleSpot PH! 🏓`;
   const encodedText = encodeURIComponent(text);
