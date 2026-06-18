@@ -356,6 +356,12 @@ function filterCourts(courts, filters) {
     // Region filter
     if (filters.region && court.region !== filters.region) return false;
 
+    // Province filter
+    if (filters.province && court.province !== filters.province) return false;
+
+    // City filter
+    if (filters.city && court.city !== filters.city) return false;
+
     // Type filter
     if (filters.types && filters.types.length > 0) {
       if (!filters.types.includes(court.type)) return false;

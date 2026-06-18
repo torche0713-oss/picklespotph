@@ -791,6 +791,8 @@ document.getElementById('reviewModalClose').addEventListener('click', () => clos
 function getActiveFilters() {
   const search = document.getElementById('searchInput').value.trim();
   const region = document.getElementById('regionFilter').value;
+  const province = document.getElementById('provinceFilter')?.value || '';
+  const city = document.getElementById('cityFilter')?.value || '';
 
   const types = [...document.querySelectorAll('.type-filter:checked')]
     .map(cb => cb.value);
@@ -799,7 +801,50 @@ function getActiveFilters() {
   const amenities = [...document.querySelectorAll('.amenity-filter:checked')]
     .map(cb => cb.value);
 
-  return { search, region, types, access, amenities };
+  return { search, region, province, city, types, access, amenities };
+}
+
+function populateProvinces() {
+  const region = document.getElementById('regionFilter').value;
+  const provinceSelect = document.getElementById('provinceFilter');
+  const provinceGroup = document.getElementById('provinceFilterGroup');
+  const citySelect = document.getElementById('cityFilter');
+  const cityGroup = document.getElementById('cityFilterGroup');
+
+  citySelect.value = '';
+  cityGroup.style.display = 'none';
+  provinceSelect.value = '';
+
+  if (!region) {
+    provinceGroup.style.display = 'none';
+    applyFilters();
+    return;
+  }
+
+  const provinces = [...new Set(allCourts.filter(c => c.region === region).map(c => c.province).filter(Boolean))].sort();
+  provinceSelect.innerHTML = '<option value="">All Provinces</option>' + provinces.map(p => `<option value="${p}">${p}</option>`).join('');
+  provinceGroup.style.display = 'block';
+  applyFilters();
+}
+
+function populateCities() {
+  const region = document.getElementById('regionFilter').value;
+  const province = document.getElementById('provinceFilter').value;
+  const citySelect = document.getElementById('cityFilter');
+  const cityGroup = document.getElementById('cityFilterGroup');
+
+  citySelect.value = '';
+
+  if (!region || !province) {
+    cityGroup.style.display = 'none';
+    applyFilters();
+    return;
+  }
+
+  const cities = [...new Set(allCourts.filter(c => c.region === region && c.province === province).map(c => c.city).filter(Boolean))].sort();
+  citySelect.innerHTML = '<option value="">All Cities</option>' + cities.map(c => `<option value="${c}">${c}</option>`).join('');
+  cityGroup.style.display = 'block';
+  applyFilters();
 }
 
 function applyFilters() {
@@ -817,6 +862,10 @@ function applyFilters() {
 function resetFilters() {
   document.getElementById('searchInput').value = '';
   document.getElementById('regionFilter').value = '';
+  document.getElementById('provinceFilter').value = '';
+  document.getElementById('provinceFilterGroup').style.display = 'none';
+  document.getElementById('cityFilter').value = '';
+  document.getElementById('cityFilterGroup').style.display = 'none';
   document.getElementById('clearSearch').style.display = 'none';
 
   document.querySelectorAll('.type-filter, .access-filter')
@@ -935,7 +984,9 @@ function setupEventListeners() {
   });
 
   // Filters
-  document.getElementById('regionFilter').addEventListener('change', applyFilters);
+  document.getElementById('regionFilter').addEventListener('change', populateProvinces);
+  document.getElementById('provinceFilter').addEventListener('change', populateCities);
+  document.getElementById('cityFilter').addEventListener('change', applyFilters);
   document.querySelectorAll('.type-filter, .access-filter, .amenity-filter')
     .forEach(cb => cb.addEventListener('change', applyFilters));
   document.getElementById('resetFilters').addEventListener('click', resetFilters);
