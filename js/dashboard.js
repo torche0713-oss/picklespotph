@@ -50,6 +50,7 @@ function renderDashboard() {
 
   const isAdmin = currentUser.email === ADMIN_EMAIL;
   document.querySelector('[data-section="payments"]').style.display = isAdmin ? 'flex' : 'none';
+  document.querySelector('[data-section="admin-analytics"]').style.display = isAdmin ? 'flex' : 'none';
   // Show analytics only for Pro users
   document.querySelector('[data-section="analytics"]').style.display = userProfile?.plan === 'pro' ? 'flex' : 'none';
 }
@@ -58,7 +59,7 @@ function renderDashboard() {
 // NAVIGATION
 // ============================================================
 function switchSection(sectionId) {
-  if (sectionId === 'payments' && currentUser.email !== ADMIN_EMAIL) {
+  if ((sectionId === 'payments' || sectionId === 'admin-analytics') && currentUser.email !== ADMIN_EMAIL) {
     showToast('Access denied.');
     return;
   }
@@ -71,6 +72,7 @@ function switchSection(sectionId) {
   if (sectionId === 'mailing') loadMailingList();
   if (sectionId === 'add-court') initAddCourtMap();
   if (sectionId === 'payments') loadPayments();
+  if (sectionId === 'admin-analytics') loadAdminAnalytics();
   if (sectionId === 'analytics') loadAnalytics();
 }
 
@@ -692,6 +694,98 @@ async function loadPayments() {
   }
 }
 
+// ============================================================
+// ADMIN SITE ANALYTICS
+// ============================================================
+async function loadAdminAnalytics() {
+  const container = document.getElementById('adminAnalyticsContainer');
+  container.innerHTML = '<p style="color:var(--text-muted)">Loading...</p>';
+
+  try {
+    const [usersSnap, courts, bookingsSnap, subscribers] = await Promise.all([
+      db.collection('users').get(),
+      PickleCourts.getAll(),
+      db.collection('bookings').get(),
+      PickleMailing.getAll()
+    ]);
+
+    const totalUsers = usersSnap.docs.length;
+    const totalCourts = courts.length;
+    const totalBookings = bookingsSnap.docs.length;
+    const totalSubscribers = subscribers.length;
+    const totalViews = courts.reduce((sum, c) => sum + (c.views || 0), 0);
+
+    let proCount = 0, basicCount = 0;
+    usersSnap.docs.forEach(doc => {
+      const d = doc.data();
+      if (d.plan === 'pro') proCount++;
+      else basicCount++;
+    });
+    const proPct = totalUsers ? Math.round((proCount / totalUsers) * 100) : 0;
+
+    const recentUsers = usersSnap.docs
+      .map(doc => ({ id: doc.id, ...doc.data() }))
+      .filter(u => u.createdAt)
+      .sort((a, b) => (b.createdAt?.toDate?.() || 0) - (a.createdAt?.toDate?.() || 0))
+      .slice(0, 10);
+
+    container.innerHTML = `
+      <div class="admin-grid">
+        <div class="admin-card">
+          <div class="admin-icon"><i class="fas fa-map-pin"></i></div>
+          <div class="admin-number">${totalCourts}</div>
+          <div class="admin-label">Total Courts</div>
+        </div>
+        <div class="admin-card">
+          <div class="admin-icon"><i class="fas fa-users"></i></div>
+          <div class="admin-number">${totalUsers}</div>
+          <div class="admin-label">Registered Owners</div>
+        </div>
+        <div class="admin-card">
+          <div class="admin-icon"><i class="fas fa-calendar-check"></i></div>
+          <div class="admin-number">${totalBookings}</div>
+          <div class="admin-label">Total Bookings</div>
+        </div>
+        <div class="admin-card accent">
+          <div class="admin-icon"><i class="fas fa-eye"></i></div>
+          <div class="admin-number">${totalViews}</div>
+          <div class="admin-label">Total Page Views</div>
+        </div>
+        <div class="admin-card">
+          <div class="admin-icon"><i class="fas fa-mail-bulk"></i></div>
+          <div class="admin-number">${totalSubscribers}</div>
+          <div class="admin-label">Mailing List</div>
+        </div>
+      </div>
+
+      <div class="admin-breakdown">
+        <h3>Plan Breakdown</h3>
+        <div class="bar">
+          <div class="bar-pro" style="flex:${proCount}"></div>
+          <div class="bar-basic" style="flex:${basicCount || 1}"></div>
+        </div>
+        <div class="bar-label">
+          <span><strong>Pro:</strong> ${proCount} (${proPct}%)</span>
+          <span><strong>Basic:</strong> ${basicCount} (${100 - proPct}%)</span>
+        </div>
+      </div>
+
+      ${recentUsers.length ? `
+      <div class="admin-breakdown">
+        <h3>Recent Registrations</h3>
+        ${recentUsers.map(u => `
+          <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #f5f5f5;font-size:13px">
+            <span>${u.displayName || 'Unknown'} <span style="color:var(--text-muted);font-size:11px">${u.email || ''}</span></span>
+            <span style="color:var(--text-muted);font-size:11px">${u.createdAt?.toDate?.() ? u.createdAt.toDate().toLocaleDateString() : ''} · ${u.plan === 'pro' ? '⭐ Pro' : 'Basic'}</span>
+          </div>
+        `).join('')}
+      </div>` : ''}
+    `;
+  } catch (err) {
+    container.innerHTML = `<p style="color:#d32f2f">Error: ${err.message}</p>`;
+  }
+}
+
 window.verifyPayment = async function(paymentId, userId) {
   if (!confirm('Verify this payment and upgrade the user to Pro?')) return;
   try {
@@ -1112,33 +1206,66 @@ function setupEventListeners() {
 async function loadMailingList() {
   const container = document.getElementById('mailingListContainer');
   try {
-    const subscribers = await PickleMailing.getAll();
-    if (subscribers.length === 0) {
-      container.innerHTML = '<div class="empty-state"><i class="fas fa-mail-bulk"></i><h3>No subscribers yet</h3><p>Customer emails will appear here when they submit booking inquiries.</p></div>';
+    const [subscribers, usersSnap] = await Promise.all([
+      PickleMailing.getAll(),
+      db.collection('users').get()
+    ]);
+
+    const proOwners = [];
+    const basicOwners = [];
+    usersSnap.docs.forEach(doc => {
+      const d = doc.data();
+      if (d.plan === 'pro') proOwners.push(d);
+      else basicOwners.push(d);
+    });
+
+    const allEmails = [
+      ...subscribers.map(s => ({ name: s.name, email: s.email, date: s.subscribedAt?.toDate?.(), group: 'Player' })),
+      ...proOwners.map(u => ({ name: u.displayName, email: u.email, date: u.createdAt?.toDate?.(), group: 'Pro Owner' })),
+      ...basicOwners.map(u => ({ name: u.displayName, email: u.email, date: u.createdAt?.toDate?.(), group: 'Basic Owner' }))
+    ];
+
+    if (allEmails.length === 0) {
+      container.innerHTML = '<div class="empty-state"><i class="fas fa-mail-bulk"></i><h3>No contacts yet</h3><p>Emails will appear here when players subscribe or owners register.</p></div>';
       return;
     }
-    container.innerHTML = `
-      <div style="background:var(--white);border-radius:var(--radius);box-shadow:var(--card-shadow);overflow:hidden">
+
+    const sections = [
+      { title: 'Players', icon: 'fa-user', data: subscribers.map(s => ({ name: s.name, email: s.email, date: s.subscribedAt?.toDate?.() })) },
+      { title: 'Pro Owners', icon: 'fa-crown', accent: true, data: proOwners.map(u => ({ name: u.displayName, email: u.email, date: u.createdAt?.toDate?.() })) },
+      { title: 'Basic Owners', icon: 'fa-user', data: basicOwners.map(u => ({ name: u.displayName, email: u.email, date: u.createdAt?.toDate?.() })) }
+    ];
+
+    container.innerHTML = sections.map(section => `
+      <div style="background:var(--white);border-radius:var(--radius);box-shadow:var(--card-shadow);overflow:hidden;margin-bottom:20px">
+        <div style="padding:14px 16px;background:${section.accent ? 'var(--accent)' : 'var(--primary)'};color:white;display:flex;justify-content:space-between;align-items:center">
+          <strong><i class="fas ${section.icon}"></i> ${section.title}</strong>
+          <span style="font-size:12px;opacity:0.9">${section.data.length}</span>
+        </div>
+        ${section.data.length === 0 ? '<p style="padding:16px;color:var(--text-muted);font-size:13px">No contacts</p>' : `
         <table style="width:100%;border-collapse:collapse;font-size:13px">
           <thead>
-            <tr style="background:var(--primary);color:white;text-align:left">
-              <th style="padding:12px 16px">Name</th>
-              <th style="padding:12px 16px">Email</th>
-              <th style="padding:12px 16px">Subscribed</th>
+            <tr style="text-align:left;background:#fafafa">
+              <th style="padding:10px 16px">Name</th>
+              <th style="padding:10px 16px">Email</th>
+              <th style="padding:10px 16px">Since</th>
             </tr>
           </thead>
           <tbody>
-            ${subscribers.map(s => `
+            ${section.data.map(d => `
               <tr style="border-bottom:1px solid #f0f0f0">
-                <td style="padding:10px 16px">${s.name || '—'}</td>
-                <td style="padding:10px 16px">${s.email}</td>
-                <td style="padding:10px 16px;color:var(--text-muted)">${s.subscribedAt?.toDate ? s.subscribedAt.toDate().toLocaleDateString() : '—'}</td>
+                <td style="padding:9px 16px">${d.name || '—'}</td>
+                <td style="padding:9px 16px">${d.email}</td>
+                <td style="padding:9px 16px;color:var(--text-muted)">${d.date ? d.date.toLocaleDateString() : '—'}</td>
               </tr>
             `).join('')}
           </tbody>
-        </table>
+        </table>`}
       </div>
-      <p style="font-size:13px;color:var(--text-muted);margin-top:12px">${subscribers.length} subscriber${subscribers.length !== 1 ? 's' : ''}</p>
+    `).join('') + `
+      <p style="font-size:13px;color:var(--text-muted);margin-top:12px">
+        ${allEmails.length} total contacts (${subscribers.length} players · ${proOwners.length} pro · ${basicOwners.length} basic)
+      </p>
     `;
   } catch (err) {
     container.innerHTML = `<p style="color:#d32f2f">Error: ${err.message}</p>`;
@@ -1147,14 +1274,33 @@ async function loadMailingList() {
 
 window.exportMailingList = async function() {
   try {
-    const subscribers = await PickleMailing.getAll();
-    if (subscribers.length === 0) {
-      showToast('No subscribers to export.');
+    const [subscribers, usersSnap] = await Promise.all([
+      PickleMailing.getAll(),
+      db.collection('users').get()
+    ]);
+
+    const proOwners = [];
+    const basicOwners = [];
+    usersSnap.docs.forEach(doc => {
+      const d = doc.data();
+      if (d.plan === 'pro') proOwners.push(d);
+      else basicOwners.push(d);
+    });
+
+    const allContacts = [
+      ...subscribers.map(s => ({ name: s.name || '', email: s.email, date: s.subscribedAt?.toDate?.(), group: 'Player' })),
+      ...proOwners.map(u => ({ name: u.displayName || '', email: u.email, date: u.createdAt?.toDate?.(), group: 'Pro Owner' })),
+      ...basicOwners.map(u => ({ name: u.displayName || '', email: u.email, date: u.createdAt?.toDate?.(), group: 'Basic Owner' }))
+    ];
+
+    if (allContacts.length === 0) {
+      showToast('No contacts to export.');
       return;
     }
-    const rows = [['Name', 'Email', 'Subscribed Date']];
-    subscribers.forEach(s => {
-      rows.push([s.name || '', s.email, s.subscribedAt?.toDate ? s.subscribedAt.toDate().toISOString().split('T')[0] : '']);
+
+    const rows = [['Name', 'Email', 'Group', 'Date']];
+    allContacts.forEach(c => {
+      rows.push([c.name, c.email, c.group, c.date ? c.date.toISOString().split('T')[0] : '']);
     });
     const csv = rows.map(r => r.map(v => `"${v}"`).join(',')).join('\n');
     const blob = new Blob([csv], { type: 'text/csv' });
