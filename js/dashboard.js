@@ -50,6 +50,8 @@ function renderDashboard() {
 
   const isAdmin = currentUser.email === ADMIN_EMAIL;
   document.querySelector('[data-section="payments"]').style.display = isAdmin ? 'flex' : 'none';
+  // Show analytics only for Pro users
+  document.querySelector('[data-section="analytics"]').style.display = userProfile?.plan === 'pro' ? 'flex' : 'none';
 }
 
 // ============================================================
@@ -69,6 +71,7 @@ function switchSection(sectionId) {
   if (sectionId === 'mailing') loadMailingList();
   if (sectionId === 'add-court') initAddCourtMap();
   if (sectionId === 'payments') loadPayments();
+  if (sectionId === 'analytics') loadAnalytics();
 }
 
 // ============================================================
@@ -506,6 +509,70 @@ async function loadReviews() {
         </div>
       `;
     }
+    container.innerHTML = html;
+  } catch (err) {
+    container.innerHTML = `<p style="color:#d32f2f">Error: ${err.message}</p>`;
+  }
+}
+
+// ============================================================
+// ANALYTICS (Pro only)
+// ============================================================
+async function loadAnalytics() {
+  const container = document.getElementById('analyticsContainer');
+  container.innerHTML = '<p style="color:var(--text-muted)">Loading...</p>';
+
+  try {
+    const courts = await PickleCourts.getByOwner(currentUser.uid);
+    if (courts.length === 0) {
+      container.innerHTML = '<div class="empty-state"><i class="fas fa-chart-bar"></i><h3>No courts yet</h3><p>Add a court to start tracking analytics.</p></div>';
+      return;
+    }
+
+    let totalViews = 0;
+    let totalBookings = 0;
+    let html = '';
+
+    for (const court of courts) {
+      const views = await PickleAnalytics.getViews(court.id);
+      const bookings = await PickleAnalytics.getBookingCount(court.id);
+      totalViews += views;
+      totalBookings += bookings;
+
+      html += `
+        <div class="analytics-card">
+          <div class="analytics-card-header">
+            <strong>${court.name}</strong>
+            <span class="tag" style="background:#e3f2fd;color:#1565c0">${court.city}</span>
+          </div>
+          <div class="analytics-stats">
+            <div class="analytics-stat">
+              <div class="analytics-number">${views}</div>
+              <div class="analytics-label"><i class="fas fa-eye"></i> Views</div>
+            </div>
+            <div class="analytics-stat">
+              <div class="analytics-number">${bookings}</div>
+              <div class="analytics-label"><i class="fas fa-calendar-check"></i> Inquiries</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    html = `
+      <div class="analytics-totals">
+        <div class="analytics-total-card">
+          <div class="analytics-number">${totalViews}</div>
+          <div class="analytics-label">Total Views</div>
+        </div>
+        <div class="analytics-total-card">
+          <div class="analytics-number">${totalBookings}</div>
+          <div class="analytics-label">Total Inquiries</div>
+        </div>
+      </div>
+      ${html}
+    `;
+
     container.innerHTML = html;
   } catch (err) {
     container.innerHTML = `<p style="color:#d32f2f">Error: ${err.message}</p>`;

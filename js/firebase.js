@@ -641,3 +641,39 @@ async function isProUser(uid) {
   const profile = await PickleAuth.getUserProfile(uid);
   return profile?.plan === 'pro';
 }
+
+// ============================================================
+// ANALYTICS
+// ============================================================
+const PickleAnalytics = {
+  async trackView(courtId) {
+    if (!courtId || typeof courtId !== 'string') return;
+    try {
+      await db.collection(COLLECTIONS.COURTS).doc(courtId).update({
+        views: firebase.firestore.FieldValue.increment(1)
+      });
+    } catch (e) {
+      try {
+        await db.collection(COLLECTIONS.COURTS).doc(courtId).set({
+          views: 1
+        }, { merge: true });
+      } catch {}
+    }
+  },
+
+  async getViews(courtId) {
+    try {
+      const doc = await db.collection(COLLECTIONS.COURTS).doc(courtId).get();
+      return doc.exists ? (doc.data().views || 0) : 0;
+    } catch { return 0; }
+  },
+
+  async getBookingCount(courtId) {
+    try {
+      const snapshot = await db.collection(COLLECTIONS.BOOKINGS)
+        .where('courtId', '==', courtId)
+        .get();
+      return snapshot.docs.length;
+    } catch { return 0; }
+  }
+};

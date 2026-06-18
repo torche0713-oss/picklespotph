@@ -310,6 +310,11 @@ window.openCourtModal = function(courtId) {
   const court = allCourts.find(c => c.id == courtId);
   if (!court) return;
 
+  // Track view for Firestore courts
+  if (typeof court.id === 'string' && typeof PickleAnalytics !== 'undefined') {
+    PickleAnalytics.trackView(court.id);
+  }
+
   const modal = document.getElementById('courtModal');
   const header = document.getElementById('modalHeader');
   const body = document.getElementById('modalBody');

@@ -1692,3 +1692,67 @@ body {
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
+
+/* ===========================
+   ANALYTICS
+   =========================== */
+.analytics-totals {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.analytics-total-card {
+  background: var(--white);
+  border-radius: 12px;
+  padding: 24px;
+  text-align: center;
+  box-shadow: var(--card-shadow);
+}
+.analytics-total-card .analytics-number {
+  font-size: 36px;
+  font-weight: 700;
+  color: var(--primary);
+}
+.analytics-total-card .analytics-label {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+.analytics-card {
+  background: var(--white);
+  border-radius: 10px;
+  padding: 18px 20px;
+  margin-bottom: 12px;
+  box-shadow: var(--card-shadow);
+}
+.analytics-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.analytics-card-header strong {
+  font-size: 14px;
+}
+.analytics-stats {
+  display: flex;
+  gap: 24px;
+}
+.analytics-stat {
+  text-align: center;
+  min-width: 80px;
+}
+.analytics-stat .analytics-number {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text);
+}
+.analytics-stat .analytics-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+.analytics-stat .analytics-label i {
+  margin-right: 4px;
+}
