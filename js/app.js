@@ -1037,9 +1037,14 @@ function setupEventListeners() {
   document.getElementById('toggleSidebar').addEventListener('click', toggleSidebar);
   document.getElementById('sidebarToggle').addEventListener('click', toggleSidebar);
 
-  // Add court
-  document.getElementById('addCourtBtn').addEventListener('click', openAddCourtModal);
-  document.getElementById('heroAddBtn').addEventListener('click', openAddCourtModal);
+  // Add court — show plans first
+  document.getElementById('addCourtBtn').addEventListener('click', openPlansModal);
+  document.getElementById('heroAddBtn').addEventListener('click', openPlansModal);
+
+  function openPlansModal() {
+    document.getElementById('plansModal').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+  }
 
   function openAddCourtModal() {
     document.getElementById('addCourtModal').style.display = 'flex';
@@ -1049,14 +1054,15 @@ function setupEventListeners() {
     initMainAddCourtMap();
   }
 
+  document.getElementById('basicPlanCta').addEventListener('click', () => {
+    closeModal('plansModal');
+    openAddCourtModal();
+  });
+
   document.getElementById('mobileAddCourt').addEventListener('click', (e) => {
     e.preventDefault();
-    document.getElementById('addCourtModal').style.display = 'flex';
-    document.body.style.overflow = 'hidden';
     document.getElementById('mobileMenu').classList.remove('open');
-    document.getElementById('courtProvinceGroup').style.display = 'none';
-    document.getElementById('courtCityGroup').style.display = 'none';
-    initMainAddCourtMap();
+    openPlansModal();
   });
 
   // Close modals
@@ -1066,6 +1072,8 @@ function setupEventListeners() {
     .addEventListener('click', () => closeModal('addCourtModal'));
   document.getElementById('cancelAdd')
     .addEventListener('click', () => closeModal('addCourtModal'));
+  document.getElementById('plansModalClose')
+    .addEventListener('click', () => closeModal('plansModal'));
 
   // Close on overlay click
   document.querySelectorAll('.modal-overlay').forEach(overlay => {
