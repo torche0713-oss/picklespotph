@@ -384,6 +384,9 @@ function filterCourts(courts, filters) {
 // Sort courts
 function sortCourts(courts, sortBy) {
   return [...courts].sort((a, b) => {
+    // Featured courts always first
+    if (a.featured && !b.featured) return -1;
+    if (!a.featured && b.featured) return 1;
     switch (sortBy) {
       case 'name':
         return a.name.localeCompare(b.name);

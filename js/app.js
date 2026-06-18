@@ -5,6 +5,7 @@
 let allCourts = [...COURTS_DATA];
 let filteredCourts = [...COURTS_DATA];
 let currentView = 'map';
+let listPage = 1;
 let sidebarCollapsed = false;
 let mainAddCourtMap = null;
 let mainAddCourtMarker = null;
@@ -199,7 +200,14 @@ function renderCourtsList(courts) {
     return;
   }
 
-  container.innerHTML = courts.map((court, idx) => {
+  const PAGE_SIZE = 12;
+  const totalPages = Math.ceil(courts.length / PAGE_SIZE);
+  const page = listPage || 1;
+  const start = (page - 1) * PAGE_SIZE;
+  const pageCourts = courts.slice(start, start + PAGE_SIZE);
+
+  container.innerHTML = pageCourts.map((court, idx) => {
+    const globalIdx = start + idx + 1;
     const amenityBadges = court.amenities.map(a => {
       const info = AMENITY_ICONS[a];
       return info ? `
@@ -216,7 +224,7 @@ function renderCourtsList(courts) {
     return `
       <div class="court-card" onclick="openCourtModal('${court.id}')">
         <div class="court-card-header">
-          <div class="court-number">${String(idx + 1).padStart(2, '0')}</div>
+          <div class="court-number">${String(globalIdx).padStart(2, '0')}</div>
           <div class="court-card-name">
             ${court.name}
             ${court.verified ? '<i class="fas fa-check-circle" style="color:#FFD700;font-size:14px" title="Verified"></i>' : ''}
@@ -277,7 +285,22 @@ function renderCourtsList(courts) {
         </div>
       </div>
     `;
-  }).join('');
+  }).join('') + buildPagination(totalPages, page);
+}
+
+function buildPagination(totalPages, current) {
+  if (totalPages <= 1) return '';
+  let html = '<div class="pagination">';
+  for (let i = 1; i <= totalPages; i++) {
+    html += `<button class="page-btn ${i === current ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`;
+  }
+  return html + '</div>';
+}
+
+function goToPage(page) {
+  listPage = page;
+  const sortBy = document.getElementById('sortSelect')?.value || 'name';
+  renderCourtsList(sortCourts(filteredCourts, sortBy));
 }
 
 // ============================================================
@@ -854,6 +877,7 @@ function applyFilters() {
   renderSidebarList(filteredCourts);
 
   if (currentView === 'list') {
+    listPage = 1;
     const sortBy = document.getElementById('sortSelect')?.value || 'name';
     renderCourtsList(sortCourts(filteredCourts, sortBy));
   }
@@ -1098,11 +1122,13 @@ function setupEventListeners() {
       c.city.toLowerCase().includes(q) ||
       c.province.toLowerCase().includes(q)
     );
+    listPage = 1;
     renderCourtsList(filtered);
   });
 
   // Sort
   document.getElementById('sortSelect')?.addEventListener('change', (e) => {
+    listPage = 1;
     renderCourtsList(sortCourts(filteredCourts, e.target.value));
   });
 

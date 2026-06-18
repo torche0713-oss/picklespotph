@@ -151,8 +151,9 @@ document.getElementById('dashAddCourtForm').addEventListener('submit', async (e)
   const courtData = {
     name: document.getElementById('dashCourtName').value,
     city: document.getElementById('dashCourtCity').value,
-    province: document.getElementById('dashCourtRegion').value,
+    province: document.getElementById('dashCourtProvince')?.value || document.getElementById('dashCourtRegion').value,
     region: document.getElementById('dashCourtRegion').value,
+    featured: userProfile?.plan === 'pro',
     type: document.getElementById('dashCourtType').value,
     access: document.getElementById('dashCourtAccess').value,
     rate: document.getElementById('dashCourtRate').value,

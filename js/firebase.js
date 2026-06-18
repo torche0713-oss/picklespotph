@@ -214,7 +214,7 @@ const PickleCourts = {
       ownerId,
       verified: false,
       approved: true,
-      featured: false,
+      featured: courtData.featured === true,
       photos: [],
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
