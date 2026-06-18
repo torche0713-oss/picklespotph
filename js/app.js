@@ -1004,6 +1004,14 @@ function submitCourtForm(e) {
     flyToMarker(newCourt.id);
   }
 
+  // Save to Firestore if user is logged in
+  const user = PickleAuth.getCurrentUser();
+  if (user) {
+    PickleCourts.add(newCourt, user.uid).catch(err => {
+      console.warn('Failed to save court to Firestore:', err);
+    });
+  }
+
   closeModal('addCourtModal');
   document.getElementById('addCourtForm').reset();
   document.getElementById('courtProvinceGroup').style.display = 'none';
@@ -1127,6 +1135,12 @@ function setupEventListeners() {
 
   document.getElementById('basicPlanCta').addEventListener('click', () => {
     closeModal('plansModal');
+    const user = PickleAuth.getCurrentUser();
+    if (!user) {
+      showToast('Please log in to add a court — create a free account to save it permanently!');
+      setTimeout(() => window.location.href = 'dashboard.html', 2500);
+      return;
+    }
     openAddCourtModal();
   });
 
