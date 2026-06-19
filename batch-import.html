@@ -54,10 +54,14 @@
     </div>
 
     <div id="loginSection">
-      <h3>Sign in Required</h3>
-      <p>Go to <a href="https://picklespotph.site/" target="_blank">picklespotph.site</a> and sign in first, then refresh this page. Your session will carry over automatically.</p>
-      <div class="actions">
-        <button class="btn btn-outline" onclick="window.location.reload()">Refresh Page</button>
+      <h3>Sign in</h3>
+      <p>Option 1: Already signed in on the main site? <button class="btn btn-outline" onclick="window.location.reload()" style="padding:4px 12px;font-size:13px">Refresh</button></p>
+      <p style="margin-top:12px">Option 2: Sign in with email/password:</p>
+      <div class="login-form">
+        <input type="email" id="loginEmail" placeholder="Email" value="torche0713@gmail.com">
+        <input type="password" id="loginPassword" placeholder="Password">
+        <button class="btn btn-primary" id="emailLoginBtn">Sign In</button>
+        <span id="loginError" style="color:#d32f2f;font-size:13px"></span>
       </div>
     </div>
 
@@ -476,6 +480,20 @@
         log('info', 'Ready. Sign in to begin.');
       }
     });
+
+    // Email/password sign-in
+    document.getElementById('emailLoginBtn').onclick = async () => {
+      const email = document.getElementById('loginEmail').value;
+      const password = document.getElementById('loginPassword').value;
+      const errEl = document.getElementById('loginError');
+      errEl.textContent = '';
+      if (!email || !password) { errEl.textContent = 'Enter email and password'; return; }
+      try {
+        await auth.signInWithEmailAndPassword(email, password);
+      } catch (err) {
+        errEl.textContent = err.message;
+      }
+    };
 
     document.getElementById('previewBtn').onclick = () => {
       let text = '=== COURTS TO IMPORT (' + COURTS_DATA.length + ') ===\n\n';
