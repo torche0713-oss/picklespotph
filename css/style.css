@@ -68,6 +68,16 @@ body {
   letter-spacing: -0.5px;
 }
 
+.logo-img {
+  height: 36px;
+  width: auto;
+  display: block;
+}
+
+.footer-logo .logo-img {
+  height: 32px;
+}
+
 
 .nav-links {
   display: flex;
@@ -109,6 +119,16 @@ body {
   margin: 0 auto;
   position: relative;
   z-index: 1;
+}
+
+.hero-logo {
+  height: 130px;
+  width: auto;
+  margin-bottom: 16px;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  filter: drop-shadow(0 4px 12px rgba(0,0,0,0.3));
 }
 .hero-badge {
   display: inline-block;
