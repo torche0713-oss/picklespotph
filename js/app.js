@@ -67,6 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setupEventListeners();
   showView('map');
   initCustomerChatWidget();
+  loadRecentlyAdded();
   loadFirestoreCourts();
 });
 
@@ -85,6 +86,61 @@ async function loadFirestoreCourts() {
     renderSidebarList(allCourts);
     updateStats(allCourts);
   } catch {}
+  loadRecentlyAdded();
+}
+
+let recentAutoScroll = null;
+
+function loadRecentlyAdded() {
+  const section = document.getElementById('recentSection');
+  const scroll = document.getElementById('recentScroll');
+  if (!section || !scroll) return;
+
+  if (!allCourts.length) { section.style.display = 'none'; return; }
+
+  const sorted = [...allCourts].sort((a, b) => {
+    const aDate = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.dateAdded || 0);
+    const bDate = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.dateAdded || 0);
+    return bDate - aDate;
+  });
+
+  const recent = sorted.slice(0, 10);
+  const isStatic = c => typeof c.id === 'number';
+
+  scroll.innerHTML = recent.map(c => `
+    <div class="recent-card" onclick="openCourtModal('${c.id}')">
+      <div class="rc-type">${c.type} · ${c.access}</div>
+      <div class="rc-name">${c.name}</div>
+      <div class="rc-location"><i class="fas fa-map-marker-alt"></i> ${c.city}, ${c.province}</div>
+      <div class="rc-meta">
+        <span><i class="fas fa-table-tennis-paddle-ball"></i> ${c.courts}</span>
+        ${c.verified ? '<span><i class="fas fa-check-circle" style="color:var(--primary)"></i> Verified</span>' : ''}
+      </div>
+      ${isStatic(c) ? '<div class="rc-sample">Sample</div>' : ''}
+    </div>
+  `).join('');
+
+  section.style.display = 'block';
+
+  if (recentAutoScroll) clearInterval(recentAutoScroll);
+  recentAutoScroll = setInterval(() => {
+    const maxScroll = scroll.scrollWidth - scroll.clientWidth;
+    if (maxScroll <= 0) return;
+    if (scroll.scrollLeft >= maxScroll - 2) {
+      scroll.scrollLeft = 0;
+    } else {
+      scroll.scrollLeft += 1;
+    }
+  }, 30);
+  scroll.addEventListener('mouseenter', () => clearInterval(recentAutoScroll));
+  scroll.addEventListener('mouseleave', () => {
+    recentAutoScroll = setInterval(() => {
+      const max = scroll.scrollWidth - scroll.clientWidth;
+      if (max <= 0) return;
+      if (scroll.scrollLeft >= max - 2) { scroll.scrollLeft = 0; }
+      else { scroll.scrollLeft += 1; }
+    }, 30);
+  });
 }
 
 // ============================================================
