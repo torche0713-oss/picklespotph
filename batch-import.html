@@ -54,11 +54,11 @@
     </div>
 
     <div id="loginSection">
-      <h3>Sign in with Google</h3>
+      <h3>Sign in Required</h3>
+      <p>Go to <a href="https://picklespotph.site/" target="_blank">picklespotph.site</a> and sign in first, then refresh this page. Your session will carry over automatically.</p>
       <div class="actions">
-        <button class="btn btn-primary" id="googleSignInBtn"><i class="fab fa-google"></i> Sign in with Google</button>
+        <button class="btn btn-outline" onclick="window.location.reload()">Refresh Page</button>
       </div>
-      <p style="margin-top:12px;font-size:13px;color:#999;">You must be signed in with your admin Google account (torche0713@gmail.com) to import courts.</p>
     </div>
 
     <hr class="divider">
@@ -474,18 +474,6 @@
         userSection.style.display = 'none';
         importBtn.disabled = true;
         log('info', 'Ready. Sign in to begin.');
-      }
-    });
-
-    document.getElementById('googleSignInBtn').onclick = () => {
-      const provider = new firebase.auth.GoogleAuthProvider();
-      auth.signInWithRedirect(provider);
-    };
-
-    // Handle redirect result
-    auth.getRedirectResult().catch(err => {
-      if (err.code !== 'auth/credential-already-in-use') {
-        log('error', 'Sign in failed: ' + err.message);
       }
     });
 
