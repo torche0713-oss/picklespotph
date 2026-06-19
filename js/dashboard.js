@@ -52,6 +52,8 @@ function renderDashboard() {
   document.querySelector('[data-section="bookings"]').style.display = isPro ? 'flex' : 'none';
   document.querySelector('[data-section="owner-courts"]').style.display = isAdmin ? 'flex' : 'none';
   document.querySelector('[data-section="tournaments"]').style.display = isAdmin ? 'flex' : 'none';
+  document.querySelector('[data-section="claims"]').style.display = isAdmin ? 'flex' : 'none';
+  document.getElementById('dashUnclaimedGroup').style.display = isAdmin ? 'block' : 'none';
   document.querySelector('[data-section="payments"]').style.display = isAdmin ? 'flex' : 'none';
   document.querySelector('[data-section="admin-analytics"]').style.display = isAdmin ? 'flex' : 'none';
   document.querySelector('[data-section="analytics"]').style.display = isPro ? 'flex' : 'none';
@@ -62,7 +64,7 @@ function renderDashboard() {
 // NAVIGATION
 // ============================================================
 function switchSection(sectionId) {
-  if ((sectionId === 'payments' || sectionId === 'admin-analytics' || sectionId === 'owner-courts' || sectionId === 'tournaments') && currentUser.email !== ADMIN_EMAIL) {
+  if ((sectionId === 'payments' || sectionId === 'admin-analytics' || sectionId === 'owner-courts' || sectionId === 'tournaments' || sectionId === 'claims') && currentUser.email !== ADMIN_EMAIL) {
     showToast('Access denied.');
     return;
   }
@@ -78,6 +80,7 @@ function switchSection(sectionId) {
   if (sectionId === 'admin-analytics') loadAdminAnalytics();
   if (sectionId === 'owner-courts') loadOwnerCourts();
   if (sectionId === 'tournaments') loadTournaments();
+  if (sectionId === 'claims') loadClaims();
   if (sectionId === 'analytics') loadAnalytics();
 }
 
@@ -176,16 +179,20 @@ document.getElementById('dashAddCourtForm').addEventListener('submit', async (e)
     amenities
   };
 
+  const isUnclaimed = document.getElementById('dashUnclaimedCheck').checked;
+
   try {
-    await PickleCourts.add(courtData, currentUser.uid);
-    showToast('Thank you! Your court has been added and is now live! 🎉');
+    const ownerId = isUnclaimed ? null : currentUser.uid;
+    await PickleCourts.add(courtData, ownerId);
+    showToast(isUnclaimed ? 'Court listed as unclaimed — owners can now claim it!' : 'Thank you! Your court has been added and is now live! 🎉');
     e.target.reset();
     document.getElementById('dashCourtProvinceGroup').style.display = 'none';
     document.getElementById('dashCourtCityGroup').style.display = 'none';
+    document.getElementById('dashUnclaimedCheck').checked = false;
     loadMyCourts();
     switchSection('my-courts');
     try {
-      await PickleNotifications.notifyOwnerCourtAdded(currentUser.email, userProfile?.displayName, courtData.name);
+      if (!isUnclaimed) await PickleNotifications.notifyOwnerCourtAdded(currentUser.email, userProfile?.displayName, courtData.name);
       await PickleNotifications.notifyAdminNewCourt(courtData, userProfile);
     } catch {}
   } catch (err) {
@@ -1644,3 +1651,86 @@ function placeMarker(lat, lng) {
 
   addCourtMap.setView([lat, lng], Math.max(addCourtMap.getZoom(), 12));
 }
+
+// ============================================================
+// CLAIMS MANAGEMENT (Admin)
+// ============================================================
+async function loadClaims() {
+  const container = document.getElementById('claimsList');
+  container.innerHTML = '<p style="color:var(--text-muted)">Loading...</p>';
+
+  try {
+    const claims = await PickleClaims.getAll();
+    if (!claims.length) {
+      container.innerHTML = '<div class="empty-state"><i class="fas fa-hand-paper"></i><h3>No claims yet</h3><p>When owners claim courts, they will appear here.</p></div>';
+      return;
+    }
+
+    const courtIds = [...new Set(claims.filter(c => c.courtId).map(c => c.courtId))];
+    const courtNames = {};
+    await Promise.all(courtIds.map(async id => {
+      try {
+        const court = await PickleCourts.getById(id);
+        if (court) courtNames[id] = court.name;
+      } catch {}
+    }));
+
+    container.innerHTML = claims.sort((a, b) => {
+      const ta = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
+      const tb = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
+      return tb - ta;
+    }).map(c => `
+      <div style="background:var(--white);border-radius:12px;padding:16px 20px;margin-bottom:12px;box-shadow:var(--card-shadow)">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px">
+          <div>
+            <strong>${c.name}</strong> · <span style="font-size:12px;color:var(--text-muted)">${c.email}</span>
+            <div style="font-size:12px;color:var(--text-muted);margin-top:4px">
+              📍 ${courtNames[c.courtId] || 'Unknown court'}
+              ${c.contact ? `· 📞 ${c.contact}` : ''}
+            </div>
+            ${c.message ? `<div style="font-size:12px;color:#555;margin-top:6px;padding:8px;background:#f9f9f9;border-radius:6px">${c.message}</div>` : ''}
+          </div>
+          <span style="font-size:11px;padding:3px 10px;border-radius:10px;font-weight:600;background:${c.status === 'approved' ? '#e8f5e9' : c.status === 'rejected' ? '#ffebee' : '#fff3e0'};color:${c.status === 'approved' ? '#2e7d32' : c.status === 'rejected' ? '#c62828' : '#e65100'}">${c.status}</span>
+        </div>
+        ${c.status === 'pending' ? `
+        <div style="display:flex;gap:8px;margin-top:12px">
+          <button class="btn-dash btn-dash-primary" onclick="approveClaim('${c.id}')"><i class="fas fa-check"></i> Approve</button>
+          <button class="btn-dash btn-dash-danger" onclick="rejectClaim('${c.id}')"><i class="fas fa-times"></i> Reject</button>
+        </div>` : ''}
+      </div>
+    `).join('');
+  } catch (err) {
+    container.innerHTML = `<p style="color:#d32f2f">Error: ${err.message}</p>`;
+  }
+}
+
+window.approveClaim = async function(claimId) {
+  if (!confirm('Approve this claim? The claimant will become the owner and the court will be verified.')) return;
+  try {
+    const claim = (await PickleClaims.getAll()).find(c => c.id === claimId);
+    if (!claim) return;
+    const usersSnap = await db.collection('users').where('email', '==', claim.email).get();
+    const userId = usersSnap.docs[0]?.id;
+    if (!userId) {
+      showToast('Claimant must register an account first before approving.', 4000);
+      return;
+    }
+    await PickleClaims.approve(claimId, userId);
+    await PickleNotifications.notifyClaimantApproved(claim.email, claim.name, 'their court');
+    showToast('Claim approved! Owner notified.');
+    loadClaims();
+  } catch (err) {
+    showToast('Error: ' + err.message, 4000);
+  }
+};
+
+window.rejectClaim = async function(claimId) {
+  if (!confirm('Reject this claim?')) return;
+  try {
+    await PickleClaims.reject(claimId);
+    showToast('Claim rejected.');
+    loadClaims();
+  } catch (err) {
+    showToast('Error: ' + err.message, 4000);
+  }
+};

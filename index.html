@@ -493,6 +493,41 @@
     </div>
   </div>
 
+  <!-- ===== CLAIM MODAL ===== -->
+  <div class="modal-overlay" id="claimModal" style="display:none">
+    <div class="modal" style="max-width:400px">
+      <button class="modal-close" id="claimModalClose"><i class="fas fa-times"></i></button>
+      <div class="modal-header">
+        <h2><i class="fas fa-hand-paper"></i> Claim This Court</h2>
+        <p id="claimCourtName">Is this your court? Fill in your details to claim ownership.</p>
+      </div>
+      <div class="modal-body">
+        <form id="claimForm">
+          <div class="form-group">
+            <label>Your Full Name</label>
+            <input type="text" id="claimName" required placeholder="e.g. Juan Dela Cruz"/>
+          </div>
+          <div class="form-group">
+            <label>Email Address</label>
+            <input type="email" id="claimEmail" required placeholder="you@email.com"/>
+          </div>
+          <div class="form-group">
+            <label>Contact Number</label>
+            <input type="text" id="claimContact" placeholder="+63 9XX XXX XXXX"/>
+          </div>
+          <div class="form-group">
+            <label>Message (optional)</label>
+            <textarea id="claimMessage" rows="3" placeholder="Any details to verify your ownership..."></textarea>
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn-cancel" id="claimCancelBtn">Cancel</button>
+            <button type="submit" class="btn-submit"><i class="fas fa-paper-plane"></i> Submit Claim</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <!-- ===== PLANS MODAL ===== -->
   <div class="modal-overlay" id="plansModal" style="display:none">
     <div class="modal" style="max-width:700px">

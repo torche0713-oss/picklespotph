@@ -618,6 +618,12 @@ window.openCourtModal = function(courtId) {
         <button class="share-btn share-copy" onclick="shareCourt('copy', '${encodeURIComponent(court.name)}', '${court.id}')" title="Copy link"><i class="fas fa-link"></i></button>
       </div>
     </div>
+    ${typeof court.id === 'string' && !court.ownerId ? `
+    <div style="margin-top:12px;padding-top:12px;border-top:1px solid #eee;text-align:center">
+      <button class="btn-modal-map" onclick="openClaimModal('${court.id}','${encodeURIComponent(court.name)}')" style="color:var(--accent);border-color:var(--accent)">
+        <i class="fas fa-hand-paper"></i> Is this your court? Claim it!
+      </button>
+    </div>` : ''}
   `;
 
   modal.style.display = 'flex';
@@ -677,6 +683,56 @@ function closeModal(modalId) {
   document.getElementById(modalId).style.display = 'none';
   document.body.style.overflow = '';
 }
+
+// ============================================================
+// CLAIM COURT MODAL
+// ============================================================
+let claimCourtId = null;
+
+window.openClaimModal = function(courtId, courtName) {
+  claimCourtId = courtId;
+  document.getElementById('claimCourtName').textContent = decodeURIComponent(courtName);
+  document.getElementById('claimForm').reset();
+  document.getElementById('claimModal').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+};
+
+document.getElementById('claimForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const court = allCourts.find(c => c.id === claimCourtId);
+  const data = {
+    courtId: claimCourtId,
+    courtName: court?.name || 'Unknown',
+    courtCity: court?.city || '',
+    courtProvince: court?.province || '',
+    courtRegion: court?.region || '',
+    courtType: court?.type || '',
+    courtAccess: court?.access || '',
+    courtRate: court?.rate || '',
+    courtContact: court?.contact || '',
+    courtAddress: court?.address || '',
+    courtHours: court?.hours || '',
+    courtLat: court?.lat || null,
+    courtLng: court?.lng || null,
+    courtCourts: court?.courts || 1,
+    courtAmenities: court?.amenities || [],
+    name: document.getElementById('claimName').value,
+    email: document.getElementById('claimEmail').value,
+    contact: document.getElementById('claimContact').value,
+    message: document.getElementById('claimMessage').value
+  };
+  try {
+    await PickleClaims.add(data);
+    await PickleNotifications.notifyAdminNewClaim(data, data.courtName);
+    closeModal('claimModal');
+    showToast('Claim submitted! The admin will review and notify you.');
+  } catch (err) {
+    showToast('Error: ' + err.message, 4000);
+  }
+});
+
+document.getElementById('claimModalClose').onclick = () => closeModal('claimModal');
+document.getElementById('claimCancelBtn').onclick = () => closeModal('claimModal');
 
 // ============================================================
 // BOOKING MODAL

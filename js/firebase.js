@@ -83,7 +83,8 @@ const COLLECTIONS = {
   CHATS: 'chats',
   MESSAGES: 'messages',
   SUBSCRIBERS: 'subscribers',
-  TOURNAMENTS: 'tournaments'
+  TOURNAMENTS: 'tournaments',
+  CLAIMS: 'claims'
 };
 
 // ============================================================
@@ -637,6 +638,16 @@ const PickleNotifications = {
   async notifyOwnerCourtAdded(ownerEmail, ownerName, courtName) {
     const body = `Hi ${ownerName || 'there'},\n\nThank you for adding "${courtName}" to PickleSpotPH! Your court listing is now live and visible to all players searching for pickleball courts.\n\nYou can manage your listing from your dashboard at any time.\n\nHappy playing!\n- The PickleSpotPH Team`;
     await this.send(ownerEmail, ownerName, `Your court "${courtName}" is now live! 🎉`, body);
+  },
+
+  async notifyAdminNewClaim(claimData, courtName) {
+    const body = `New court claim request!\n\nClaimant: ${claimData.name}\nEmail: ${claimData.email}\nContact: ${claimData.contact || 'N/A'}\nMessage: ${claimData.message || 'N/A'}\nCourt: ${courtName}`;
+    await this.send('torche0713@gmail.com', 'Admin', `Court Claim Request: ${courtName}`, body);
+  },
+
+  async notifyClaimantApproved(email, name, courtName) {
+    const body = `Hi ${name || 'there'},\n\nYour claim for "${courtName}" has been approved! You can now manage this court from your dashboard.\n\nHappy playing!\n- The PickleSpotPH Team`;
+    await this.send(email, name, `Your claim for "${courtName}" is approved! ✅`, body);
   }
 };
 
@@ -673,6 +684,60 @@ const PickleTournaments = {
       const d = new Date(t.date);
       return d >= now || isNaN(d.getTime());
     }).sort((a, b) => new Date(a.date) - new Date(b.date));
+  }
+};
+
+// ============================================================
+// CLAIMS SERVICE
+// ============================================================
+const PickleClaims = {
+  async add(data) {
+    const docRef = await db.collection(COLLECTIONS.CLAIMS).add({
+      ...data,
+      status: 'pending',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    return docRef.id;
+  },
+  async getAll() {
+    const snapshot = await db.collection(COLLECTIONS.CLAIMS).get();
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  },
+  async approve(claimId, userId) {
+    const claim = await db.collection(COLLECTIONS.CLAIMS).doc(claimId).get();
+    const data = claim.data();
+    if (data.courtId) {
+      if (isNaN(data.courtId)) {
+        await db.collection(COLLECTIONS.COURTS).doc(data.courtId).update({ ownerId: userId, verified: true });
+      } else {
+        await db.collection(COLLECTIONS.COURTS).add({
+          name: data.courtName || 'Claimed Court',
+          city: data.courtCity || '',
+          province: data.courtProvince || '',
+          region: data.courtRegion || '',
+          type: data.courtType || '',
+          access: data.courtAccess || '',
+          rate: data.courtRate || '',
+          contact: data.courtContact || '',
+          address: data.courtAddress || '',
+          hours: data.courtHours || '',
+          lat: data.courtLat || null,
+          lng: data.courtLng || null,
+          courts: data.courtCourts || 1,
+          amenities: data.courtAmenities || [],
+          ownerId: userId,
+          verified: true,
+          approved: true,
+          featured: false,
+          photos: [],
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+      }
+    }
+    await db.collection(COLLECTIONS.CLAIMS).doc(claimId).update({ status: 'approved' });
+  },
+  async reject(claimId) {
+    await db.collection(COLLECTIONS.CLAIMS).doc(claimId).update({ status: 'rejected' });
   }
 };
 
