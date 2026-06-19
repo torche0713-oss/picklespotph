@@ -292,6 +292,17 @@ async function deleteCourt(courtId) {
   }
 }
 
+async function adminDeleteCourt(courtId) {
+  if (!confirm('Delete this court permanently?')) return;
+  try {
+    await PickleCourts.delete(courtId);
+    showToast('Court deleted.');
+    loadOwnerCourts();
+  } catch (err) {
+    showToast('Error: ' + err.message, 4000);
+  }
+}
+
 // ============================================================
 // PHOTO MANAGER
 // ============================================================
@@ -828,6 +839,8 @@ async function loadOwnerCourts() {
       } catch {}
     }));
 
+    const isAdmin = currentUser?.email === ADMIN_EMAIL;
+
     container.innerHTML = courts.map(court => {
       const owner = ownerCache[court.ownerId] || {};
       return `
@@ -837,6 +850,7 @@ async function loadOwnerCourts() {
               <h3>${court.name} ${court.verified ? '<i class="fas fa-check-circle" style="color:#1565c0" title="Verified"></i>' : ''} ${court.featured ? '<span class="status-badge" style="background:#fff3e0;color:#e65100">★ Featured</span>' : ''}</h3>
               <span style="font-size:12px;color:var(--text-muted)">${court.city}, ${court.region}</span>
             </div>
+            ${isAdmin ? `<button onclick="adminDeleteCourt('${court.id}')" title="Delete this court" style="background:none;border:none;color:#d32f2f;cursor:pointer;font-size:16px;padding:4px 8px"><i class="fas fa-trash"></i></button>` : ''}
           </div>
           <div class="card-body" style="font-size:13px;color:var(--text-muted)">
             <div style="display:flex;gap:16px;flex-wrap:wrap">
