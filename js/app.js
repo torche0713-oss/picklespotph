@@ -89,12 +89,15 @@ async function loadFirestoreCourts() {
   loadRecentlyAdded();
 }
 
-let recentAutoScroll = null;
+let carouselTimer = null;
 
 function loadRecentlyAdded() {
   const section = document.getElementById('recentSection');
-  const scroll = document.getElementById('recentScroll');
-  if (!section || !scroll) return;
+  const track = document.getElementById('recentScroll');
+  const prevBtn = document.getElementById('carouselPrev');
+  const nextBtn = document.getElementById('carouselNext');
+  const dotsEl = document.getElementById('carouselDots');
+  if (!section || !track) return;
 
   if (!allCourts.length) { section.style.display = 'none'; return; }
 
@@ -107,7 +110,7 @@ function loadRecentlyAdded() {
   const recent = sorted.slice(0, 10);
   const isStatic = c => typeof c.id === 'number';
 
-  scroll.innerHTML = recent.map(c => `
+  track.innerHTML = recent.map(c => `
     <div class="recent-card" onclick="openCourtModal('${c.id}')">
       <div class="rc-type">${c.type} · ${c.access}</div>
       <div class="rc-name">${c.name}</div>
@@ -122,20 +125,77 @@ function loadRecentlyAdded() {
 
   section.style.display = 'block';
 
-  if (recentAutoScroll) clearInterval(recentAutoScroll);
-  const startAutoScroll = () => {
-    const max = scroll.scrollWidth - scroll.clientWidth;
-    if (max <= 0) return;
-    recentAutoScroll = setInterval(() => {
-      const m = scroll.scrollWidth - scroll.clientWidth;
-      if (m <= 0) return;
-      if (scroll.scrollLeft >= m - 2) { scroll.scrollLeft = 0; }
-      else { scroll.scrollLeft += 1; }
-    }, 25);
-  };
-  setTimeout(startAutoScroll, 200);
-  scroll.addEventListener('mouseenter', () => { clearInterval(recentAutoScroll); recentAutoScroll = null; });
-  scroll.addEventListener('mouseleave', () => { if (!recentAutoScroll) setTimeout(startAutoScroll, 200); });
+  let currentPage = 0;
+  let totalPages = 0;
+
+  function getCardWidth() {
+    const first = track.querySelector('.recent-card');
+    if (!first) return 240;
+    return first.offsetWidth + 14;
+  }
+
+  function getVisible() {
+    const cw = track.offsetWidth;
+    const gw = getCardWidth();
+    return Math.max(1, Math.floor(cw / gw));
+  }
+
+  function getTotalPages() {
+    const total = track.children.length;
+    const perPage = getVisible();
+    return Math.max(1, Math.ceil(total / perPage));
+  }
+
+  function goToPage(page) {
+    const perPage = getVisible();
+    totalPages = getTotalPages();
+    currentPage = Math.max(0, Math.min(page, totalPages - 1));
+    const scrollTo = currentPage * perPage * getCardWidth();
+    track.scrollTo({ left: scrollTo, behavior: 'smooth' });
+    updateDots();
+  }
+
+  function updateDots() {
+    totalPages = getTotalPages();
+    prevBtn.style.display = totalPages <= 1 ? 'none' : '';
+    nextBtn.style.display = totalPages <= 1 ? 'none' : '';
+    dotsEl.innerHTML = '';
+    if (totalPages <= 1) { dotsEl.style.display = 'none'; return; }
+    dotsEl.style.display = '';
+    for (let i = 0; i < totalPages; i++) {
+      const dot = document.createElement('button');
+      dot.className = 'carousel-dot' + (i === currentPage ? ' active' : '');
+      dot.setAttribute('aria-label', 'Go to page ' + (i + 1));
+      dot.addEventListener('click', () => goToPage(i));
+      dotsEl.appendChild(dot);
+    }
+  }
+
+  prevBtn.addEventListener('click', () => goToPage(currentPage - 1));
+  nextBtn.addEventListener('click', () => goToPage(currentPage + 1));
+
+  window.addEventListener('resize', () => {
+    const maxP = getTotalPages() - 1;
+    if (currentPage > maxP) { goToPage(maxP); }
+    else { updateDots(); }
+  });
+
+  function startAuto() {
+    stopAuto();
+    carouselTimer = setInterval(() => {
+      totalPages = getTotalPages();
+      const next = currentPage + 1;
+      if (next >= totalPages) { goToPage(0); }
+      else { goToPage(next); }
+    }, 4000);
+  }
+
+  function stopAuto() { clearInterval(carouselTimer); }
+
+  updateDots();
+  setTimeout(startAuto, 500);
+  section.addEventListener('mouseenter', stopAuto);
+  section.addEventListener('mouseleave', startAuto);
 }
 
 // ============================================================

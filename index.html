@@ -129,13 +129,18 @@
     </div>
   </section>
 
-  <!-- ===== RECENTLY ADDED ===== -->
+  <!-- ===== RECENTLY ADDED CAROUSEL ===== -->
   <section class="recent-section" id="recentSection" style="display:none">
     <div class="recent-header">
       <h2><i class="fas fa-clock"></i> Recently Added Courts</h2>
       <a href="#" onclick="showView('map');document.getElementById('searchInput')?.focus();return false">View All</a>
     </div>
-    <div class="recent-scroll" id="recentScroll"></div>
+    <div class="carousel-wrapper">
+      <button class="carousel-arrow carousel-prev" id="carouselPrev" aria-label="Previous"><i class="fas fa-chevron-left"></i></button>
+      <div class="carousel-track" id="recentScroll"></div>
+      <button class="carousel-arrow carousel-next" id="carouselNext" aria-label="Next"><i class="fas fa-chevron-right"></i></button>
+    </div>
+    <div class="carousel-dots" id="carouselDots"></div>
   </section>
 
   <!-- ===== MAIN APP ===== -->

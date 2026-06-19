@@ -166,28 +166,65 @@ body {
 .recent-header a:hover {
   text-decoration: underline;
 }
-.recent-scroll {
+.carousel-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.carousel-track {
   display: flex;
   gap: 14px;
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  -webkit-overflow-scrolling: touch;
-  padding-bottom: 8px;
+  overflow: hidden;
+  scroll-behavior: smooth;
+  padding: 4px 0;
+  flex: 1;
 }
-.recent-scroll::-webkit-scrollbar {
-  height: 6px;
+.carousel-arrow {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid #ddd;
+  background: var(--white);
+  color: var(--text);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  transition: var(--transition);
+  z-index: 2;
 }
-.recent-scroll::-webkit-scrollbar-track {
-  background: #f0f0f0;
-  border-radius: 3px;
+.carousel-arrow:hover {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
 }
-.recent-scroll::-webkit-scrollbar-thumb {
-  background: #ccc;
-  border-radius: 3px;
+.carousel-prev { margin-right: 10px; }
+.carousel-next { margin-left: 10px; }
+.carousel-dots {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 14px;
+}
+.carousel-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: none;
+  background: #d0d0d0;
+  cursor: pointer;
+  padding: 0;
+  transition: var(--transition);
+}
+.carousel-dot.active {
+  background: var(--primary);
+  width: 24px;
+  border-radius: 4px;
 }
 .recent-card {
   flex: 0 0 240px;
-  scroll-snap-align: start;
   background: var(--white);
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
