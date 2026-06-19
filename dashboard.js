@@ -1317,7 +1317,8 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
 // Social login
 document.getElementById('googleLoginBtn').addEventListener('click', async () => {
   try {
-    await PickleAuth.signInWithGoogle();
+    const result = await PickleAuth.signInWithGoogle();
+    if (result) closeModal('loginModal');
   } catch (err) {
     showToast('Google sign-in failed: ' + err.message, 4000);
   }
@@ -1325,7 +1326,8 @@ document.getElementById('googleLoginBtn').addEventListener('click', async () => 
 
 document.getElementById('facebookLoginBtn').addEventListener('click', async () => {
   try {
-    await PickleAuth.signInWithFacebook();
+    const result = await PickleAuth.signInWithFacebook();
+    if (result) closeModal('loginModal');
   } catch (err) {
     showToast('Facebook sign-in failed: ' + err.message, 4000);
   }

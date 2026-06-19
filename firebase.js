@@ -114,19 +114,57 @@ const PickleAuth = {
 
   // Sign in with Google
   async signInWithGoogle() {
-    await auth.signInWithRedirect(googleProvider);
+    try {
+      const cred = await auth.signInWithPopup(googleProvider);
+      const doc = await db.collection(COLLECTIONS.USERS).doc(cred.user.uid).get();
+      if (!doc.exists) {
+        await db.collection(COLLECTIONS.USERS).doc(cred.user.uid).set({
+          displayName: cred.user.displayName,
+          email: cred.user.email,
+          role: 'owner',
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+          plan: 'basic'
+        });
+      }
+      return cred.user;
+    } catch (popupErr) {
+      if (popupErr.code === 'auth/popup-blocked' || popupErr.code === 'auth/popup-closed-by-user') {
+        await auth.signInWithRedirect(googleProvider);
+        return;
+      }
+      throw popupErr;
+    }
   },
 
   // Sign in with Facebook
   async signInWithFacebook() {
-    await auth.signInWithRedirect(facebookProvider);
+    try {
+      const cred = await auth.signInWithPopup(facebookProvider);
+      const doc = await db.collection(COLLECTIONS.USERS).doc(cred.user.uid).get();
+      if (!doc.exists) {
+        await db.collection(COLLECTIONS.USERS).doc(cred.user.uid).set({
+          displayName: cred.user.displayName,
+          email: cred.user.email,
+          role: 'owner',
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+          plan: 'basic'
+        });
+      }
+      return cred.user;
+    } catch (popupErr) {
+      if (popupErr.code === 'auth/popup-blocked' || popupErr.code === 'auth/popup-closed-by-user') {
+        await auth.signInWithRedirect(facebookProvider);
+        return;
+      }
+      throw popupErr;
+    }
   },
 
-  // Handle redirect result (call on page load)
+  // Handle redirect result (call on page load to process redirect auth)
   async handleRedirectResult() {
     try {
       const cred = await auth.getRedirectResult();
-      if (cred.user) {
+      if (cred && cred.user) {
         const doc = await db.collection(COLLECTIONS.USERS).doc(cred.user.uid).get();
         if (!doc.exists) {
           await db.collection(COLLECTIONS.USERS).doc(cred.user.uid).set({
@@ -137,8 +175,8 @@ const PickleAuth = {
             plan: 'basic'
           });
         }
+        return cred.user;
       }
-      return cred;
     } catch (err) {
       if (err.code !== 'auth/credential-already-in-use') throw err;
     }
