@@ -18,7 +18,7 @@
   <meta name="twitter:description" content="Find pickleball courts near you across the Philippines. Interactive map, booking inquiries, and community-driven listings."/>
   <link rel="canonical" href="https://picklespotph.site/"/>
   <link rel="sitemap" type="application/xml" href="sitemap.xml"/>
-  <link rel="alternate" type="application/rss+xml" title="PickleSpotPH News &amp; Updates" href="https://picklespotph.site/rss.xml"/>
+  <link rel="alternate" type="application/rss+xml" title="PickleSpotPH News &amp; Updates" href="https://picklespotph.site/api/rss"/>
 
   <script type="application/ld+json">
   {
@@ -128,6 +128,12 @@
       </div>
     </div>
   </section>
+
+  <!-- ===== TOURNAMENT TICKER ===== -->
+  <div class="ticker-wrap" id="tickerWrap" style="display:none">
+    <div class="ticker-label"><i class="fas fa-trophy"></i> Tournaments</div>
+    <div class="ticker-track" id="tickerTrack"></div>
+  </div>
 
   <!-- ===== RECENTLY ADDED CAROUSEL ===== -->
   <section class="recent-section" id="recentSection" style="display:none">
@@ -705,7 +711,7 @@
         <button onclick="window.open('https://twitter.com/intent/tweet?text=Find+pickleball+courts+in+the+Philippines+%F0%9F%8F%93&url=https://picklespotph.site','_blank')" style="width:32px;height:32px;border-radius:50%;border:none;background:#000;color:white;cursor:pointer;font-size:14px;display:inline-flex;align-items:center;justify-content:center" title="Share on X"><i class="fab fa-x-twitter"></i></button>
         <button onclick="window.open('https://wa.me/?text=Find+pickleball+courts+in+the+Philippines+%F0%9F%8F%93+https://picklespotph.site','_blank')" style="width:32px;height:32px;border-radius:50%;border:none;background:#25d366;color:white;cursor:pointer;font-size:14px;display:inline-flex;align-items:center;justify-content:center" title="Share on WhatsApp"><i class="fab fa-whatsapp"></i></button>
         <button onclick="window.open('https://t.me/share/url?url=https://picklespotph.site&text=Find+pickleball+courts+in+the+Philippines+%F0%9F%8F%93','_blank')" style="width:32px;height:32px;border-radius:50%;border:none;background:#0088cc;color:white;cursor:pointer;font-size:14px;display:inline-flex;align-items:center;justify-content:center" title="Share on Telegram"><i class="fab fa-telegram"></i></button>
-        <a href="https://picklespotph.site/rss.xml" target="_blank" style="width:32px;height:32px;border-radius:50%;border:none;background:#ee802f;color:white;cursor:pointer;font-size:14px;display:inline-flex;align-items:center;justify-content:center;text-decoration:none" title="RSS Feed"><i class="fas fa-rss"></i></a>
+        <a href="https://picklespotph.site/api/rss" target="_blank" style="width:32px;height:32px;border-radius:50%;border:none;background:#ee802f;color:white;cursor:pointer;font-size:14px;display:inline-flex;align-items:center;justify-content:center;text-decoration:none" title="RSS Feed"><i class="fas fa-rss"></i></a>
         <button onclick="navigator.clipboard.writeText('https://picklespotph.site').then(()=>{let t=document.getElementById('toast');t.textContent='Link copied!';t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2000)})" style="width:32px;height:32px;border-radius:50%;border:none;background:#757575;color:white;cursor:pointer;font-size:14px;display:inline-flex;align-items:center;justify-content:center" title="Copy link"><i class="fas fa-link"></i></button>
       </div>
       <p class="footer-copy">&copy; 2026 PickleSpotPH &middot; All rights reserved</p>

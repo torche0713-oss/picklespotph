@@ -82,7 +82,8 @@ const COLLECTIONS = {
   PAYMENTS: 'payments',
   CHATS: 'chats',
   MESSAGES: 'messages',
-  SUBSCRIBERS: 'subscribers'
+  SUBSCRIBERS: 'subscribers',
+  TOURNAMENTS: 'tournaments'
 };
 
 // ============================================================
@@ -643,6 +644,37 @@ const PickleNotifications = {
 if (typeof emailjs !== 'undefined' && EMAILJS_CONFIG.PUBLIC_KEY) {
   emailjs.init(EMAILJS_CONFIG.PUBLIC_KEY);
 }
+
+// ============================================================
+// TOURNAMENTS SERVICE
+// ============================================================
+const PickleTournaments = {
+  async add(data) {
+    const docRef = await db.collection(COLLECTIONS.TOURNAMENTS).add({
+      ...data,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    return docRef.id;
+  },
+  async getAll() {
+    const snapshot = await db.collection(COLLECTIONS.TOURNAMENTS).get();
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  },
+  async update(id, data) {
+    await db.collection(COLLECTIONS.TOURNAMENTS).doc(id).update(data);
+  },
+  async delete(id) {
+    await db.collection(COLLECTIONS.TOURNAMENTS).doc(id).delete();
+  },
+  async getUpcoming() {
+    const all = await this.getAll();
+    const now = new Date();
+    return all.filter(t => {
+      const d = new Date(t.date);
+      return d >= now || isNaN(d.getTime());
+    }).sort((a, b) => new Date(a.date) - new Date(b.date));
+  }
+};
 
 // ============================================================
 // HELPER: Check if user is Pro

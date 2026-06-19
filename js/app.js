@@ -96,6 +96,7 @@ async function loadFirestoreCourts() {
     updateStats(allCourts);
   } catch {}
   loadRecentlyAdded();
+  loadTournamentTicker();
 }
 
 let carouselTimer = null;
@@ -208,8 +209,24 @@ function loadRecentlyAdded() {
 }
 
 // ============================================================
-// VIEW MANAGEMENT
+// TOURNAMENT TICKER
 // ============================================================
+async function loadTournamentTicker() {
+  const wrap = document.getElementById('tickerWrap');
+  const track = document.getElementById('tickerTrack');
+  if (!wrap || !track) return;
+  try {
+    if (typeof PickleTournaments === 'undefined') return;
+    const tournaments = await PickleTournaments.getUpcoming();
+    if (!tournaments.length) return;
+    const items = tournaments.map(t => {
+      const d = new Date(t.date).toLocaleDateString('en-PH', { month: 'short', day: 'numeric' });
+      return `<span class="ticker-item"><span class="date">${d}</span> ${t.name} ${t.location ? '· ' + t.location : ''}</span>`;
+    }).join('');
+    track.innerHTML = `<span class="ticker-content">${items}${items}</span>`;
+    wrap.style.display = 'flex';
+  } catch {}
+}
 function showView(view) {
   currentView = view;
 

@@ -51,6 +51,7 @@ function renderDashboard() {
   const isAdmin = currentUser.email === ADMIN_EMAIL;
   document.querySelector('[data-section="bookings"]').style.display = isPro ? 'flex' : 'none';
   document.querySelector('[data-section="owner-courts"]').style.display = isAdmin ? 'flex' : 'none';
+  document.querySelector('[data-section="tournaments"]').style.display = isAdmin ? 'flex' : 'none';
   document.querySelector('[data-section="payments"]').style.display = isAdmin ? 'flex' : 'none';
   document.querySelector('[data-section="admin-analytics"]').style.display = isAdmin ? 'flex' : 'none';
   document.querySelector('[data-section="analytics"]').style.display = isPro ? 'flex' : 'none';
@@ -61,7 +62,7 @@ function renderDashboard() {
 // NAVIGATION
 // ============================================================
 function switchSection(sectionId) {
-  if ((sectionId === 'payments' || sectionId === 'admin-analytics' || sectionId === 'owner-courts') && currentUser.email !== ADMIN_EMAIL) {
+  if ((sectionId === 'payments' || sectionId === 'admin-analytics' || sectionId === 'owner-courts' || sectionId === 'tournaments') && currentUser.email !== ADMIN_EMAIL) {
     showToast('Access denied.');
     return;
   }
@@ -76,6 +77,7 @@ function switchSection(sectionId) {
   if (sectionId === 'payments') loadPayments();
   if (sectionId === 'admin-analytics') loadAdminAnalytics();
   if (sectionId === 'owner-courts') loadOwnerCourts();
+  if (sectionId === 'tournaments') loadTournaments();
   if (sectionId === 'analytics') loadAnalytics();
 }
 
@@ -844,6 +846,138 @@ async function loadOwnerCourts() {
     container.innerHTML = `<p style="color:#d32f2f">Error: ${err.message}</p>`;
   }
 }
+
+// ============================================================
+// TOURNAMENTS
+// ============================================================
+let editingTournamentId = null;
+
+async function loadTournaments() {
+  const container = document.getElementById('tournamentsList');
+  container.innerHTML = '<p style="color:var(--text-muted)">Loading...</p>';
+
+  try {
+    const tournaments = await PickleTournaments.getAll();
+    const now = new Date();
+
+    const formHtml = `
+      <div style="background:var(--white);border-radius:16px;padding:24px;margin-bottom:24px;box-shadow:var(--card-shadow)">
+        <h3 style="margin-bottom:16px;font-size:16px">${editingTournamentId ? 'Edit Tournament' : 'Add Tournament'}</h3>
+        <form id="tournamentForm">
+          <div class="form-row">
+            <div class="form-group" style="flex:2">
+              <label>Tournament Name</label>
+              <input type="text" id="tournName" required/>
+            </div>
+            <div class="form-group" style="flex:1">
+              <label>Date</label>
+              <input type="date" id="tournDate" required/>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group" style="flex:2">
+              <label>Location</label>
+              <input type="text" id="tournLocation" placeholder="City, Venue"/>
+            </div>
+            <div class="form-group" style="flex:1">
+              <label>Link (optional)</label>
+              <input type="url" id="tournLink" placeholder="https://..."/>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Details</label>
+            <textarea id="tournDetails" rows="3" placeholder="Format, prizes, registration info..."></textarea>
+          </div>
+          <div class="form-actions">
+            ${editingTournamentId ? `<button type="button" class="btn-cancel" onclick="cancelEditTournament()">Cancel</button>` : ''}
+            <button type="submit" class="btn-submit"><i class="fas fa-save"></i> ${editingTournamentId ? 'Update' : 'Add'} Tournament</button>
+          </div>
+        </form>
+      </div>
+    `;
+
+    const listHtml = tournaments.length ? tournaments.map(t => {
+      const d = new Date(t.date);
+      const past = d < now;
+      return `
+        <div style="background:var(--white);border-radius:12px;padding:16px 20px;margin-bottom:12px;box-shadow:var(--card-shadow);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;opacity:${past ? 0.5 : 1}">
+          <div>
+            <strong>${t.name}</strong> ${past ? '<span style="color:#999;font-size:11px">(past)</span>' : ''}
+            <div style="font-size:12px;color:var(--text-muted);margin-top:2px">
+              📅 ${d.toLocaleDateString('en-PH', { year: 'numeric', month: 'short', day: 'numeric' })} · 📍 ${t.location || 'N/A'}
+            </div>
+            ${t.details ? `<div style="font-size:12px;color:var(--text-muted);margin-top:2px">${t.details}</div>` : ''}
+            ${t.link ? `<a href="${t.link}" target="_blank" style="font-size:12px;color:var(--primary)">🔗 More info</a>` : ''}
+          </div>
+          <div style="display:flex;gap:8px;flex-shrink:0">
+            <button class="btn-dash btn-dash-primary" onclick="editTournament('${t.id}')"><i class="fas fa-edit"></i></button>
+            <button class="btn-dash btn-dash-danger" onclick="deleteTournament('${t.id}')"><i class="fas fa-trash"></i></button>
+          </div>
+        </div>
+      `;
+    }).join('') : '<div class="empty-state"><i class="fas fa-trophy"></i><h3>No tournaments</h3><p>Add your first tournament above.</p></div>';
+
+    container.innerHTML = formHtml + listHtml;
+
+    document.getElementById('tournamentForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const data = {
+        name: document.getElementById('tournName').value,
+        date: document.getElementById('tournDate').value,
+        location: document.getElementById('tournLocation').value,
+        link: document.getElementById('tournLink').value,
+        details: document.getElementById('tournDetails').value
+      };
+      try {
+        if (editingTournamentId) {
+          await PickleTournaments.update(editingTournamentId, data);
+          showToast('Tournament updated!');
+        } else {
+          await PickleTournaments.add(data);
+          showToast('Tournament added and will appear in RSS feed!');
+        }
+        editingTournamentId = null;
+        loadTournaments();
+      } catch (err) {
+        showToast('Error: ' + err.message, 4000);
+      }
+    });
+
+    if (editingTournamentId) {
+      const t = tournaments.find(x => x.id === editingTournamentId);
+      if (t) {
+        document.getElementById('tournName').value = t.name;
+        document.getElementById('tournDate').value = t.date;
+        document.getElementById('tournLocation').value = t.location || '';
+        document.getElementById('tournLink').value = t.link || '';
+        document.getElementById('tournDetails').value = t.details || '';
+      }
+    }
+  } catch (err) {
+    container.innerHTML = `<p style="color:#d32f2f">Error: ${err.message}</p>`;
+  }
+}
+
+window.editTournament = function(id) {
+  editingTournamentId = id;
+  loadTournaments();
+};
+
+window.cancelEditTournament = function() {
+  editingTournamentId = null;
+  loadTournaments();
+};
+
+window.deleteTournament = async function(id) {
+  if (!confirm('Delete this tournament?')) return;
+  try {
+    await PickleTournaments.delete(id);
+    showToast('Tournament deleted.');
+    loadTournaments();
+  } catch (err) {
+    showToast('Error: ' + err.message, 4000);
+  }
+};
 
 window.verifyPayment = async function(paymentId, userId) {
   if (!confirm('Verify this payment and upgrade the user to Pro?')) return;

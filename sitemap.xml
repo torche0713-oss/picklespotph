@@ -37,7 +37,7 @@
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://picklespotph.site/rss.xml</loc>
+    <loc>https://picklespotph.site/api/rss</loc>
     <lastmod>2026-06-18</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.6</priority>

@@ -157,6 +157,51 @@ body {
   max-width: 540px;
   margin: 0 auto 28px;
 }
+
+/* Tournament Ticker */
+.ticker-wrap {
+  display: flex;
+  align-items: center;
+  background: #1b5e20;
+  color: #fff;
+  overflow: hidden;
+  position: relative;
+  z-index: 1;
+}
+.ticker-label {
+  flex-shrink: 0;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 700;
+  background: rgba(255,255,255,0.15);
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.ticker-track {
+  flex: 1;
+  overflow: hidden;
+  white-space: nowrap;
+  padding: 10px 0;
+}
+.ticker-content {
+  display: inline-block;
+  animation: tickerScroll 30s linear infinite;
+  font-size: 14px;
+}
+.ticker-item {
+  display: inline-block;
+  margin-right: 60px;
+}
+.ticker-item .date {
+  font-weight: 600;
+  margin-right: 4px;
+}
+@keyframes tickerScroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
 .recent-section {
   max-width: 1200px;
   margin: -20px auto 0;

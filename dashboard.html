@@ -6,7 +6,7 @@
   <title>Owner Dashboard - PickleSpotPH</title>
   <meta name="description" content="Manage your pickleball court listings on PickleSpotPH"/>
   <meta name="google-site-verification" content="mLVVSeBUGWWNqiD_LwNbWgDR7_D8OyLzviWek_wEeT8"/>
-  <link rel="alternate" type="application/rss+xml" title="PickleSpotPH News &amp; Updates" href="https://picklespotph.site/rss.xml"/>
+  <link rel="alternate" type="application/rss+xml" title="PickleSpotPH News &amp; Updates" href="https://picklespotph.site/api/rss"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="css/style.css"/>
@@ -594,6 +594,9 @@
       <button class="dash-nav-item" data-section="owner-courts" style="display:none">
         <i class="fas fa-building"></i> Owner Courts
       </button>
+      <button class="dash-nav-item" data-section="tournaments" style="display:none">
+        <i class="fas fa-trophy"></i> Tournaments
+      </button>
       <button class="dash-nav-item" data-section="admin-analytics" style="display:none">
         <i class="fas fa-chart-pie"></i> Site Analytics
       </button>
@@ -845,6 +848,13 @@
         <h1>Owner-Added Courts</h1>
         <p class="subtitle">All courts submitted by owners</p>
         <div id="ownerCourtsList"></div>
+      </div>
+
+      <!-- Tournaments (Admin) -->
+      <div class="dash-section" id="section-tournaments">
+        <h1>Tournaments</h1>
+        <p class="subtitle">Manage upcoming tournaments (appear in RSS feed)</p>
+        <div id="tournamentsList"></div>
       </div>
 
     </div>
@@ -1099,7 +1109,7 @@
         <button onclick="window.open('https://twitter.com/intent/tweet?text=Find+pickleball+courts+in+the+Philippines+%F0%9F%8F%93&url=https://picklespotph.site','_blank')" style="width:32px;height:32px;border-radius:50%;border:none;background:#000;color:white;cursor:pointer;font-size:14px;display:inline-flex;align-items:center;justify-content:center" title="Share on X"><i class="fab fa-x-twitter"></i></button>
         <button onclick="window.open('https://wa.me/?text=Find+pickleball+courts+in+the+Philippines+%F0%9F%8F%93+https://picklespotph.site','_blank')" style="width:32px;height:32px;border-radius:50%;border:none;background:#25d366;color:white;cursor:pointer;font-size:14px;display:inline-flex;align-items:center;justify-content:center" title="Share on WhatsApp"><i class="fab fa-whatsapp"></i></button>
         <button onclick="window.open('https://t.me/share/url?url=https://picklespotph.site&text=Find+pickleball+courts+in+the+Philippines+%F0%9F%8F%93','_blank')" style="width:32px;height:32px;border-radius:50%;border:none;background:#0088cc;color:white;cursor:pointer;font-size:14px;display:inline-flex;align-items:center;justify-content:center" title="Share on Telegram"><i class="fab fa-telegram"></i></button>
-        <a href="https://picklespotph.site/rss.xml" target="_blank" style="width:32px;height:32px;border-radius:50%;border:none;background:#ee802f;color:white;cursor:pointer;font-size:14px;display:inline-flex;align-items:center;justify-content:center;text-decoration:none" title="RSS Feed"><i class="fas fa-rss"></i></a>
+        <a href="https://picklespotph.site/api/rss" target="_blank" style="width:32px;height:32px;border-radius:50%;border:none;background:#ee802f;color:white;cursor:pointer;font-size:14px;display:inline-flex;align-items:center;justify-content:center;text-decoration:none" title="RSS Feed"><i class="fas fa-rss"></i></a>
         <button onclick="navigator.clipboard.writeText('https://picklespotph.site').then(()=>{let t=document.getElementById('dashToast');t.textContent='Link copied!';t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2000)})" style="width:32px;height:32px;border-radius:50%;border:none;background:#757575;color:white;cursor:pointer;font-size:14px;display:inline-flex;align-items:center;justify-content:center" title="Copy link"><i class="fas fa-link"></i></button>
       </div>
       <p class="footer-copy">&copy; 2026 PickleSpotPH &middot; All rights reserved</p>
