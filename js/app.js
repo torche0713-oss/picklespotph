@@ -123,24 +123,19 @@ function loadRecentlyAdded() {
   section.style.display = 'block';
 
   if (recentAutoScroll) clearInterval(recentAutoScroll);
-  recentAutoScroll = setInterval(() => {
-    const maxScroll = scroll.scrollWidth - scroll.clientWidth;
-    if (maxScroll <= 0) return;
-    if (scroll.scrollLeft >= maxScroll - 2) {
-      scroll.scrollLeft = 0;
-    } else {
-      scroll.scrollLeft += 1;
-    }
-  }, 30);
-  scroll.addEventListener('mouseenter', () => clearInterval(recentAutoScroll));
-  scroll.addEventListener('mouseleave', () => {
+  const startAutoScroll = () => {
+    const max = scroll.scrollWidth - scroll.clientWidth;
+    if (max <= 0) return;
     recentAutoScroll = setInterval(() => {
-      const max = scroll.scrollWidth - scroll.clientWidth;
-      if (max <= 0) return;
-      if (scroll.scrollLeft >= max - 2) { scroll.scrollLeft = 0; }
+      const m = scroll.scrollWidth - scroll.clientWidth;
+      if (m <= 0) return;
+      if (scroll.scrollLeft >= m - 2) { scroll.scrollLeft = 0; }
       else { scroll.scrollLeft += 1; }
-    }, 30);
-  });
+    }, 25);
+  };
+  setTimeout(startAutoScroll, 200);
+  scroll.addEventListener('mouseenter', () => { clearInterval(recentAutoScroll); recentAutoScroll = null; });
+  scroll.addEventListener('mouseleave', () => { if (!recentAutoScroll) setTimeout(startAutoScroll, 200); });
 }
 
 // ============================================================
