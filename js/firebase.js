@@ -114,29 +114,19 @@ const PickleAuth = {
 
   // Sign in with Google
   async signInWithGoogle() {
-    await auth.signInWithRedirect(googleProvider);
-  },
-
-  // Handle redirect result (call this on page load)
-  async handleRedirectResult() {
-    try {
-      const cred = await auth.getRedirectResult();
-      if (cred.user) {
-        const doc = await db.collection(COLLECTIONS.USERS).doc(cred.user.uid).get();
-        if (!doc.exists) {
-          await db.collection(COLLECTIONS.USERS).doc(cred.user.uid).set({
-            displayName: cred.user.displayName,
-            email: cred.user.email,
-            role: 'owner',
-            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-            plan: 'basic'
-          });
-        }
-      }
-      return cred;
-    } catch (err) {
-      if (err.code !== 'auth/credential-already-in-use') throw err;
+    const cred = await auth.signInWithPopup(googleProvider);
+    // Create user doc if first time
+    const doc = await db.collection(COLLECTIONS.USERS).doc(cred.user.uid).get();
+    if (!doc.exists) {
+      await db.collection(COLLECTIONS.USERS).doc(cred.user.uid).set({
+        displayName: cred.user.displayName,
+        email: cred.user.email,
+        role: 'owner',
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        plan: 'basic'
+      });
     }
+    return cred.user;
   },
 
   // Sign in with Facebook

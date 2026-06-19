@@ -1315,7 +1315,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
 document.getElementById('googleLoginBtn').addEventListener('click', async () => {
   try {
     await PickleAuth.signInWithGoogle();
-    // Page will redirect — this won't execute
+    closeModal('loginModal');
   } catch (err) {
     showToast('Google sign-in failed: ' + err.message, 4000);
   }
