@@ -44,15 +44,16 @@ function renderDashboard() {
   }
 
   loadMyCourts();
-  loadBookings();
   loadReviews();
   initChat();
 
+  const isPro = userProfile?.plan === 'pro';
   const isAdmin = currentUser.email === ADMIN_EMAIL;
+  document.querySelector('[data-section="bookings"]').style.display = isPro ? 'flex' : 'none';
   document.querySelector('[data-section="payments"]').style.display = isAdmin ? 'flex' : 'none';
   document.querySelector('[data-section="admin-analytics"]').style.display = isAdmin ? 'flex' : 'none';
-  // Show analytics only for Pro users
-  document.querySelector('[data-section="analytics"]').style.display = userProfile?.plan === 'pro' ? 'flex' : 'none';
+  document.querySelector('[data-section="analytics"]').style.display = isPro ? 'flex' : 'none';
+  if (isPro) loadBookings();
 }
 
 // ============================================================

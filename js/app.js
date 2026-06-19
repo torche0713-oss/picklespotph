@@ -76,8 +76,17 @@ async function loadFirestoreCourts() {
     if (typeof PickleCourts === 'undefined') return;
     const firestoreCourts = await PickleCourts.getAll();
     if (!firestoreCourts.length) return;
+    const ownerIds = [...new Set(firestoreCourts.map(c => c.ownerId).filter(Boolean))];
+    const ownerPlans = {};
+    await Promise.all(ownerIds.map(async uid => {
+      try {
+        const prof = await PickleAuth.getUserProfile(uid);
+        if (prof) ownerPlans[uid] = prof.plan;
+      } catch {}
+    }));
     for (const fc of firestoreCourts) {
       if (!allCourts.find(c => c.id === fc.id)) {
+        fc.ownerPlan = ownerPlans[fc.ownerId] || 'basic';
         allCourts.push(fc);
       }
     }
@@ -573,9 +582,10 @@ window.openCourtModal = function(courtId) {
       ` : ''}
     </div>
     <div style="display:flex;gap:8px;margin-top:8px">
+      ${court.ownerPlan === 'pro' ? `
       <button class="btn-submit" style="flex:1" onclick="openBookingModal('${court.id}')">
         <i class="fas fa-calendar-check"></i> Book / Inquire
-      </button>
+      </button>` : ''}
       <button class="btn-submit" style="flex:1;background:var(--accent)" onclick="openReviewModal('${court.id}')">
         <i class="fas fa-star"></i> Write Review
       </button>
