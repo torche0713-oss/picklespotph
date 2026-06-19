@@ -479,8 +479,15 @@
 
     document.getElementById('googleSignInBtn').onclick = () => {
       const provider = new firebase.auth.GoogleAuthProvider();
-      auth.signInWithPopup(provider).catch(err => log('error', 'Sign in failed: ' + err.message));
+      auth.signInWithRedirect(provider);
     };
+
+    // Handle redirect result
+    auth.getRedirectResult().catch(err => {
+      if (err.code !== 'auth/credential-already-in-use') {
+        log('error', 'Sign in failed: ' + err.message);
+      }
+    });
 
     document.getElementById('previewBtn').onclick = () => {
       let text = '=== COURTS TO IMPORT (' + COURTS_DATA.length + ') ===\n\n';
