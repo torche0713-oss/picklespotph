@@ -14,6 +14,9 @@ let addCourtMapInitialized = false;
 // INIT
 // ============================================================
 document.addEventListener('DOMContentLoaded', () => {
+  // Handle redirect auth result (Google/Facebook sign-in)
+  PickleAuth.handleRedirectResult().catch(() => {});
+
   PickleAuth.onAuthChanged(async (user) => {
     if (user) {
       currentUser = user;
@@ -1315,7 +1318,6 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
 document.getElementById('googleLoginBtn').addEventListener('click', async () => {
   try {
     await PickleAuth.signInWithGoogle();
-    closeModal('loginModal');
   } catch (err) {
     showToast('Google sign-in failed: ' + err.message, 4000);
   }
@@ -1324,7 +1326,6 @@ document.getElementById('googleLoginBtn').addEventListener('click', async () => 
 document.getElementById('facebookLoginBtn').addEventListener('click', async () => {
   try {
     await PickleAuth.signInWithFacebook();
-    closeModal('loginModal');
   } catch (err) {
     showToast('Facebook sign-in failed: ' + err.message, 4000);
   }
