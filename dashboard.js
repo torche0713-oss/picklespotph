@@ -44,19 +44,27 @@ function renderDashboard() {
   }
 
   loadMyCourts();
-  loadBookings();
   loadReviews();
   initChat();
 
+  const isPro = userProfile?.plan === 'pro';
   const isAdmin = currentUser.email === ADMIN_EMAIL;
+  document.querySelector('[data-section="bookings"]').style.display = isPro ? 'flex' : 'none';
+  document.querySelector('[data-section="owner-courts"]').style.display = isAdmin ? 'flex' : 'none';
+  document.querySelector('[data-section="tournaments"]').style.display = isAdmin ? 'flex' : 'none';
+  document.querySelector('[data-section="claims"]').style.display = isAdmin ? 'flex' : 'none';
+  document.getElementById('dashUnclaimedGroup').style.display = isAdmin ? 'block' : 'none';
   document.querySelector('[data-section="payments"]').style.display = isAdmin ? 'flex' : 'none';
+  document.querySelector('[data-section="admin-analytics"]').style.display = isAdmin ? 'flex' : 'none';
+  document.querySelector('[data-section="analytics"]').style.display = isPro ? 'flex' : 'none';
+  if (isPro) loadBookings();
 }
 
 // ============================================================
 // NAVIGATION
 // ============================================================
 function switchSection(sectionId) {
-  if (sectionId === 'payments' && currentUser.email !== ADMIN_EMAIL) {
+  if ((sectionId === 'payments' || sectionId === 'admin-analytics' || sectionId === 'owner-courts' || sectionId === 'tournaments' || sectionId === 'claims') && currentUser.email !== ADMIN_EMAIL) {
     showToast('Access denied.');
     return;
   }
@@ -66,8 +74,14 @@ function switchSection(sectionId) {
   document.querySelector(`[data-section="${sectionId}"]`).classList.add('active');
 
   if (sectionId === 'availability') loadAvailabilitySection();
+  if (sectionId === 'mailing') loadMailingList();
   if (sectionId === 'add-court') initAddCourtMap();
   if (sectionId === 'payments') loadPayments();
+  if (sectionId === 'admin-analytics') loadAdminAnalytics();
+  if (sectionId === 'owner-courts') loadOwnerCourts();
+  if (sectionId === 'tournaments') loadTournaments();
+  if (sectionId === 'claims') loadClaims();
+  if (sectionId === 'analytics') loadAnalytics();
 }
 
 // ============================================================
@@ -150,8 +164,9 @@ document.getElementById('dashAddCourtForm').addEventListener('submit', async (e)
   const courtData = {
     name: document.getElementById('dashCourtName').value,
     city: document.getElementById('dashCourtCity').value,
-    province: document.getElementById('dashCourtRegion').value,
+    province: document.getElementById('dashCourtProvince').value,
     region: document.getElementById('dashCourtRegion').value,
+    featured: userProfile?.plan === 'pro',
     type: document.getElementById('dashCourtType').value,
     access: document.getElementById('dashCourtAccess').value,
     rate: document.getElementById('dashCourtRate').value,
@@ -164,12 +179,22 @@ document.getElementById('dashAddCourtForm').addEventListener('submit', async (e)
     amenities
   };
 
+  const isUnclaimed = document.getElementById('dashUnclaimedCheck').checked;
+
   try {
-    await PickleCourts.add(courtData, currentUser.uid);
-    showToast('Court added successfully! It will appear after approval.');
+    const ownerId = isUnclaimed ? null : currentUser.uid;
+    await PickleCourts.add(courtData, ownerId);
+    showToast(isUnclaimed ? 'Court listed as unclaimed — owners can now claim it!' : 'Thank you! Your court has been added and is now live! 🎉');
     e.target.reset();
+    document.getElementById('dashCourtProvinceGroup').style.display = 'none';
+    document.getElementById('dashCourtCityGroup').style.display = 'none';
+    document.getElementById('dashUnclaimedCheck').checked = false;
     loadMyCourts();
     switchSection('my-courts');
+    try {
+      if (!isUnclaimed) await PickleNotifications.notifyOwnerCourtAdded(currentUser.email, userProfile?.displayName, courtData.name);
+      await PickleNotifications.notifyAdminNewCourt(courtData, userProfile);
+    } catch {}
   } catch (err) {
     showToast('Error: ' + err.message, 4000);
   }
@@ -184,8 +209,34 @@ async function openEditCourt(courtId) {
 
   editingCourtId = courtId;
   document.getElementById('editCourtName').value = court.name;
-  document.getElementById('editCourtCity').value = court.city;
-  document.getElementById('editCourtRegion').value = court.region;
+  document.getElementById('editCourtRegion').value = court.region || '';
+
+  // Cascade: populate province + city selects
+  const region = court.region || '';
+  const provGroup = document.getElementById('editCourtProvinceGroup');
+  const provSelect = document.getElementById('editCourtProvince');
+  const cityGroup = document.getElementById('editCourtCityGroup');
+  const citySelect = document.getElementById('editCourtCity');
+
+  if (region && PH_LOCATIONS[region]) {
+    const provinces = Object.keys(PH_LOCATIONS[region]).sort();
+    provSelect.innerHTML = '<option value="">Select Province</option>' + provinces.map(p => `<option value="${p}">${p}</option>`).join('');
+    provSelect.value = court.province || '';
+    provGroup.style.display = 'block';
+
+    if (court.province && PH_LOCATIONS[region][court.province]) {
+      const cities = [...PH_LOCATIONS[region][court.province]].sort();
+      citySelect.innerHTML = '<option value="">Select City</option>' + cities.map(c => `<option value="${c}">${c}</option>`).join('');
+      citySelect.value = court.city || '';
+      cityGroup.style.display = 'block';
+    } else {
+      cityGroup.style.display = 'none';
+    }
+  } else {
+    provGroup.style.display = 'none';
+    cityGroup.style.display = 'none';
+  }
+
   document.getElementById('editCourtType').value = court.type;
   document.getElementById('editCourtAccess').value = court.access;
   document.getElementById('editCourtRate').value = court.rate || '';
@@ -204,6 +255,7 @@ document.getElementById('editCourtForm').addEventListener('submit', async (e) =>
     await PickleCourts.update(editingCourtId, {
       name: document.getElementById('editCourtName').value,
       city: document.getElementById('editCourtCity').value,
+      province: document.getElementById('editCourtProvince').value,
       region: document.getElementById('editCourtRegion').value,
       type: document.getElementById('editCourtType').value,
       access: document.getElementById('editCourtAccess').value,
@@ -375,6 +427,24 @@ async function loadBookings() {
   }
 }
 
+function toMinutes(s) {
+  const [h, m] = s.split(':').map(Number);
+  return h * 60 + m;
+}
+function timeOverlap(timeA, timeB) {
+  const parse = (t) => {
+    if (t.includes('-')) {
+      const [s, e] = t.split('-');
+      return [toMinutes(s), toMinutes(e)];
+    }
+    const m = toMinutes(t);
+    return [m, m + 60];
+  };
+  const [aStart, aEnd] = parse(timeA);
+  const [bStart, bEnd] = parse(timeB);
+  return aStart < bEnd && bStart < aEnd;
+}
+
 async function updateBooking(bookingId, status) {
   // If confirming, check for double-booking first
   if (status === 'confirmed') {
@@ -386,10 +456,11 @@ async function updateBooking(bookingId, status) {
         b.status === 'confirmed' &&
         b.courtId === thisBooking.courtId &&
         b.date === thisBooking.date &&
-        b.time === thisBooking.time
+        b.time && thisBooking.time &&
+        timeOverlap(b.time, thisBooking.time)
       );
       if (conflict) {
-        showToast('⚠️ Conflict! Another confirmed booking already exists for this date/time.', 5000);
+        showToast('⚠️ Conflict! Another confirmed booking overlaps this time slot.', 5000);
         return;
       }
     }
@@ -398,6 +469,38 @@ async function updateBooking(bookingId, status) {
   try {
     await PickleBookings.updateStatus(bookingId, status);
     showToast(`Booking ${status}!`);
+
+    // Send chat notification to the customer
+    try {
+      const booking = await PickleBookings.getById(bookingId);
+      let courtName = 'Court';
+      let court = null;
+      try {
+        court = await PickleCourts.getById(booking.courtId);
+        if (court) courtName = court.name;
+      } catch {}
+      if (booking && booking.chatId) {
+        const emoji = status === 'confirmed' ? '✅' : status === 'rejected' ? '❌' : '⏳';
+        const label = status.charAt(0).toUpperCase() + status.slice(1);
+        let msg = `${emoji} Your booking at ${courtName} has been ${label}.`;
+        if (status === 'confirmed' && booking.date && booking.time) {
+          const calUrl = generateCalendarUrl(`Pickleball at ${courtName}`, booking.date, booking.time, court?.address || '');
+          msg += `\n\n📅 Add to Calendar: ${calUrl}`;
+        }
+        await PickleChat.sendMessage(booking.chatId, 'system', courtName, msg);
+      }
+      // Email notification to customer
+      if (booking && booking.email) {
+        await PickleNotifications.notifyCustomerBookingStatus(booking.email, booking.name, courtName, status, booking.date, booking.time, court?.address || '');
+      }
+      // Email notification to owner with calendar link when confirmed
+      if (status === 'confirmed' && currentUser && currentUser.email) {
+        const ownerBody = `✅ Booking confirmed at ${courtName}!\n\nCustomer: ${booking.name}\nContact: ${booking.contact}\nDate: ${booking.date}\nTime: ${booking.time}\nPlayers: ${booking.players}`;
+        const ownerCalUrl = generateCalendarUrl(`Pickleball at ${courtName}`, booking.date, booking.time, court?.address || '');
+        await PickleNotifications.send(currentUser.email, currentUser.displayName || 'Owner', `Booking Confirmed: ${courtName}`, ownerBody + `\n\nAdd to Google Calendar: ${ownerCalUrl}`);
+      }
+    } catch {}
+
     loadBookings();
   } catch (err) {
     showToast('Error: ' + err.message, 4000);
@@ -453,6 +556,70 @@ async function loadReviews() {
         </div>
       `;
     }
+    container.innerHTML = html;
+  } catch (err) {
+    container.innerHTML = `<p style="color:#d32f2f">Error: ${err.message}</p>`;
+  }
+}
+
+// ============================================================
+// ANALYTICS (Pro only)
+// ============================================================
+async function loadAnalytics() {
+  const container = document.getElementById('analyticsContainer');
+  container.innerHTML = '<p style="color:var(--text-muted)">Loading...</p>';
+
+  try {
+    const courts = await PickleCourts.getByOwner(currentUser.uid);
+    if (courts.length === 0) {
+      container.innerHTML = '<div class="empty-state"><i class="fas fa-chart-bar"></i><h3>No courts yet</h3><p>Add a court to start tracking analytics.</p></div>';
+      return;
+    }
+
+    let totalViews = 0;
+    let totalBookings = 0;
+    let html = '';
+
+    for (const court of courts) {
+      const views = await PickleAnalytics.getViews(court.id);
+      const bookings = await PickleAnalytics.getBookingCount(court.id);
+      totalViews += views;
+      totalBookings += bookings;
+
+      html += `
+        <div class="analytics-card">
+          <div class="analytics-card-header">
+            <strong>${court.name}</strong>
+            <span class="tag" style="background:#e3f2fd;color:#1565c0">${court.city}</span>
+          </div>
+          <div class="analytics-stats">
+            <div class="analytics-stat">
+              <div class="analytics-number">${views}</div>
+              <div class="analytics-label"><i class="fas fa-eye"></i> Views</div>
+            </div>
+            <div class="analytics-stat">
+              <div class="analytics-number">${bookings}</div>
+              <div class="analytics-label"><i class="fas fa-calendar-check"></i> Inquiries</div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    html = `
+      <div class="analytics-totals">
+        <div class="analytics-total-card">
+          <div class="analytics-number">${totalViews}</div>
+          <div class="analytics-label">Total Views</div>
+        </div>
+        <div class="analytics-total-card">
+          <div class="analytics-number">${totalBookings}</div>
+          <div class="analytics-label">Total Inquiries</div>
+        </div>
+      </div>
+      ${html}
+    `;
+
     container.innerHTML = html;
   } catch (err) {
     container.innerHTML = `<p style="color:#d32f2f">Error: ${err.message}</p>`;
@@ -542,6 +709,282 @@ async function loadPayments() {
     container.innerHTML = `<p style="color:#d32f2f">Error: ${err.message}</p>`;
   }
 }
+
+// ============================================================
+// ADMIN SITE ANALYTICS
+// ============================================================
+async function loadAdminAnalytics() {
+  const container = document.getElementById('adminAnalyticsContainer');
+  container.innerHTML = '<p style="color:var(--text-muted)">Loading...</p>';
+
+  try {
+    const [usersSnap, courts, bookingsSnap, subscribers] = await Promise.all([
+      db.collection('users').get(),
+      PickleCourts.getAll(),
+      db.collection('bookings').get(),
+      PickleMailing.getAll()
+    ]);
+
+    const totalUsers = usersSnap.docs.length;
+    const totalCourts = courts.length;
+    const totalBookings = bookingsSnap.docs.length;
+    const totalSubscribers = subscribers.length;
+    const totalViews = courts.reduce((sum, c) => sum + (c.views || 0), 0);
+
+    let proCount = 0, basicCount = 0;
+    usersSnap.docs.forEach(doc => {
+      const d = doc.data();
+      if (d.plan === 'pro') proCount++;
+      else basicCount++;
+    });
+    const proPct = totalUsers ? Math.round((proCount / totalUsers) * 100) : 0;
+
+    const recentUsers = usersSnap.docs
+      .map(doc => ({ id: doc.id, ...doc.data() }))
+      .filter(u => u.createdAt)
+      .sort((a, b) => (b.createdAt?.toDate?.() || 0) - (a.createdAt?.toDate?.() || 0))
+      .slice(0, 10);
+
+    container.innerHTML = `
+      <div class="admin-grid">
+        <div class="admin-card">
+          <div class="admin-icon"><i class="fas fa-map-pin"></i></div>
+          <div class="admin-number">${totalCourts}</div>
+          <div class="admin-label">Total Courts</div>
+        </div>
+        <div class="admin-card">
+          <div class="admin-icon"><i class="fas fa-users"></i></div>
+          <div class="admin-number">${totalUsers}</div>
+          <div class="admin-label">Registered Owners</div>
+        </div>
+        <div class="admin-card">
+          <div class="admin-icon"><i class="fas fa-calendar-check"></i></div>
+          <div class="admin-number">${totalBookings}</div>
+          <div class="admin-label">Total Bookings</div>
+        </div>
+        <div class="admin-card accent">
+          <div class="admin-icon"><i class="fas fa-eye"></i></div>
+          <div class="admin-number">${totalViews}</div>
+          <div class="admin-label">Total Page Views</div>
+        </div>
+        <div class="admin-card">
+          <div class="admin-icon"><i class="fas fa-mail-bulk"></i></div>
+          <div class="admin-number">${totalSubscribers}</div>
+          <div class="admin-label">Mailing List</div>
+        </div>
+      </div>
+
+      <div class="admin-breakdown">
+        <h3>Plan Breakdown</h3>
+        <div class="bar">
+          <div class="bar-pro" style="flex:${proCount}"></div>
+          <div class="bar-basic" style="flex:${basicCount || 1}"></div>
+        </div>
+        <div class="bar-label">
+          <span><strong>Pro:</strong> ${proCount} (${proPct}%)</span>
+          <span><strong>Basic:</strong> ${basicCount} (${100 - proPct}%)</span>
+        </div>
+      </div>
+
+      ${recentUsers.length ? `
+      <div class="admin-breakdown">
+        <h3>Recent Registrations</h3>
+        ${recentUsers.map(u => `
+          <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #f5f5f5;font-size:13px">
+            <span>${u.displayName || 'Unknown'} <span style="color:var(--text-muted);font-size:11px">${u.email || ''}</span></span>
+            <span style="color:var(--text-muted);font-size:11px">${u.createdAt?.toDate?.() ? u.createdAt.toDate().toLocaleDateString() : ''} · ${u.plan === 'pro' ? '⭐ Pro' : 'Basic'}</span>
+          </div>
+        `).join('')}
+      </div>` : ''}
+    `;
+  } catch (err) {
+    container.innerHTML = `<p style="color:#d32f2f">Error: ${err.message}</p>`;
+  }
+}
+
+// ============================================================
+// OWNER COURTS (Admin View)
+// ============================================================
+async function loadOwnerCourts() {
+  const container = document.getElementById('ownerCourtsList');
+  container.innerHTML = '<p style="color:var(--text-muted)">Loading...</p>';
+
+  try {
+    const courts = await PickleCourts.getAll();
+    if (courts.length === 0) {
+      container.innerHTML = '<div class="empty-state"><i class="fas fa-map-pin"></i><h3>No courts added yet</h3></div>';
+      return;
+    }
+
+    const ownerIds = [...new Set(courts.map(c => c.ownerId).filter(Boolean))];
+    const ownerCache = {};
+    await Promise.all(ownerIds.map(async uid => {
+      try {
+        const prof = await PickleAuth.getUserProfile(uid);
+        if (prof) ownerCache[uid] = prof;
+      } catch {}
+    }));
+
+    container.innerHTML = courts.map(court => {
+      const owner = ownerCache[court.ownerId] || {};
+      return `
+        <div class="court-card-owner">
+          <div class="card-header">
+            <div>
+              <h3>${court.name} ${court.verified ? '<i class="fas fa-check-circle" style="color:#1565c0" title="Verified"></i>' : ''} ${court.featured ? '<span class="status-badge" style="background:#fff3e0;color:#e65100">★ Featured</span>' : ''}</h3>
+              <span style="font-size:12px;color:var(--text-muted)">${court.city}, ${court.region}</span>
+            </div>
+          </div>
+          <div class="card-body" style="font-size:13px;color:var(--text-muted)">
+            <div style="display:flex;gap:16px;flex-wrap:wrap">
+              <span>🏓 ${court.courts || 1} court(s)</span>
+              <span>📋 ${court.type}</span>
+              <span>🔑 ${court.access}</span>
+              ${court.rate ? `<span>💰 ${court.rate}</span>` : ''}
+            </div>
+            <div style="margin-top:8px;padding:8px;background:#f9f9f9;border-radius:6px;font-size:12px">
+              <strong>Owner:</strong> ${owner.displayName || 'Unknown'} · ${owner.email || ''} · ${owner.plan === 'pro' ? '⭐ Pro' : 'Basic'}
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
+  } catch (err) {
+    container.innerHTML = `<p style="color:#d32f2f">Error: ${err.message}</p>`;
+  }
+}
+
+// ============================================================
+// TOURNAMENTS
+// ============================================================
+let editingTournamentId = null;
+
+async function loadTournaments() {
+  const container = document.getElementById('tournamentsList');
+  container.innerHTML = '<p style="color:var(--text-muted)">Loading...</p>';
+
+  try {
+    const tournaments = await PickleTournaments.getAll();
+    const now = new Date();
+
+    const formHtml = `
+      <div style="background:var(--white);border-radius:16px;padding:24px;margin-bottom:24px;box-shadow:var(--card-shadow)">
+        <h3 style="margin-bottom:16px;font-size:16px">${editingTournamentId ? 'Edit Tournament' : 'Add Tournament'}</h3>
+        <form id="tournamentForm">
+          <div class="form-row">
+            <div class="form-group" style="flex:2">
+              <label>Tournament Name</label>
+              <input type="text" id="tournName" required/>
+            </div>
+            <div class="form-group" style="flex:1">
+              <label>Date</label>
+              <input type="date" id="tournDate" required/>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group" style="flex:2">
+              <label>Location</label>
+              <input type="text" id="tournLocation" placeholder="City, Venue"/>
+            </div>
+            <div class="form-group" style="flex:1">
+              <label>Link (optional)</label>
+              <input type="url" id="tournLink" placeholder="https://..."/>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Details</label>
+            <textarea id="tournDetails" rows="3" placeholder="Format, prizes, registration info..."></textarea>
+          </div>
+          <div class="form-actions">
+            ${editingTournamentId ? `<button type="button" class="btn-cancel" onclick="cancelEditTournament()">Cancel</button>` : ''}
+            <button type="submit" class="btn-submit"><i class="fas fa-save"></i> ${editingTournamentId ? 'Update' : 'Add'} Tournament</button>
+          </div>
+        </form>
+      </div>
+    `;
+
+    const listHtml = tournaments.length ? tournaments.map(t => {
+      const d = new Date(t.date);
+      const past = d < now;
+      return `
+        <div style="background:var(--white);border-radius:12px;padding:16px 20px;margin-bottom:12px;box-shadow:var(--card-shadow);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;opacity:${past ? 0.5 : 1}">
+          <div>
+            <strong>${t.name}</strong> ${past ? '<span style="color:#999;font-size:11px">(past)</span>' : ''}
+            <div style="font-size:12px;color:var(--text-muted);margin-top:2px">
+              📅 ${d.toLocaleDateString('en-PH', { year: 'numeric', month: 'short', day: 'numeric' })} · 📍 ${t.location || 'N/A'}
+            </div>
+            ${t.details ? `<div style="font-size:12px;color:var(--text-muted);margin-top:2px">${t.details}</div>` : ''}
+            ${t.link ? `<a href="${t.link}" target="_blank" style="font-size:12px;color:var(--primary)">🔗 More info</a>` : ''}
+          </div>
+          <div style="display:flex;gap:8px;flex-shrink:0">
+            <button class="btn-dash btn-dash-primary" onclick="editTournament('${t.id}')"><i class="fas fa-edit"></i></button>
+            <button class="btn-dash btn-dash-danger" onclick="deleteTournament('${t.id}')"><i class="fas fa-trash"></i></button>
+          </div>
+        </div>
+      `;
+    }).join('') : '<div class="empty-state"><i class="fas fa-trophy"></i><h3>No tournaments</h3><p>Add your first tournament above.</p></div>';
+
+    container.innerHTML = formHtml + listHtml;
+
+    document.getElementById('tournamentForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const data = {
+        name: document.getElementById('tournName').value,
+        date: document.getElementById('tournDate').value,
+        location: document.getElementById('tournLocation').value,
+        link: document.getElementById('tournLink').value,
+        details: document.getElementById('tournDetails').value
+      };
+      try {
+        if (editingTournamentId) {
+          await PickleTournaments.update(editingTournamentId, data);
+          showToast('Tournament updated!');
+        } else {
+          await PickleTournaments.add(data);
+          showToast('Tournament added and will appear in RSS feed!');
+        }
+        editingTournamentId = null;
+        loadTournaments();
+      } catch (err) {
+        showToast('Error: ' + err.message, 4000);
+      }
+    });
+
+    if (editingTournamentId) {
+      const t = tournaments.find(x => x.id === editingTournamentId);
+      if (t) {
+        document.getElementById('tournName').value = t.name;
+        document.getElementById('tournDate').value = t.date;
+        document.getElementById('tournLocation').value = t.location || '';
+        document.getElementById('tournLink').value = t.link || '';
+        document.getElementById('tournDetails').value = t.details || '';
+      }
+    }
+  } catch (err) {
+    container.innerHTML = `<p style="color:#d32f2f">Error: ${err.message}</p>`;
+  }
+}
+
+window.editTournament = function(id) {
+  editingTournamentId = id;
+  loadTournaments();
+};
+
+window.cancelEditTournament = function() {
+  editingTournamentId = null;
+  loadTournaments();
+};
+
+window.deleteTournament = async function(id) {
+  if (!confirm('Delete this tournament?')) return;
+  try {
+    await PickleTournaments.delete(id);
+    showToast('Tournament deleted.');
+    loadTournaments();
+  } catch (err) {
+    showToast('Error: ' + err.message, 4000);
+  }
+};
 
 window.verifyPayment = async function(paymentId, userId) {
   if (!confirm('Verify this payment and upgrade the user to Pro?')) return;
@@ -786,6 +1229,15 @@ async function sendChatMessage() {
       userProfile?.displayName || 'Owner',
       text
     );
+    // Notify customer via email
+    try {
+      if (typeof PickleNotifications !== 'undefined') {
+        const chat = await PickleChat.getById(activeChatId);
+        if (chat && chat.customerEmail) {
+          PickleNotifications.send(chat.customerEmail, chat.customerName, `New Message: ${chat.courtName}`, `You have a new reply from ${chat.courtName}:\n\n"${text}"`);
+        }
+      }
+    } catch {}
   } catch (err) {
     showToast('Error sending message: ' + err.message, 4000);
   }
@@ -824,6 +1276,13 @@ document.getElementById('paymentSubmitBtn').addEventListener('click', async () =
     });
     showToast('Payment submitted! Your Pro account will be verified within 24 hours.');
     closeModal('paymentModal');
+
+    // Notify admin via email
+    try {
+      if (typeof PickleNotifications !== 'undefined') {
+        await PickleNotifications.notifyAdminNewPayment(currentUser.email, currentUser.displayName || 'Owner', { amount: 399, method, reference: ref });
+      }
+    } catch {}
   } catch (err) {
     showToast('Error: ' + err.message, 4000);
   }
@@ -880,7 +1339,7 @@ document.getElementById('registerForm').addEventListener('submit', async (e) => 
   try {
     await PickleAuth.register(email, password, name);
     closeModal('registerModal');
-    showToast('Account created! Welcome to PickleSpot PH!');
+    showToast('Account created! Welcome to PickleSpotPH!');
   } catch (err) {
     showToast('Registration failed: ' + err.message, 4000);
   }
@@ -930,8 +1389,131 @@ function setupEventListeners() {
     sidebar.style.display = sidebar.style.display === 'none' ? 'block' : 'none';
   });
 
+  // Add court province/city cascade
+  document.getElementById('dashCourtRegion').addEventListener('change', populateDashAddCourtProvinces);
+  document.getElementById('dashCourtProvince').addEventListener('change', populateDashAddCourtCities);
+
+  // Edit court province/city cascade
+  document.getElementById('editCourtRegion').addEventListener('change', populateEditCourtProvinces);
+  document.getElementById('editCourtProvince').addEventListener('change', populateEditCourtCities);
+
   setupLogout();
 }
+
+// ============================================================
+// MAILING LIST
+// ============================================================
+async function loadMailingList() {
+  const container = document.getElementById('mailingListContainer');
+  try {
+    const [subscribers, usersSnap] = await Promise.all([
+      PickleMailing.getAll(),
+      db.collection('users').get()
+    ]);
+
+    const proOwners = [];
+    const basicOwners = [];
+    usersSnap.docs.forEach(doc => {
+      const d = doc.data();
+      if (d.plan === 'pro') proOwners.push(d);
+      else basicOwners.push(d);
+    });
+
+    const allEmails = [
+      ...subscribers.map(s => ({ name: s.name, email: s.email, date: s.subscribedAt?.toDate?.(), group: 'Player' })),
+      ...proOwners.map(u => ({ name: u.displayName, email: u.email, date: u.createdAt?.toDate?.(), group: 'Pro Owner' })),
+      ...basicOwners.map(u => ({ name: u.displayName, email: u.email, date: u.createdAt?.toDate?.(), group: 'Basic Owner' }))
+    ];
+
+    if (allEmails.length === 0) {
+      container.innerHTML = '<div class="empty-state"><i class="fas fa-mail-bulk"></i><h3>No contacts yet</h3><p>Emails will appear here when players subscribe or owners register.</p></div>';
+      return;
+    }
+
+    const sections = [
+      { title: 'Players', icon: 'fa-user', data: subscribers.map(s => ({ name: s.name, email: s.email, date: s.subscribedAt?.toDate?.() })) },
+      { title: 'Pro Owners', icon: 'fa-crown', accent: true, data: proOwners.map(u => ({ name: u.displayName, email: u.email, date: u.createdAt?.toDate?.() })) },
+      { title: 'Basic Owners', icon: 'fa-user', data: basicOwners.map(u => ({ name: u.displayName, email: u.email, date: u.createdAt?.toDate?.() })) }
+    ];
+
+    container.innerHTML = sections.map(section => `
+      <div style="background:var(--white);border-radius:var(--radius);box-shadow:var(--card-shadow);overflow:hidden;margin-bottom:20px">
+        <div style="padding:14px 16px;background:${section.accent ? 'var(--accent)' : 'var(--primary)'};color:white;display:flex;justify-content:space-between;align-items:center">
+          <strong><i class="fas ${section.icon}"></i> ${section.title}</strong>
+          <span style="font-size:12px;opacity:0.9">${section.data.length}</span>
+        </div>
+        ${section.data.length === 0 ? '<p style="padding:16px;color:var(--text-muted);font-size:13px">No contacts</p>' : `
+        <table style="width:100%;border-collapse:collapse;font-size:13px">
+          <thead>
+            <tr style="text-align:left;background:#fafafa">
+              <th style="padding:10px 16px">Name</th>
+              <th style="padding:10px 16px">Email</th>
+              <th style="padding:10px 16px">Since</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${section.data.map(d => `
+              <tr style="border-bottom:1px solid #f0f0f0">
+                <td style="padding:9px 16px">${d.name || '—'}</td>
+                <td style="padding:9px 16px">${d.email}</td>
+                <td style="padding:9px 16px;color:var(--text-muted)">${d.date ? d.date.toLocaleDateString() : '—'}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>`}
+      </div>
+    `).join('') + `
+      <p style="font-size:13px;color:var(--text-muted);margin-top:12px">
+        ${allEmails.length} total contacts (${subscribers.length} players · ${proOwners.length} pro · ${basicOwners.length} basic)
+      </p>
+    `;
+  } catch (err) {
+    container.innerHTML = `<p style="color:#d32f2f">Error: ${err.message}</p>`;
+  }
+}
+
+window.exportMailingList = async function() {
+  try {
+    const [subscribers, usersSnap] = await Promise.all([
+      PickleMailing.getAll(),
+      db.collection('users').get()
+    ]);
+
+    const proOwners = [];
+    const basicOwners = [];
+    usersSnap.docs.forEach(doc => {
+      const d = doc.data();
+      if (d.plan === 'pro') proOwners.push(d);
+      else basicOwners.push(d);
+    });
+
+    const allContacts = [
+      ...subscribers.map(s => ({ name: s.name || '', email: s.email, date: s.subscribedAt?.toDate?.(), group: 'Player' })),
+      ...proOwners.map(u => ({ name: u.displayName || '', email: u.email, date: u.createdAt?.toDate?.(), group: 'Pro Owner' })),
+      ...basicOwners.map(u => ({ name: u.displayName || '', email: u.email, date: u.createdAt?.toDate?.(), group: 'Basic Owner' }))
+    ];
+
+    if (allContacts.length === 0) {
+      showToast('No contacts to export.');
+      return;
+    }
+
+    const rows = [['Name', 'Email', 'Group', 'Date']];
+    allContacts.forEach(c => {
+      rows.push([c.name, c.email, c.group, c.date ? c.date.toISOString().split('T')[0] : '']);
+    });
+    const csv = rows.map(r => r.map(v => `"${v}"`).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'mailing-list.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+  } catch (err) {
+    showToast('Error exporting: ' + err.message, 4000);
+  }
+};
 
 // ============================================================
 // HELPERS
@@ -950,6 +1532,84 @@ function showToast(message, duration = 3000) {
 // ============================================================
 // MAP PICKER FOR ADD COURT
 // ============================================================
+function populateDashAddCourtProvinces() {
+  const region = document.getElementById('dashCourtRegion').value;
+  const provGroup = document.getElementById('dashCourtProvinceGroup');
+  const provSelect = document.getElementById('dashCourtProvince');
+  const cityGroup = document.getElementById('dashCourtCityGroup');
+  const citySelect = document.getElementById('dashCourtCity');
+
+  citySelect.value = '';
+  cityGroup.style.display = 'none';
+  provSelect.value = '';
+
+  if (!region) {
+    provGroup.style.display = 'none';
+    return;
+  }
+
+  const provinces = PH_LOCATIONS[region] ? Object.keys(PH_LOCATIONS[region]).sort() : [];
+  provSelect.innerHTML = '<option value="">Select Province</option>' + provinces.map(p => `<option value="${p}">${p}</option>`).join('');
+  provGroup.style.display = 'block';
+}
+
+function populateDashAddCourtCities() {
+  const region = document.getElementById('dashCourtRegion').value;
+  const province = document.getElementById('dashCourtProvince').value;
+  const cityGroup = document.getElementById('dashCourtCityGroup');
+  const citySelect = document.getElementById('dashCourtCity');
+
+  citySelect.value = '';
+
+  if (!region || !province) {
+    cityGroup.style.display = 'none';
+    return;
+  }
+
+  const cities = PH_LOCATIONS[region] && PH_LOCATIONS[region][province] ? [...PH_LOCATIONS[region][province]].sort() : [];
+  citySelect.innerHTML = '<option value="">Select City</option>' + cities.map(c => `<option value="${c}">${c}</option>`).join('');
+  cityGroup.style.display = 'block';
+}
+
+function populateEditCourtProvinces() {
+  const region = document.getElementById('editCourtRegion').value;
+  const provGroup = document.getElementById('editCourtProvinceGroup');
+  const provSelect = document.getElementById('editCourtProvince');
+  const cityGroup = document.getElementById('editCourtCityGroup');
+  const citySelect = document.getElementById('editCourtCity');
+
+  citySelect.value = '';
+  cityGroup.style.display = 'none';
+  provSelect.value = '';
+
+  if (!region) {
+    provGroup.style.display = 'none';
+    return;
+  }
+
+  const provinces = PH_LOCATIONS[region] ? Object.keys(PH_LOCATIONS[region]).sort() : [];
+  provSelect.innerHTML = '<option value="">Select Province</option>' + provinces.map(p => `<option value="${p}">${p}</option>`).join('');
+  provGroup.style.display = 'block';
+}
+
+function populateEditCourtCities() {
+  const region = document.getElementById('editCourtRegion').value;
+  const province = document.getElementById('editCourtProvince').value;
+  const cityGroup = document.getElementById('editCourtCityGroup');
+  const citySelect = document.getElementById('editCourtCity');
+
+  citySelect.value = '';
+
+  if (!region || !province) {
+    cityGroup.style.display = 'none';
+    return;
+  }
+
+  const cities = PH_LOCATIONS[region] && PH_LOCATIONS[region][province] ? [...PH_LOCATIONS[region][province]].sort() : [];
+  citySelect.innerHTML = '<option value="">Select City</option>' + cities.map(c => `<option value="${c}">${c}</option>`).join('');
+  cityGroup.style.display = 'block';
+}
+
 function initAddCourtMap() {
   if (addCourtMapInitialized) {
     setTimeout(() => addCourtMap?.invalidateSize(), 100);
@@ -991,3 +1651,86 @@ function placeMarker(lat, lng) {
 
   addCourtMap.setView([lat, lng], Math.max(addCourtMap.getZoom(), 12));
 }
+
+// ============================================================
+// CLAIMS MANAGEMENT (Admin)
+// ============================================================
+async function loadClaims() {
+  const container = document.getElementById('claimsList');
+  container.innerHTML = '<p style="color:var(--text-muted)">Loading...</p>';
+
+  try {
+    const claims = await PickleClaims.getAll();
+    if (!claims.length) {
+      container.innerHTML = '<div class="empty-state"><i class="fas fa-hand-paper"></i><h3>No claims yet</h3><p>When owners claim courts, they will appear here.</p></div>';
+      return;
+    }
+
+    const courtIds = [...new Set(claims.filter(c => c.courtId).map(c => c.courtId))];
+    const courtNames = {};
+    await Promise.all(courtIds.map(async id => {
+      try {
+        const court = await PickleCourts.getById(id);
+        if (court) courtNames[id] = court.name;
+      } catch {}
+    }));
+
+    container.innerHTML = claims.sort((a, b) => {
+      const ta = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
+      const tb = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
+      return tb - ta;
+    }).map(c => `
+      <div style="background:var(--white);border-radius:12px;padding:16px 20px;margin-bottom:12px;box-shadow:var(--card-shadow)">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px">
+          <div>
+            <strong>${c.name}</strong> · <span style="font-size:12px;color:var(--text-muted)">${c.email}</span>
+            <div style="font-size:12px;color:var(--text-muted);margin-top:4px">
+              📍 ${courtNames[c.courtId] || 'Unknown court'}
+              ${c.contact ? `· 📞 ${c.contact}` : ''}
+            </div>
+            ${c.message ? `<div style="font-size:12px;color:#555;margin-top:6px;padding:8px;background:#f9f9f9;border-radius:6px">${c.message}</div>` : ''}
+          </div>
+          <span style="font-size:11px;padding:3px 10px;border-radius:10px;font-weight:600;background:${c.status === 'approved' ? '#e8f5e9' : c.status === 'rejected' ? '#ffebee' : '#fff3e0'};color:${c.status === 'approved' ? '#2e7d32' : c.status === 'rejected' ? '#c62828' : '#e65100'}">${c.status}</span>
+        </div>
+        ${c.status === 'pending' ? `
+        <div style="display:flex;gap:8px;margin-top:12px">
+          <button class="btn-dash btn-dash-primary" onclick="approveClaim('${c.id}')"><i class="fas fa-check"></i> Approve</button>
+          <button class="btn-dash btn-dash-danger" onclick="rejectClaim('${c.id}')"><i class="fas fa-times"></i> Reject</button>
+        </div>` : ''}
+      </div>
+    `).join('');
+  } catch (err) {
+    container.innerHTML = `<p style="color:#d32f2f">Error: ${err.message}</p>`;
+  }
+}
+
+window.approveClaim = async function(claimId) {
+  if (!confirm('Approve this claim? The claimant will become the owner and the court will be verified.')) return;
+  try {
+    const claim = (await PickleClaims.getAll()).find(c => c.id === claimId);
+    if (!claim) return;
+    const usersSnap = await db.collection('users').where('email', '==', claim.email).get();
+    const userId = usersSnap.docs[0]?.id;
+    if (!userId) {
+      showToast('Claimant must register an account first before approving.', 4000);
+      return;
+    }
+    await PickleClaims.approve(claimId, userId);
+    await PickleNotifications.notifyClaimantApproved(claim.email, claim.name, 'their court');
+    showToast('Claim approved! Owner notified.');
+    loadClaims();
+  } catch (err) {
+    showToast('Error: ' + err.message, 4000);
+  }
+};
+
+window.rejectClaim = async function(claimId) {
+  if (!confirm('Reject this claim?')) return;
+  try {
+    await PickleClaims.reject(claimId);
+    showToast('Claim rejected.');
+    loadClaims();
+  } catch (err) {
+    showToast('Error: ' + err.message, 4000);
+  }
+};

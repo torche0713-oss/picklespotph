@@ -16,6 +16,49 @@ const FIREBASE_CONFIG = {
   messagingSenderId: "847121039089",
   appId: "1:847121039089:web:b4cda36838300d33b83350"
 };
+// ============================================================
+// EMAIL NOTIFICATIONS (via EmailJS - free tier: 200/mo)
+
+// ============================================================
+// MAILING LIST / SUBSCRIBERS
+// ============================================================
+const PickleMailing = {
+  async subscribe(email, name) {
+    if (!email) return;
+    const existing = await db.collection(COLLECTIONS.SUBSCRIBERS)
+      .where('email', '==', email)
+      .get();
+    if (!existing.empty) return;
+    await db.collection(COLLECTIONS.SUBSCRIBERS).add({
+      email,
+      name,
+      subscribedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+  },
+
+  async getAll() {
+    const snapshot = await db.collection(COLLECTIONS.SUBSCRIBERS)
+      .orderBy('subscribedAt', 'desc')
+      .get();
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  }
+};
+
+// ============================================================
+// EMAIL NOTIFICATIONS (via EmailJS - free tier: 200/mo)
+// ============================================================
+// To set up:
+//   1. Sign up at https://emailjs.com (free)
+//   2. Go to Email Services → Add New Service → connect Gmail
+//   3. Go to Email Templates → Create Template with variables:
+//      {{to_email}} {{to_name}} {{subject}} {{body}}
+//   4. Copy Service ID, Template ID, and Public Key below
+// ============================================================
+const EMAILJS_CONFIG = {
+  PUBLIC_KEY: 'ZqwVgBW5afMAIEWtS',
+  SERVICE_ID: 'service_xh12jr3',
+  TEMPLATE_ID: 'template_zbaoqpb'
+};
 
 // Initialize Firebase
 if (!firebase.apps.length) {
@@ -38,7 +81,10 @@ const COLLECTIONS = {
   REVIEWS: 'reviews',
   PAYMENTS: 'payments',
   CHATS: 'chats',
-  MESSAGES: 'messages'
+  MESSAGES: 'messages',
+  SUBSCRIBERS: 'subscribers',
+  TOURNAMENTS: 'tournaments',
+  CLAIMS: 'claims'
 };
 
 // ============================================================
@@ -170,7 +216,7 @@ const PickleCourts = {
       ownerId,
       verified: false,
       approved: true,
-      featured: false,
+      featured: courtData.featured === true,
       photos: [],
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
@@ -277,6 +323,13 @@ const PickleBookings = {
   // Update booking status
   async updateStatus(bookingId, status) {
     await db.collection(COLLECTIONS.BOOKINGS).doc(bookingId).update({ status });
+  },
+
+  // Get a single booking by ID
+  async getById(bookingId) {
+    const doc = await db.collection(COLLECTIONS.BOOKINGS).doc(bookingId).get();
+    if (!doc.exists) return null;
+    return { id: doc.id, ...doc.data() };
   }
 };
 
@@ -297,9 +350,14 @@ const PickleReviews = {
   async getByCourt(courtId) {
     const snapshot = await db.collection(COLLECTIONS.REVIEWS)
       .where('courtId', '==', courtId)
-      .orderBy('createdAt', 'desc')
       .get();
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const reviews = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    reviews.sort((a, b) => {
+      const ta = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
+      const tb = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
+      return tb - ta;
+    });
+    return reviews;
   },
 
   // Get average rating for a court
@@ -341,17 +399,27 @@ const PicklePayments = {
   async getByUser(uid) {
     const snapshot = await db.collection(COLLECTIONS.PAYMENTS)
       .where('userId', '==', uid)
-      .orderBy('createdAt', 'desc')
       .get();
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const payments = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    payments.sort((a, b) => {
+      const ta = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
+      const tb = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
+      return tb - ta;
+    });
+    return payments;
   },
 
   // Get all payments (admin view)
   async getAll() {
     const snapshot = await db.collection(COLLECTIONS.PAYMENTS)
-      .orderBy('createdAt', 'desc')
       .get();
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const payments = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    payments.sort((a, b) => {
+      const ta = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
+      const tb = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
+      return tb - ta;
+    });
+    return payments;
   }
 };
 
@@ -367,6 +435,7 @@ const PickleChat = {
       ownerId: data.ownerId,
       customerName: data.customerName,
       customerContact: data.customerContact,
+      customerEmail: data.customerEmail || '',
       lastMessage: data.lastMessage || '',
       lastSender: data.lastSender || '',
       unreadOwner: 0,
@@ -400,13 +469,20 @@ const PickleChat = {
   onMessages(chatId, callback) {
     return db.collection(COLLECTIONS.MESSAGES)
       .where('chatId', '==', chatId)
-      .orderBy('timestamp', 'asc')
       .onSnapshot(snapshot => {
         const msgs = snapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data()
         }));
+        // Sort client-side to avoid needing a composite index
+        msgs.sort((a, b) => {
+          const ta = a.timestamp?.toMillis ? a.timestamp.toMillis() : 0;
+          const tb = b.timestamp?.toMillis ? b.timestamp.toMillis() : 0;
+          return ta - tb;
+        });
         callback(msgs);
+      }, err => {
+        console.error('Chat listener error:', err);
       });
   },
 
@@ -414,13 +490,20 @@ const PickleChat = {
   onOwnerChats(ownerId, callback) {
     return db.collection(COLLECTIONS.CHATS)
       .where('ownerId', '==', ownerId)
-      .orderBy('updatedAt', 'desc')
       .onSnapshot(snapshot => {
         const chats = snapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data()
         }));
+        // Sort client-side to avoid needing a composite index
+        chats.sort((a, b) => {
+          const ta = a.updatedAt?.toMillis ? a.updatedAt.toMillis() : 0;
+          const tb = b.updatedAt?.toMillis ? b.updatedAt.toMillis() : 0;
+          return tb - ta;
+        });
         callback(chats);
+      }, err => {
+        console.error('Owner chats listener error:', err);
       });
   },
 
@@ -454,6 +537,207 @@ const PickleChat = {
       .orderBy('updatedAt', 'desc')
       .get();
     return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  },
+
+  // Get a single chat room by ID
+  async getById(chatId) {
+    const doc = await db.collection(COLLECTIONS.CHATS).doc(chatId).get();
+    if (!doc.exists) return null;
+    return { id: doc.id, ...doc.data() };
+  }
+};
+
+// ============================================================
+// EMAIL NOTIFICATION SERVICE
+// ============================================================
+function generateCalendarUrl(title, dateStr, timeStr, location) {
+  if (!dateStr || !timeStr) return '';
+  let startTime, endTime;
+  if (timeStr.includes('-')) {
+    const [s, e] = timeStr.split('-');
+    startTime = s;
+    endTime = e;
+  } else {
+    startTime = timeStr;
+    const [h, m] = timeStr.split(':').map(Number);
+    const endM = h * 60 + m + 60;
+    endTime = `${String(Math.floor(endM / 60)).padStart(2,'0')}:${String(endM % 60).padStart(2,'0')}`;
+  }
+  const d = dateStr.replace(/-/g, '');
+  const start = `${d}T${startTime.replace(':', '')}00`;
+  const end = `${d}T${endTime.replace(':', '')}00`;
+  const params = new URLSearchParams({
+    action: 'TEMPLATE',
+    text: title,
+    dates: `${start}/${end}`,
+    location: location || '',
+    sf: 'true',
+    output: 'xml'
+  });
+  return `https://www.google.com/calendar/render?${params.toString()}`;
+}
+
+const PickleNotifications = {
+  async send(toEmail, toName, subject, body) {
+    if (!EMAILJS_CONFIG.PUBLIC_KEY || !EMAILJS_CONFIG.SERVICE_ID || !EMAILJS_CONFIG.TEMPLATE_ID) return;
+    try {
+      await emailjs.send(EMAILJS_CONFIG.SERVICE_ID, EMAILJS_CONFIG.TEMPLATE_ID, {
+        to_email: toEmail,
+        to_name: toName,
+        subject: subject,
+        body: body
+      });
+    } catch (err) {
+      console.error('Email send failed:', err);
+    }
+  },
+
+  async notifyOwnerNewBooking(ownerId, bookingData, courtName) {
+    try {
+      const owner = await PickleAuth.getUserProfile(ownerId);
+      if (!owner || !owner.email) return;
+      const body = `New booking inquiry at ${courtName}!\n\nCustomer: ${bookingData.name}\nContact: ${bookingData.contact}\nDate: ${bookingData.date}\nTime: ${bookingData.time}\nPlayers: ${bookingData.players}\nMessage: ${bookingData.message || 'None'}`;
+      await this.send(owner.email, owner.displayName || 'Owner', `New Booking: ${courtName}`, body);
+    } catch {}
+  },
+
+  async notifyAdminNewPayment(userEmail, userName, paymentData) {
+    const body = `New Pro upgrade payment!\n\nUser: ${userName}\nEmail: ${userEmail}\nAmount: ₱${paymentData.amount}\nMethod: ${paymentData.method}\nReference: ${paymentData.reference}`;
+    await this.send('torche0713@gmail.com', 'Admin', 'New Pro Upgrade Payment', body);
+  },
+
+  async notifyCustomerBookingStatus(customerEmail, customerName, courtName, status, date, time, location) {
+    if (!customerEmail) return;
+    const emoji = status === 'confirmed' ? '✅' : status === 'rejected' ? '❌' : '⏳';
+    const label = status.charAt(0).toUpperCase() + status.slice(1);
+    let body = `${emoji} Your booking at ${courtName} has been ${label}.\n\nCourt: ${courtName}\nStatus: ${label}`;
+    if (status === 'confirmed' && date && time) {
+      const calUrl = generateCalendarUrl(`Pickleball at ${courtName}`, date, time, location);
+      body += `\n\nAdd to Google Calendar: ${calUrl}`;
+    }
+    await this.send(customerEmail, customerName, `Booking ${label}: ${courtName}`, body);
+  },
+
+  async notifyOwnerNewMessage(chatId, senderName, text) {
+    try {
+      const chat = await PickleChat.getById(chatId);
+      if (!chat || !chat.ownerId) return;
+      const owner = await PickleAuth.getUserProfile(chat.ownerId);
+      if (!owner || !owner.email) return;
+      const courtName = chat.courtName || 'Court';
+      const body = `New message from ${senderName} regarding ${courtName}:\n\n"${text}"\n\nOpen your dashboard to reply.`;
+      await this.send(owner.email, owner.displayName || 'Owner', `New Message: ${courtName}`, body);
+    } catch {}
+  },
+
+  async notifyAdminNewCourt(courtData, owner) {
+    const body = `New court added by ${owner.displayName || 'Unknown'} (${owner.email || 'No email'})!\n\nCourt: ${courtData.name}\nLocation: ${courtData.city}, ${courtData.region}\nType: ${courtData.type}\nAccess: ${courtData.access}\nRate: ${courtData.rate || 'N/A'}\nContact: ${courtData.contact || 'N/A'}`;
+    await this.send('torche0713@gmail.com', 'Admin', `New Court Added: ${courtData.name}`, body);
+  },
+
+  async notifyOwnerCourtAdded(ownerEmail, ownerName, courtName) {
+    const body = `Hi ${ownerName || 'there'},\n\nThank you for adding "${courtName}" to PickleSpotPH! Your court listing is now live and visible to all players searching for pickleball courts.\n\nYou can manage your listing from your dashboard at any time.\n\nHappy playing!\n- The PickleSpotPH Team`;
+    await this.send(ownerEmail, ownerName, `Your court "${courtName}" is now live! 🎉`, body);
+  },
+
+  async notifyAdminNewClaim(claimData, courtName) {
+    const body = `New court claim request!\n\nClaimant: ${claimData.name}\nEmail: ${claimData.email}\nContact: ${claimData.contact || 'N/A'}\nMessage: ${claimData.message || 'N/A'}\nCourt: ${courtName}`;
+    await this.send('torche0713@gmail.com', 'Admin', `Court Claim Request: ${courtName}`, body);
+  },
+
+  async notifyClaimantApproved(email, name, courtName) {
+    const body = `Hi ${name || 'there'},\n\nYour claim for "${courtName}" has been approved! You can now manage this court from your dashboard.\n\nHappy playing!\n- The PickleSpotPH Team`;
+    await this.send(email, name, `Your claim for "${courtName}" is approved! ✅`, body);
+  }
+};
+
+// Init EmailJS if configured
+if (typeof emailjs !== 'undefined' && EMAILJS_CONFIG.PUBLIC_KEY) {
+  emailjs.init(EMAILJS_CONFIG.PUBLIC_KEY);
+}
+
+// ============================================================
+// TOURNAMENTS SERVICE
+// ============================================================
+const PickleTournaments = {
+  async add(data) {
+    const docRef = await db.collection(COLLECTIONS.TOURNAMENTS).add({
+      ...data,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    return docRef.id;
+  },
+  async getAll() {
+    const snapshot = await db.collection(COLLECTIONS.TOURNAMENTS).get();
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  },
+  async update(id, data) {
+    await db.collection(COLLECTIONS.TOURNAMENTS).doc(id).update(data);
+  },
+  async delete(id) {
+    await db.collection(COLLECTIONS.TOURNAMENTS).doc(id).delete();
+  },
+  async getUpcoming() {
+    const all = await this.getAll();
+    const now = new Date();
+    return all.filter(t => {
+      const d = new Date(t.date);
+      return d >= now || isNaN(d.getTime());
+    }).sort((a, b) => new Date(a.date) - new Date(b.date));
+  }
+};
+
+// ============================================================
+// CLAIMS SERVICE
+// ============================================================
+const PickleClaims = {
+  async add(data) {
+    const docRef = await db.collection(COLLECTIONS.CLAIMS).add({
+      ...data,
+      status: 'pending',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    return docRef.id;
+  },
+  async getAll() {
+    const snapshot = await db.collection(COLLECTIONS.CLAIMS).get();
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  },
+  async approve(claimId, userId) {
+    const claim = await db.collection(COLLECTIONS.CLAIMS).doc(claimId).get();
+    const data = claim.data();
+    if (data.courtId) {
+      if (isNaN(data.courtId)) {
+        await db.collection(COLLECTIONS.COURTS).doc(data.courtId).update({ ownerId: userId, verified: true });
+      } else {
+        await db.collection(COLLECTIONS.COURTS).add({
+          name: data.courtName || 'Claimed Court',
+          city: data.courtCity || '',
+          province: data.courtProvince || '',
+          region: data.courtRegion || '',
+          type: data.courtType || '',
+          access: data.courtAccess || '',
+          rate: data.courtRate || '',
+          contact: data.courtContact || '',
+          address: data.courtAddress || '',
+          hours: data.courtHours || '',
+          lat: data.courtLat || null,
+          lng: data.courtLng || null,
+          courts: data.courtCourts || 1,
+          amenities: data.courtAmenities || [],
+          ownerId: userId,
+          verified: true,
+          approved: true,
+          featured: false,
+          photos: [],
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+      }
+    }
+    await db.collection(COLLECTIONS.CLAIMS).doc(claimId).update({ status: 'approved' });
+  },
+  async reject(claimId) {
+    await db.collection(COLLECTIONS.CLAIMS).doc(claimId).update({ status: 'rejected' });
   }
 };
 
@@ -464,3 +748,39 @@ async function isProUser(uid) {
   const profile = await PickleAuth.getUserProfile(uid);
   return profile?.plan === 'pro';
 }
+
+// ============================================================
+// ANALYTICS
+// ============================================================
+const PickleAnalytics = {
+  async trackView(courtId) {
+    if (!courtId || typeof courtId !== 'string') return;
+    try {
+      await db.collection(COLLECTIONS.COURTS).doc(courtId).update({
+        views: firebase.firestore.FieldValue.increment(1)
+      });
+    } catch (e) {
+      try {
+        await db.collection(COLLECTIONS.COURTS).doc(courtId).set({
+          views: 1
+        }, { merge: true });
+      } catch {}
+    }
+  },
+
+  async getViews(courtId) {
+    try {
+      const doc = await db.collection(COLLECTIONS.COURTS).doc(courtId).get();
+      return doc.exists ? (doc.data().views || 0) : 0;
+    } catch { return 0; }
+  },
+
+  async getBookingCount(courtId) {
+    try {
+      const snapshot = await db.collection(COLLECTIONS.BOOKINGS)
+        .where('courtId', '==', courtId)
+        .get();
+      return snapshot.docs.length;
+    } catch { return 0; }
+  }
+};
