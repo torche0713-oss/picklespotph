@@ -50,6 +50,7 @@ function renderDashboard() {
   const isPro = userProfile?.plan === 'pro';
   const isAdmin = currentUser.email === ADMIN_EMAIL;
   document.querySelector('[data-section="bookings"]').style.display = isPro ? 'flex' : 'none';
+  document.querySelector('[data-section="owner-courts"]').style.display = isAdmin ? 'flex' : 'none';
   document.querySelector('[data-section="payments"]').style.display = isAdmin ? 'flex' : 'none';
   document.querySelector('[data-section="admin-analytics"]').style.display = isAdmin ? 'flex' : 'none';
   document.querySelector('[data-section="analytics"]').style.display = isPro ? 'flex' : 'none';
@@ -60,7 +61,7 @@ function renderDashboard() {
 // NAVIGATION
 // ============================================================
 function switchSection(sectionId) {
-  if ((sectionId === 'payments' || sectionId === 'admin-analytics') && currentUser.email !== ADMIN_EMAIL) {
+  if ((sectionId === 'payments' || sectionId === 'admin-analytics' || sectionId === 'owner-courts') && currentUser.email !== ADMIN_EMAIL) {
     showToast('Access denied.');
     return;
   }
@@ -74,6 +75,7 @@ function switchSection(sectionId) {
   if (sectionId === 'add-court') initAddCourtMap();
   if (sectionId === 'payments') loadPayments();
   if (sectionId === 'admin-analytics') loadAdminAnalytics();
+  if (sectionId === 'owner-courts') loadOwnerCourts();
   if (sectionId === 'analytics') loadAnalytics();
 }
 
@@ -174,12 +176,16 @@ document.getElementById('dashAddCourtForm').addEventListener('submit', async (e)
 
   try {
     await PickleCourts.add(courtData, currentUser.uid);
-    showToast('Court added successfully!');
+    showToast('Thank you! Your court has been added and is now live! 🎉');
     e.target.reset();
     document.getElementById('dashCourtProvinceGroup').style.display = 'none';
     document.getElementById('dashCourtCityGroup').style.display = 'none';
     loadMyCourts();
     switchSection('my-courts');
+    try {
+      await PickleNotifications.notifyOwnerCourtAdded(currentUser.email, userProfile?.displayName, courtData.name);
+      await PickleNotifications.notifyAdminNewCourt(courtData, userProfile);
+    } catch {}
   } catch (err) {
     showToast('Error: ' + err.message, 4000);
   }
@@ -782,6 +788,58 @@ async function loadAdminAnalytics() {
         `).join('')}
       </div>` : ''}
     `;
+  } catch (err) {
+    container.innerHTML = `<p style="color:#d32f2f">Error: ${err.message}</p>`;
+  }
+}
+
+// ============================================================
+// OWNER COURTS (Admin View)
+// ============================================================
+async function loadOwnerCourts() {
+  const container = document.getElementById('ownerCourtsList');
+  container.innerHTML = '<p style="color:var(--text-muted)">Loading...</p>';
+
+  try {
+    const courts = await PickleCourts.getAll();
+    if (courts.length === 0) {
+      container.innerHTML = '<div class="empty-state"><i class="fas fa-map-pin"></i><h3>No courts added yet</h3></div>';
+      return;
+    }
+
+    const ownerIds = [...new Set(courts.map(c => c.ownerId).filter(Boolean))];
+    const ownerCache = {};
+    await Promise.all(ownerIds.map(async uid => {
+      try {
+        const prof = await PickleAuth.getUserProfile(uid);
+        if (prof) ownerCache[uid] = prof;
+      } catch {}
+    }));
+
+    container.innerHTML = courts.map(court => {
+      const owner = ownerCache[court.ownerId] || {};
+      return `
+        <div class="court-card-owner">
+          <div class="card-header">
+            <div>
+              <h3>${court.name} ${court.verified ? '<i class="fas fa-check-circle" style="color:#1565c0" title="Verified"></i>' : ''} ${court.featured ? '<span class="status-badge" style="background:#fff3e0;color:#e65100">★ Featured</span>' : ''}</h3>
+              <span style="font-size:12px;color:var(--text-muted)">${court.city}, ${court.region}</span>
+            </div>
+          </div>
+          <div class="card-body" style="font-size:13px;color:var(--text-muted)">
+            <div style="display:flex;gap:16px;flex-wrap:wrap">
+              <span>🏓 ${court.courts || 1} court(s)</span>
+              <span>📋 ${court.type}</span>
+              <span>🔑 ${court.access}</span>
+              ${court.rate ? `<span>💰 ${court.rate}</span>` : ''}
+            </div>
+            <div style="margin-top:8px;padding:8px;background:#f9f9f9;border-radius:6px;font-size:12px">
+              <strong>Owner:</strong> ${owner.displayName || 'Unknown'} · ${owner.email || ''} · ${owner.plan === 'pro' ? '⭐ Pro' : 'Basic'}
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
   } catch (err) {
     container.innerHTML = `<p style="color:#d32f2f">Error: ${err.message}</p>`;
   }

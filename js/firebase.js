@@ -626,6 +626,16 @@ const PickleNotifications = {
       const body = `New message from ${senderName} regarding ${courtName}:\n\n"${text}"\n\nOpen your dashboard to reply.`;
       await this.send(owner.email, owner.displayName || 'Owner', `New Message: ${courtName}`, body);
     } catch {}
+  },
+
+  async notifyAdminNewCourt(courtData, owner) {
+    const body = `New court added by ${owner.displayName || 'Unknown'} (${owner.email || 'No email'})!\n\nCourt: ${courtData.name}\nLocation: ${courtData.city}, ${courtData.region}\nType: ${courtData.type}\nAccess: ${courtData.access}\nRate: ${courtData.rate || 'N/A'}\nContact: ${courtData.contact || 'N/A'}`;
+    await this.send('torche0713@gmail.com', 'Admin', `New Court Added: ${courtData.name}`, body);
+  },
+
+  async notifyOwnerCourtAdded(ownerEmail, ownerName, courtName) {
+    const body = `Hi ${ownerName || 'there'},\n\nThank you for adding "${courtName}" to PickleSpotPH! Your court listing is now live and visible to all players searching for pickleball courts.\n\nYou can manage your listing from your dashboard at any time.\n\nHappy playing!\n- The PickleSpotPH Team`;
+    await this.send(ownerEmail, ownerName, `Your court "${courtName}" is now live! 🎉`, body);
   }
 };
 
