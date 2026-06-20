@@ -14,27 +14,45 @@ let addCourtMapInitialized = false;
 // INIT
 // ============================================================
 document.addEventListener('DOMContentLoaded', () => {
+  let authFired = false;
+
+  // Fallback: if Firebase Auth never fires, force login modal
+  const fbTimeout = setTimeout(() => {
+    if (!authFired) {
+      showLoginModal();
+    }
+  }, 3000);
+
   // Handle redirect auth result (Google/Facebook sign-in)
-  PickleAuth.handleRedirectResult().catch(() => {});
+  if (typeof PickleAuth !== 'undefined') {
+    PickleAuth.handleRedirectResult().catch(() => {});
+  }
 
   const wantsAdd = new URLSearchParams(window.location.search).get('add') === '1';
   if (wantsAdd) {
     history.replaceState(null, '', window.location.pathname);
   }
 
-  PickleAuth.onAuthChanged(async (user) => {
-    if (user) {
-      currentUser = user;
-      userProfile = await PickleAuth.getUserProfile(user.uid);
-      renderDashboard();
-      if (wantsAdd) {
-        switchSection('add-court');
-        showToast('You\'re logged in! Add your court below.', 3000);
+  if (typeof PickleAuth !== 'undefined') {
+    PickleAuth.onAuthChanged(async (user) => {
+      authFired = true;
+      clearTimeout(fbTimeout);
+      if (user) {
+        currentUser = user;
+        userProfile = await PickleAuth.getUserProfile(user.uid).catch(() => null);
+        renderDashboard();
+        if (wantsAdd) {
+          switchSection('add-court');
+          showToast('You\'re logged in! Add your court below.', 3000);
+        }
+      } else {
+        showLoginModal();
       }
-    } else {
-      showLoginModal();
-    }
-  });
+    });
+  } else {
+    // Firebase not loaded — show login modal immediately
+    showLoginModal();
+  }
 
   setupEventListeners();
 });
@@ -1078,7 +1096,6 @@ async function loadTournaments() {
       </div>
     `;
 
-    const isAdmin = currentUser.email === ADMIN_EMAIL;
     const listHtml = tournaments.length ? tournaments.map(t => {
       const d = new Date(t.date);
       const past = d < now;
