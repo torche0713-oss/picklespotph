@@ -5,6 +5,7 @@
 let allCourts = [...COURTS_DATA];
 let filteredCourts = [...COURTS_DATA];
 let currentView = 'map';
+let listPage = 1;
 let sidebarCollapsed = false;
 let mainAddCourtMap = null;
 let mainAddCourtMarker = null;
@@ -66,6 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setupEventListeners();
   showView('map');
   initCustomerChatWidget();
+  loadRecentlyAdded();
   loadFirestoreCourts();
 });
 
@@ -74,8 +76,17 @@ async function loadFirestoreCourts() {
     if (typeof PickleCourts === 'undefined') return;
     const firestoreCourts = await PickleCourts.getAll();
     if (!firestoreCourts.length) return;
+    const ownerIds = [...new Set(firestoreCourts.map(c => c.ownerId).filter(Boolean))];
+    const ownerPlans = {};
+    await Promise.all(ownerIds.map(async uid => {
+      try {
+        const prof = await PickleAuth.getUserProfile(uid);
+        if (prof) ownerPlans[uid] = prof.plan;
+      } catch {}
+    }));
     for (const fc of firestoreCourts) {
       if (!allCourts.find(c => c.id === fc.id)) {
+        fc.ownerPlan = fc.ownerPlan || ownerPlans[fc.ownerId] || 'basic';
         allCourts.push(fc);
       }
     }
@@ -84,24 +95,149 @@ async function loadFirestoreCourts() {
     renderSidebarList(allCourts);
     updateStats(allCourts);
   } catch {}
+  loadRecentlyAdded();
+  loadTournamentTicker();
+}
+
+let carouselTimer = null;
+
+function loadRecentlyAdded() {
+  const section = document.getElementById('recentSection');
+  const track = document.getElementById('recentScroll');
+  const prevBtn = document.getElementById('carouselPrev');
+  const nextBtn = document.getElementById('carouselNext');
+  const dotsEl = document.getElementById('carouselDots');
+  if (!section || !track) return;
+
+  if (!allCourts.length) { section.style.display = 'none'; return; }
+
+  const sorted = [...allCourts].sort((a, b) => {
+    const aDate = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.dateAdded || 0);
+    const bDate = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.dateAdded || 0);
+    return bDate - aDate;
+  });
+
+  const recent = sorted.slice(0, 10);
+  const isStatic = c => typeof c.id === 'number';
+
+  track.innerHTML = recent.map(c => `
+    <div class="recent-card" onclick="openCourtModal('${c.id}')">
+      <div class="rc-type">${c.type} · ${c.access}</div>
+      <div class="rc-name">${c.name}</div>
+      <div class="rc-location"><i class="fas fa-map-marker-alt"></i> ${c.city}, ${c.province}</div>
+      <div class="rc-meta">
+        <span><i class="fas fa-table-tennis-paddle-ball"></i> ${c.courts}</span>
+        ${c.verified ? '<span><i class="fas fa-check-circle" style="color:var(--primary)"></i> Verified</span>' : ''}
+      </div>
+      ${isStatic(c) ? '<div class="rc-sample">Sample</div>' : ''}
+    </div>
+  `).join('');
+
+  section.style.display = 'block';
+
+  let currentPage = 0;
+  let totalPages = 0;
+
+  function getCardWidth() {
+    const first = track.querySelector('.recent-card');
+    if (!first) return 240;
+    return first.offsetWidth + 14;
+  }
+
+  function getVisible() {
+    const cw = track.offsetWidth;
+    const gw = getCardWidth();
+    return Math.max(1, Math.floor(cw / gw));
+  }
+
+  function getTotalPages() {
+    const total = track.children.length;
+    const perPage = getVisible();
+    return Math.max(1, Math.ceil(total / perPage));
+  }
+
+  function goToPage(page) {
+    const perPage = getVisible();
+    totalPages = getTotalPages();
+    currentPage = Math.max(0, Math.min(page, totalPages - 1));
+    const scrollTo = currentPage * perPage * getCardWidth();
+    track.scrollTo({ left: scrollTo, behavior: 'smooth' });
+    updateDots();
+  }
+
+  function updateDots() {
+    totalPages = getTotalPages();
+    prevBtn.style.display = totalPages <= 1 ? 'none' : '';
+    nextBtn.style.display = totalPages <= 1 ? 'none' : '';
+    dotsEl.innerHTML = '';
+    if (totalPages <= 1) { dotsEl.style.display = 'none'; return; }
+    dotsEl.style.display = '';
+    for (let i = 0; i < totalPages; i++) {
+      const dot = document.createElement('button');
+      dot.className = 'carousel-dot' + (i === currentPage ? ' active' : '');
+      dot.setAttribute('aria-label', 'Go to page ' + (i + 1));
+      dot.addEventListener('click', () => goToPage(i));
+      dotsEl.appendChild(dot);
+    }
+  }
+
+  prevBtn.addEventListener('click', () => goToPage(currentPage - 1));
+  nextBtn.addEventListener('click', () => goToPage(currentPage + 1));
+
+  window.addEventListener('resize', () => {
+    const maxP = getTotalPages() - 1;
+    if (currentPage > maxP) { goToPage(maxP); }
+    else { updateDots(); }
+  });
+
+  function startAuto() {
+    stopAuto();
+    carouselTimer = setInterval(() => {
+      totalPages = getTotalPages();
+      const next = currentPage + 1;
+      if (next >= totalPages) { goToPage(0); }
+      else { goToPage(next); }
+    }, 4000);
+  }
+
+  function stopAuto() { clearInterval(carouselTimer); }
+
+  updateDots();
+  setTimeout(startAuto, 500);
+  section.addEventListener('mouseenter', stopAuto);
+  section.addEventListener('mouseleave', startAuto);
 }
 
 // ============================================================
-// VIEW MANAGEMENT
+// TOURNAMENT TICKER
 // ============================================================
+async function loadTournamentTicker() {
+  const wrap = document.getElementById('tickerWrap');
+  const track = document.getElementById('tickerTrack');
+  if (!wrap || !track) return;
+  try {
+    if (typeof PickleTournaments === 'undefined') return;
+    const tournaments = await PickleTournaments.getUpcoming();
+    if (!tournaments.length) return;
+    const items = tournaments.map(t => {
+      const d = new Date(t.date).toLocaleDateString('en-PH', { month: 'short', day: 'numeric' });
+      return `<span class="ticker-item"><span class="date">${d}</span> ${t.name} ${t.location ? '· ' + t.location : ''}</span>`;
+    }).join('');
+    track.innerHTML = `<span class="ticker-content">${items}${items}</span>`;
+    wrap.style.display = 'flex';
+  } catch {}
+}
 function showView(view) {
   currentView = view;
 
   const mapContainer = document.querySelector('.app-container');
   const listView = document.getElementById('listView');
   const aboutView = document.getElementById('aboutView');
-  const footer = document.getElementById('siteFooter');
 
   // Hide all
   mapContainer.style.display = 'none';
   listView.style.display = 'none';
   aboutView.style.display = 'none';
-  footer.style.display = 'none';
 
   // Update nav active state
   document.querySelectorAll('.nav-link, .mobile-link').forEach(link => {
@@ -145,7 +281,7 @@ function renderSidebarList(courts) {
 
   container.innerHTML = courts.map(court => `
     <div class="sidebar-court-item" data-id="${court.id}"
-         onclick="handleSidebarCourtClick(${court.id})">
+         onclick="handleSidebarCourtClick('${court.id}')">
       <div class="court-item-name">
         ${court.name}
         ${court.verified ? '<i class="fas fa-check-circle" style="color:var(--primary);font-size:12px" title="Verified"></i>' : ''}
@@ -199,7 +335,14 @@ function renderCourtsList(courts) {
     return;
   }
 
-  container.innerHTML = courts.map((court, idx) => {
+  const PAGE_SIZE = 12;
+  const totalPages = Math.ceil(courts.length / PAGE_SIZE);
+  const page = listPage || 1;
+  const start = (page - 1) * PAGE_SIZE;
+  const pageCourts = courts.slice(start, start + PAGE_SIZE);
+
+  container.innerHTML = pageCourts.map((court, idx) => {
+    const globalIdx = start + idx + 1;
     const amenityBadges = court.amenities.map(a => {
       const info = AMENITY_ICONS[a];
       return info ? `
@@ -214,12 +357,13 @@ function renderCourtsList(courts) {
       court.access === 'Paid' ? 'tag-paid' : 'tag-members';
 
     return `
-      <div class="court-card" onclick="openCourtModal(${court.id})">
+      <div class="court-card" onclick="openCourtModal('${court.id}')">
         <div class="court-card-header">
-          <div class="court-number">${String(idx + 1).padStart(2, '0')}</div>
+          <div class="court-number">${String(globalIdx).padStart(2, '0')}</div>
           <div class="court-card-name">
             ${court.name}
             ${court.verified ? '<i class="fas fa-check-circle" style="color:#FFD700;font-size:14px" title="Verified"></i>' : ''}
+            ${typeof court.id === 'number' ? '<span style="font-size:9px;background:#f5f5f5;color:#999;padding:1px 6px;border-radius:8px;margin-left:4px;font-weight:500">Sample</span>' : ''}
           </div>
           ${court.featured ? '<div style="position:absolute;top:12px;left:12px;background:var(--accent);color:white;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700">★ Featured</div>' : ''}
           <div class="court-card-location">
@@ -253,6 +397,9 @@ function renderCourtsList(courts) {
             ${court.verified
               ? '<span class="tag" style="background:#e3f2fd;color:#1565c0">✓ Verified</span>'
               : ''}
+            ${typeof court.id === 'number'
+              ? '<span class="tag" style="background:#f5f5f5;color:#999">Sample</span>'
+              : ''}
           </div>
           ${court.amenities.length > 0 ? `
           <div class="court-amenities">${amenityBadges}</div>
@@ -277,15 +424,60 @@ function renderCourtsList(courts) {
         </div>
       </div>
     `;
-  }).join('');
+  }).join('') + buildPagination(totalPages, page);
+}
+
+function buildPagination(totalPages, current) {
+  if (totalPages <= 1) return '';
+  let html = '<div class="pagination">';
+  for (let i = 1; i <= totalPages; i++) {
+    html += `<button class="page-btn ${i === current ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`;
+  }
+  return html + '</div>';
+}
+
+function goToPage(page) {
+  listPage = page;
+  const sortBy = document.getElementById('sortSelect')?.value || 'name';
+  renderCourtsList(sortCourts(filteredCourts, sortBy));
 }
 
 // ============================================================
 // COURT MODAL
 // ============================================================
-window.openCourtModal = function(courtId) {
-  const court = allCourts.find(c => c.id === courtId);
+window.openCourtModal = async function(courtId) {
+  const court = allCourts.find(c => c.id == courtId);
   if (!court) return;
+
+  // Track view for Firestore courts
+  if (typeof court.id === 'string' && typeof PickleAnalytics !== 'undefined') {
+    PickleAnalytics.trackView(court.id);
+  }
+
+  // Load open play schedules
+  let schedulesHtml = '';
+  if (typeof PickleSchedules !== 'undefined' && court.id) {
+    try {
+      const schedules = await PickleSchedules.getByCourt(String(court.id));
+      if (schedules.length > 0) {
+        const dayOrder = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+        const sorted = [...schedules].sort((a, b) => dayOrder.indexOf(a.day) - dayOrder.indexOf(b.day));
+        schedulesHtml = `
+          <div class="court-detail-section">
+            <h3><i class="fas fa-calendar-alt"></i> Open Play Schedule</h3>
+            ${sorted.map(s => `
+              <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f0f0f0;font-size:13px">
+                <span style="font-weight:600;min-width:80px">${s.day}</span>
+                <span style="color:var(--text-muted)">${s.startTime} - ${s.endTime}</span>
+                ${s.cost ? `<span style="color:var(--accent);font-weight:600">${s.cost}</span>` : ''}
+                ${s.notes ? `<span style="color:var(--text-muted);font-size:12px">· ${s.notes}</span>` : ''}
+              </div>
+            `).join('')}
+          </div>`;
+      }
+    } catch (e) {}
+  }
+  court.schedulesHtml = schedulesHtml;
 
   const modal = document.getElementById('courtModal');
   const header = document.getElementById('modalHeader');
@@ -308,6 +500,7 @@ window.openCourtModal = function(courtId) {
             ${court.name}
             ${court.verified ? '<i class="fas fa-check-circle" style="color:#FFD700;font-size:16px" title="Verified"></i>' : ''}
             ${court.featured ? '<span style="font-size:12px;background:rgba(255,255,255,0.2);padding:2px 8px;border-radius:10px;margin-left:4px">★ Featured</span>' : ''}
+            ${typeof court.id === 'number' ? '<span style="font-size:10px;background:rgba(255,255,255,0.15);color:rgba(255,255,255,0.7);padding:2px 8px;border-radius:8px;margin-left:4px;font-weight:500">Sample Listing</span>' : ''}
           </h2>
           <p style="font-size:13px;color:rgba(255,255,255,0.85)">
             <i class="fas fa-map-marker-alt"></i>
@@ -345,7 +538,14 @@ window.openCourtModal = function(courtId) {
     ` : '';
   }).join('');
 
-  body.innerHTML = `
+  body.innerHTML = (typeof court.id === 'number' ? `
+    <div style="background:#fff8e1;border:1px solid #ffe082;border-radius:8px;padding:12px 14px;margin-bottom:16px;font-size:13px;color:var(--text)">
+      <i class="fas fa-info-circle" style="color:var(--accent)"></i>
+      <strong>Sample Listing</strong> — This court is shown as a preview. Once owners register and add their courts,
+      they will appear here with a verified badge.
+      <a href="dashboard.html" style="color:var(--accent);font-weight:600">Add your court now</a>.
+    </div>
+    ` : '') + `
     <div class="court-detail-section">
       <h3>Court Information</h3>
       <div class="detail-item">
@@ -366,6 +566,8 @@ window.openCourtModal = function(courtId) {
         <span>Rate: ${court.rate}</span>
       </div>` : ''}
     </div>
+
+    ${court.schedulesHtml || ''}
 
     <div class="court-detail-section">
       <h3>Location & Schedule</h3>
@@ -403,7 +605,7 @@ window.openCourtModal = function(courtId) {
 
     <div class="court-detail-section" style="margin-bottom:0">
       <p style="font-size:11px;color:#999">
-        Added on PickleSpot PH:
+        Added on PickleSpotPH:
         ${new Date(court.dateAdded).toLocaleDateString('en-PH', {
           year: 'numeric', month: 'long', day: 'numeric'
         })}
@@ -413,7 +615,7 @@ window.openCourtModal = function(courtId) {
 
   footer.innerHTML = `
     <div class="modal-action-btns">
-      <button class="btn-modal-map" onclick="viewOnMap(${court.id})">
+      <button class="btn-modal-map" onclick="viewOnMap('${court.id}')">
         <i class="fas fa-map-marked-alt"></i> View on Map
       </button>
       ${court.lat && court.lng ? `
@@ -424,13 +626,31 @@ window.openCourtModal = function(courtId) {
       ` : ''}
     </div>
     <div style="display:flex;gap:8px;margin-top:8px">
-      <button class="btn-submit" style="flex:1" onclick="openBookingModal(${court.id})">
+      ${court.ownerPlan === 'pro' ? `
+      <button class="btn-submit" style="flex:1" onclick="openBookingModal('${court.id}')">
         <i class="fas fa-calendar-check"></i> Book / Inquire
-      </button>
-      <button class="btn-submit" style="flex:1;background:var(--accent)" onclick="openReviewModal(${court.id})">
+      </button>` : ''}
+      <button class="btn-submit" style="flex:1;background:var(--accent)" onclick="openReviewModal('${court.id}')">
         <i class="fas fa-star"></i> Write Review
       </button>
     </div>
+    <div style="margin-top:12px;padding-top:12px;border-top:1px solid #eee">
+      <p style="font-size:11px;color:var(--text-muted);margin-bottom:6px">Share this court</p>
+      <div class="share-buttons">
+        <button class="share-btn share-fb" onclick="shareCourt('fb', '${encodeURIComponent(court.name)}', '${court.id}')" title="Share on Facebook"><i class="fab fa-facebook"></i></button>
+        <button class="share-btn share-x" onclick="shareCourt('x', '${encodeURIComponent(court.name)}', '${court.id}')" title="Share on X"><i class="fab fa-x-twitter"></i></button>
+        <button class="share-btn share-wa" onclick="shareCourt('wa', '${encodeURIComponent(court.name)}', '${court.id}')" title="Share on WhatsApp"><i class="fab fa-whatsapp"></i></button>
+        <button class="share-btn share-tg" onclick="shareCourt('tg', '${encodeURIComponent(court.name)}', '${court.id}')" title="Share on Telegram"><i class="fab fa-telegram"></i></button>
+        <button class="share-btn share-msg" onclick="shareCourt('msg', '${encodeURIComponent(court.name)}', '${court.id}')" title="Share on Messenger"><i class="fab fa-facebook-messenger"></i></button>
+        <button class="share-btn share-copy" onclick="shareCourt('copy', '${encodeURIComponent(court.name)}', '${court.id}')" title="Copy link"><i class="fas fa-link"></i></button>
+      </div>
+    </div>
+    ${typeof court.id === 'string' && !court.ownerId ? `
+    <div style="margin-top:12px;padding-top:12px;border-top:1px solid #eee;text-align:center">
+      <button class="btn-modal-map" onclick="openClaimModal('${court.id}','${encodeURIComponent(court.name)}')" style="color:var(--accent);border-color:var(--accent)">
+        <i class="fas fa-hand-paper"></i> Is this your court? Claim it!
+      </button>
+    </div>` : ''}
   `;
 
   modal.style.display = 'flex';
@@ -453,10 +673,93 @@ function openDirections(lat, lng) {
   );
 }
 
+function shareCourt(platform, courtNameEncoded, courtId) {
+  const url = `https://picklespotph.site/?court=${courtId}`;
+  const name = decodeURIComponent(courtNameEncoded);
+  const text = `Check out ${name} on PickleSpotPH! 🏓`;
+  const encodedText = encodeURIComponent(text);
+  const encodedUrl = encodeURIComponent(url);
+
+  switch (platform) {
+    case 'fb':
+      window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}&quote=${encodedText}`, '_blank', 'width=600,height=400');
+      break;
+    case 'x':
+      window.open(`https://twitter.com/intent/tweet?text=${encodedText}&url=${encodedUrl}`, '_blank', 'width=600,height=400');
+      break;
+    case 'wa':
+      window.open(`https://wa.me/?text=${encodedText}+${encodedUrl}`, '_blank');
+      break;
+    case 'tg':
+      window.open(`https://t.me/share/url?url=${encodedUrl}&text=${encodedText}`, '_blank');
+      break;
+    case 'msg':
+      window.open(`https://www.facebook.com/dialog/send?link=${encodedUrl}&app_id=&redirect_uri=${encodedUrl}`, '_blank', 'width=600,height=400');
+      break;
+    case 'copy':
+      navigator.clipboard.writeText(url).then(() => {
+        showToast('Link copied to clipboard!');
+      }).catch(() => {
+        showToast('Failed to copy link');
+      });
+      break;
+  }
+}
+
 function closeModal(modalId) {
   document.getElementById(modalId).style.display = 'none';
   document.body.style.overflow = '';
 }
+
+// ============================================================
+// CLAIM COURT MODAL
+// ============================================================
+let claimCourtId = null;
+
+window.openClaimModal = function(courtId, courtName) {
+  claimCourtId = courtId;
+  document.getElementById('claimCourtName').textContent = decodeURIComponent(courtName);
+  document.getElementById('claimForm').reset();
+  document.getElementById('claimModal').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+};
+
+document.getElementById('claimForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const court = allCourts.find(c => c.id === claimCourtId);
+  const data = {
+    courtId: claimCourtId,
+    courtName: court?.name || 'Unknown',
+    courtCity: court?.city || '',
+    courtProvince: court?.province || '',
+    courtRegion: court?.region || '',
+    courtType: court?.type || '',
+    courtAccess: court?.access || '',
+    courtRate: court?.rate || '',
+    courtContact: court?.contact || '',
+    courtAddress: court?.address || '',
+    courtHours: court?.hours || '',
+    courtLat: court?.lat || null,
+    courtLng: court?.lng || null,
+    courtCourts: court?.courts || 1,
+    courtAmenities: court?.amenities || [],
+    name: document.getElementById('claimName').value,
+    email: document.getElementById('claimEmail').value,
+    contact: document.getElementById('claimContact').value,
+    message: document.getElementById('claimMessage').value
+  };
+  try {
+    await PickleClaims.add(data);
+    await PickleNotifications.notifyAdminNewClaim(data, data.courtName);
+    closeModal('claimModal');
+    showToast('Claim submitted! The admin will review and notify you.');
+  } catch (err) {
+    showToast('Error: ' + err.message, 4000);
+  }
+});
+
+document.getElementById('claimModalClose').onclick = () => closeModal('claimModal');
+document.getElementById('claimCancelBtn').onclick = () => closeModal('claimModal');
 
 // ============================================================
 // BOOKING MODAL
@@ -464,7 +767,7 @@ function closeModal(modalId) {
 let bookingCourtId = null;
 
 window.openBookingModal = function(courtId) {
-  const court = allCourts.find(c => c.id === courtId);
+  const court = allCourts.find(c => c.id == courtId);
   if (!court) return;
   bookingCourtId = courtId;
   document.getElementById('bookingCourtName').textContent = `Send a booking request to ${court.name}`;
@@ -484,6 +787,9 @@ async function loadAvailableSlots() {
   const slotGroup = document.getElementById('slotPickerGroup');
   const slotGrid = document.getElementById('slotGrid');
   const slotStatus = document.getElementById('slotStatus');
+
+  selectedSlots = [];
+  document.getElementById('bookingTime').value = '';
 
   if (!dateVal || !bookingCourtId) {
     slotGrid.innerHTML = '';
@@ -528,6 +834,7 @@ async function loadAvailableSlots() {
 
   if (slots.length === 0) {
     slotGrid.innerHTML = '<p style="font-size:12px;color:var(--text-muted);grid-column:1/-1">No available slots for this day.</p>';
+    slotGroup.style.display = 'block';
     return;
   }
 
@@ -547,13 +854,76 @@ async function loadAvailableSlots() {
       ${s}
     </div>
   `).join('');
+  slotGroup.style.display = 'block';
 }
 
+let selectedSlots = [];
+
 window.selectSlot = function(slot) {
+  const allSlots = [...document.querySelectorAll('.slot-btn:not(.taken)')].map(b => b.dataset.slot);
+  const idx = selectedSlots.indexOf(slot);
+
+  if (idx !== -1) {
+    // Already selected
+    if (idx === 0 || idx === selectedSlots.length - 1) {
+      selectedSlots.splice(idx, 1); // deselect edge slot
+    } else {
+      selectedSlots = [slot]; // middle slot → reset to just this one
+    }
+  } else {
+    if (selectedSlots.length === 0) {
+      selectedSlots = [slot];
+    } else {
+      const clickIdx = allSlots.indexOf(slot);
+      const firstIdx = allSlots.indexOf(selectedSlots[0]);
+      const lastIdx = allSlots.indexOf(selectedSlots[selectedSlots.length - 1]);
+
+      if (clickIdx === lastIdx + 1 || clickIdx === firstIdx - 1) {
+        selectedSlots.push(slot);
+        selectedSlots.sort((a, b) => allSlots.indexOf(a) - allSlots.indexOf(b));
+      } else {
+        selectedSlots = [slot];
+      }
+    }
+  }
+
+  // Update UI
   document.querySelectorAll('.slot-btn').forEach(b => b.classList.remove('selected'));
-  document.querySelector(`.slot-btn[data-slot="${slot}"]`).classList.add('selected');
-  document.getElementById('bookingTime').value = slot;
+  selectedSlots.forEach(s => {
+    document.querySelector(`.slot-btn[data-slot="${s}"]`)?.classList.add('selected');
+  });
+
+  // Set time range (e.g. "08:00-10:00")
+  if (selectedSlots.length > 0) {
+    const start = selectedSlots[0];
+    const last = selectedSlots[selectedSlots.length - 1];
+    const [sh, sm] = last.split(':').map(Number);
+    const endM = sh * 60 + sm + 60;
+    const endStr = `${String(Math.floor(endM / 60)).padStart(2, '0')}:${String(endM % 60).padStart(2, '0')}`;
+    document.getElementById('bookingTime').value = `${start}-${endStr}`;
+  } else {
+    document.getElementById('bookingTime').value = '';
+  }
 };
+
+function toMinutes(s) {
+  const [h, m] = s.split(':').map(Number);
+  return h * 60 + m;
+}
+
+function timeOverlap(timeA, timeB) {
+  const parse = (t) => {
+    if (t.includes('-')) {
+      const [s, e] = t.split('-');
+      return [toMinutes(s), toMinutes(e)];
+    }
+    const m = toMinutes(t);
+    return [m, m + 60];
+  };
+  const [aStart, aEnd] = parse(timeA);
+  const [bStart, bEnd] = parse(timeB);
+  return aStart < bEnd && bStart < aEnd;
+}
 
 document.getElementById('bookingForm').addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -564,6 +934,7 @@ document.getElementById('bookingForm').addEventListener('submit', async (e) => {
 
   const customerName = document.getElementById('bookingName').value;
   const customerContact = document.getElementById('bookingContact').value;
+  const customerEmail = document.getElementById('bookingEmail').value;
 
   const bookingDate = document.getElementById('bookingDate').value;
   const bookingTime = document.getElementById('bookingTime').value;
@@ -572,6 +943,7 @@ document.getElementById('bookingForm').addEventListener('submit', async (e) => {
     courtId: bookingCourtId,
     name: customerName,
     contact: customerContact,
+    email: customerEmail,
     date: bookingDate,
     time: bookingTime,
     players: document.getElementById('bookingPlayers').value,
@@ -579,17 +951,17 @@ document.getElementById('bookingForm').addEventListener('submit', async (e) => {
     status: 'pending'
   };
 
-  // Double-booking check: look for confirmed bookings on same court + date + time
+  // Double-booking check: look for confirmed bookings on same court + date with overlapping time
   if (bookingDate && typeof PickleBookings !== 'undefined') {
     try {
       const existing = await PickleBookings.getByCourt(bookingCourtId);
       const conflict = existing.find(b =>
         b.status === 'confirmed' &&
         b.date === bookingDate &&
-        b.time === bookingTime
+        b.time && timeOverlap(b.time, bookingTime)
       );
       if (conflict) {
-        showToast('⚠️ This time slot is already booked. Please choose a different date or time.', 5000);
+        showToast('⚠️ This time slot overlaps with an existing booking. Please choose a different date or time.', 5000);
         return;
       }
     } catch {}
@@ -606,6 +978,7 @@ document.getElementById('bookingForm').addEventListener('submit', async (e) => {
         ownerId: court.ownerId || 'unknown',
         customerName,
         customerContact,
+        customerEmail,
         lastMessage: bookingData.message || 'Inquiry sent',
         lastSender: customerName
       });
@@ -624,11 +997,28 @@ document.getElementById('bookingForm').addEventListener('submit', async (e) => {
   // Store chat access in localStorage for the customer
   if (chatId) {
     const chats = JSON.parse(localStorage.getItem('psp_chats') || '[]');
-    if (!chats.find(c => c.id === chatId)) {
+    if (!chats.find(c => c.id == chatId)) {
       chats.push({ id: chatId, name: court.name, customerName, customerContact });
       localStorage.setItem('psp_chats', JSON.stringify(chats));
     }
+    // Show chat widget immediately
+    document.getElementById('customerChatWidget').style.display = 'block';
+    renderChatThreadsList();
   }
+
+  // Notify the court owner via email
+  try {
+    if (typeof PickleNotifications !== 'undefined' && court.ownerId) {
+      await PickleNotifications.notifyOwnerNewBooking(court.ownerId, bookingData, court.name);
+    }
+  } catch {}
+
+  // Add to mailing list
+  try {
+    if (typeof PickleMailing !== 'undefined' && customerEmail) {
+      await PickleMailing.subscribe(customerEmail, customerName);
+    }
+  } catch {}
 
   showToast('✅ Inquiry sent! Check your Messages below to chat with the owner.');
   document.getElementById('bookingForm').reset();
@@ -645,7 +1035,7 @@ let reviewCourtId = null;
 let selectedRating = 0;
 
 window.openReviewModal = function(courtId) {
-  const court = allCourts.find(c => c.id === courtId);
+  const court = allCourts.find(c => c.id == courtId);
   if (!court) return;
   reviewCourtId = courtId;
   selectedRating = 0;
@@ -704,6 +1094,8 @@ document.getElementById('reviewModalClose').addEventListener('click', () => clos
 function getActiveFilters() {
   const search = document.getElementById('searchInput').value.trim();
   const region = document.getElementById('regionFilter').value;
+  const province = document.getElementById('provinceFilter')?.value || '';
+  const city = document.getElementById('cityFilter')?.value || '';
 
   const types = [...document.querySelectorAll('.type-filter:checked')]
     .map(cb => cb.value);
@@ -712,7 +1104,50 @@ function getActiveFilters() {
   const amenities = [...document.querySelectorAll('.amenity-filter:checked')]
     .map(cb => cb.value);
 
-  return { search, region, types, access, amenities };
+  return { search, region, province, city, types, access, amenities };
+}
+
+function populateProvinces() {
+  const region = document.getElementById('regionFilter').value;
+  const provinceSelect = document.getElementById('provinceFilter');
+  const provinceGroup = document.getElementById('provinceFilterGroup');
+  const citySelect = document.getElementById('cityFilter');
+  const cityGroup = document.getElementById('cityFilterGroup');
+
+  citySelect.value = '';
+  cityGroup.style.display = 'none';
+  provinceSelect.value = '';
+
+  if (!region) {
+    provinceGroup.style.display = 'none';
+    applyFilters();
+    return;
+  }
+
+  const provinces = PH_LOCATIONS[region] ? Object.keys(PH_LOCATIONS[region]).sort() : [];
+  provinceSelect.innerHTML = '<option value="">All Provinces</option>' + provinces.map(p => `<option value="${p}">${p}</option>`).join('');
+  provinceGroup.style.display = 'block';
+  applyFilters();
+}
+
+function populateCities() {
+  const region = document.getElementById('regionFilter').value;
+  const province = document.getElementById('provinceFilter').value;
+  const citySelect = document.getElementById('cityFilter');
+  const cityGroup = document.getElementById('cityFilterGroup');
+
+  citySelect.value = '';
+
+  if (!region || !province) {
+    cityGroup.style.display = 'none';
+    applyFilters();
+    return;
+  }
+
+  const cities = PH_LOCATIONS[region] && PH_LOCATIONS[region][province] ? [...PH_LOCATIONS[region][province]].sort() : [];
+  citySelect.innerHTML = '<option value="">All Cities</option>' + cities.map(c => `<option value="${c}">${c}</option>`).join('');
+  cityGroup.style.display = 'block';
+  applyFilters();
 }
 
 function applyFilters() {
@@ -722,6 +1157,7 @@ function applyFilters() {
   renderSidebarList(filteredCourts);
 
   if (currentView === 'list') {
+    listPage = 1;
     const sortBy = document.getElementById('sortSelect')?.value || 'name';
     renderCourtsList(sortCourts(filteredCourts, sortBy));
   }
@@ -730,6 +1166,10 @@ function applyFilters() {
 function resetFilters() {
   document.getElementById('searchInput').value = '';
   document.getElementById('regionFilter').value = '';
+  document.getElementById('provinceFilter').value = '';
+  document.getElementById('provinceFilterGroup').style.display = 'none';
+  document.getElementById('cityFilter').value = '';
+  document.getElementById('cityFilterGroup').style.display = 'none';
   document.getElementById('clearSearch').style.display = 'none';
 
   document.querySelectorAll('.type-filter, .access-filter')
@@ -750,6 +1190,10 @@ function updateStats(courts) {
     getUniqueCities(courts).length;
   document.getElementById('totalRegions').textContent =
     getUniqueRegions(courts).length;
+
+  // Hero stats
+  const heroCourts = document.getElementById('statCourts');
+  if (heroCourts) heroCourts.textContent = courts.length;
 }
 
 // ============================================================
@@ -765,7 +1209,7 @@ function submitCourtForm(e) {
     id: allCourts.length + 1,
     name: document.getElementById('courtName').value,
     city: document.getElementById('courtCity').value,
-    province: document.getElementById('courtRegion').value,
+    province: document.getElementById('courtProvince').value,
     region: document.getElementById('courtRegion').value,
     type: document.getElementById('courtType').value,
     access: document.getElementById('courtAccess').value,
@@ -793,9 +1237,58 @@ function submitCourtForm(e) {
     flyToMarker(newCourt.id);
   }
 
+  // Save to Firestore if user is logged in
+  const user = PickleAuth.getCurrentUser();
+  if (user) {
+    PickleCourts.add(newCourt, user.uid).catch(err => {
+      console.warn('Failed to save court to Firestore:', err);
+    });
+  }
+
   closeModal('addCourtModal');
   document.getElementById('addCourtForm').reset();
-  showToast('🎉 Court added to PickleSpot PH! Salamat! 🇵🇭');
+  document.getElementById('courtProvinceGroup').style.display = 'none';
+  document.getElementById('courtCityGroup').style.display = 'none';
+  showToast('🎉 Court added to PickleSpotPH! Salamat! 🇵🇭');
+}
+
+function populateAddCourtProvinces() {
+  const region = document.getElementById('courtRegion').value;
+  const provGroup = document.getElementById('courtProvinceGroup');
+  const provSelect = document.getElementById('courtProvince');
+  const cityGroup = document.getElementById('courtCityGroup');
+  const citySelect = document.getElementById('courtCity');
+
+  citySelect.value = '';
+  cityGroup.style.display = 'none';
+  provSelect.value = '';
+
+  if (!region) {
+    provGroup.style.display = 'none';
+    return;
+  }
+
+  const provinces = PH_LOCATIONS[region] ? Object.keys(PH_LOCATIONS[region]).sort() : [];
+  provSelect.innerHTML = '<option value="">Select Province</option>' + provinces.map(p => `<option value="${p}">${p}</option>`).join('');
+  provGroup.style.display = 'block';
+}
+
+function populateAddCourtCities() {
+  const region = document.getElementById('courtRegion').value;
+  const province = document.getElementById('courtProvince').value;
+  const cityGroup = document.getElementById('courtCityGroup');
+  const citySelect = document.getElementById('courtCity');
+
+  citySelect.value = '';
+
+  if (!region || !province) {
+    cityGroup.style.display = 'none';
+    return;
+  }
+
+  const cities = PH_LOCATIONS[region] && PH_LOCATIONS[region][province] ? [...PH_LOCATIONS[region][province]].sort() : [];
+  citySelect.innerHTML = '<option value="">Select City</option>' + cities.map(c => `<option value="${c}">${c}</option>`).join('');
+  cityGroup.style.display = 'block';
 }
 
 // ============================================================
@@ -844,7 +1337,9 @@ function setupEventListeners() {
   });
 
   // Filters
-  document.getElementById('regionFilter').addEventListener('change', applyFilters);
+  document.getElementById('regionFilter').addEventListener('change', populateProvinces);
+  document.getElementById('provinceFilter').addEventListener('change', populateCities);
+  document.getElementById('cityFilter').addEventListener('change', applyFilters);
   document.querySelectorAll('.type-filter, .access-filter, .amenity-filter')
     .forEach(cb => cb.addEventListener('change', applyFilters));
   document.getElementById('resetFilters').addEventListener('click', resetFilters);
@@ -854,19 +1349,38 @@ function setupEventListeners() {
   document.getElementById('toggleSidebar').addEventListener('click', toggleSidebar);
   document.getElementById('sidebarToggle').addEventListener('click', toggleSidebar);
 
-  // Add court
-  document.getElementById('addCourtBtn').addEventListener('click', () => {
+  // Add court — show plans first
+  document.getElementById('addCourtBtn').addEventListener('click', openPlansModal);
+  document.getElementById('heroAddBtn').addEventListener('click', openPlansModal);
+
+  function openPlansModal() {
+    document.getElementById('plansModal').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+  }
+
+  function openAddCourtModal() {
     document.getElementById('addCourtModal').style.display = 'flex';
     document.body.style.overflow = 'hidden';
+    document.getElementById('courtProvinceGroup').style.display = 'none';
+    document.getElementById('courtCityGroup').style.display = 'none';
     initMainAddCourtMap();
+  }
+
+  document.getElementById('basicPlanCta').addEventListener('click', () => {
+    closeModal('plansModal');
+    const user = PickleAuth.getCurrentUser();
+    if (!user) {
+      showToast('Please log in to add a court — create a free account to save it permanently!');
+      setTimeout(() => window.location.href = 'dashboard.html?add=1', 2500);
+      return;
+    }
+    openAddCourtModal();
   });
 
   document.getElementById('mobileAddCourt').addEventListener('click', (e) => {
     e.preventDefault();
-    document.getElementById('addCourtModal').style.display = 'flex';
-    document.body.style.overflow = 'hidden';
     document.getElementById('mobileMenu').classList.remove('open');
-    initMainAddCourtMap();
+    openPlansModal();
   });
 
   // Close modals
@@ -876,6 +1390,8 @@ function setupEventListeners() {
     .addEventListener('click', () => closeModal('addCourtModal'));
   document.getElementById('cancelAdd')
     .addEventListener('click', () => closeModal('addCourtModal'));
+  document.getElementById('plansModalClose')
+    .addEventListener('click', () => closeModal('plansModal'));
 
   // Close on overlay click
   document.querySelectorAll('.modal-overlay').forEach(overlay => {
@@ -888,6 +1404,10 @@ function setupEventListeners() {
   document.getElementById('addCourtForm')
     .addEventListener('submit', submitCourtForm);
 
+  // Add court cascade
+  document.getElementById('courtRegion').addEventListener('change', populateAddCourtProvinces);
+  document.getElementById('courtProvince').addEventListener('change', populateAddCourtCities);
+
   // List search
   document.getElementById('listSearchInput')?.addEventListener('input', (e) => {
     const q = e.target.value.toLowerCase();
@@ -896,11 +1416,13 @@ function setupEventListeners() {
       c.city.toLowerCase().includes(q) ||
       c.province.toLowerCase().includes(q)
     );
+    listPage = 1;
     renderCourtsList(filtered);
   });
 
   // Sort
   document.getElementById('sortSelect')?.addEventListener('change', (e) => {
+    listPage = 1;
     renderCourtsList(sortCourts(filteredCourts, e.target.value));
   });
 
@@ -946,6 +1468,11 @@ function initCustomerChatWidget() {
 function renderChatThreadsList() {
   const stored = JSON.parse(localStorage.getItem('psp_chats') || '[]');
   const container = document.getElementById('chatThreadsList');
+  if (!container) return;
+
+  container.style.display = '';
+  container.style.flexDirection = '';
+  container.style.gap = '';
 
   if (stored.length === 0) {
     container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-muted);font-size:13px">No conversations</div>';
@@ -963,7 +1490,8 @@ function renderChatThreadsList() {
 window.openCustomerChat = async function(chatId) {
   customerChatId = chatId;
 
-  document.getElementById('chatThreadsList').innerHTML = '';
+  const threadsEl = document.getElementById('chatThreadsList');
+  if (threadsEl) threadsEl.innerHTML = '';
   document.getElementById('chatPopupInputArea').style.display = 'flex';
 
   // Get chat info
@@ -982,8 +1510,11 @@ window.openCustomerChat = async function(chatId) {
 
 function renderCustomerMessages(msgs) {
   const container = document.getElementById('chatThreadsList');
-  container.id = 'chatPopupMessages';
+  if (!container) return;
 
+  container.style.display = 'flex';
+  container.style.flexDirection = 'column';
+  container.style.gap = '8px';
   container.innerHTML = msgs.map(m => {
     const isCustomer = m.senderId === 'customer';
     const time = m.timestamp?.toDate ? m.timestamp.toDate().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
@@ -1010,6 +1541,12 @@ async function sendCustomerMessage() {
   input.value = '';
   try {
     await PickleChat.sendMessage(customerChatId, 'customer', 'You', text);
+    // Notify the owner via email
+    try {
+      if (typeof PickleNotifications !== 'undefined') {
+        PickleNotifications.notifyOwnerNewMessage(customerChatId, 'You', text);
+      }
+    } catch {}
   } catch (err) {
     showToast('Error sending message');
   }
@@ -1032,5 +1569,4 @@ document.getElementById('chatPopupClose').addEventListener('click', () => {
   document.getElementById('chatPopup').style.display = 'none';
   if (customerChatUnsub) { customerChatUnsub(); customerChatUnsub = null; }
   customerChatId = null;
-  document.getElementById('chatThreadsList').id = 'chatThreadsList';
 });
