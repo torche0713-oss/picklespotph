@@ -902,7 +902,7 @@ async function loadOwnerCourts() {
 // OPEN PLAY SCHEDULES
 // ============================================================
 let editingScheduleId = null;
-const DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+const SCHEDULE_DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
 
 async function loadSchedules() {
   const container = document.getElementById('schedulesList');
@@ -928,7 +928,7 @@ async function loadSchedules() {
               <label>Day *</label>
               <select id="schedDay" required>
                 <option value="">Select day</option>
-                ${DAYS.map(d => `<option value="${d}">${d}</option>`).join('')}
+                ${SCHEDULE_DAYS.map(d => `<option value="${d}">${d}</option>`).join('')}
               </select>
             </div>
           </div>
@@ -1210,7 +1210,7 @@ window.failPayment = async function(paymentId) {
 // ============================================================
 // AVAILABILITY (Weekly Schedule)
 // ============================================================
-const DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+const AVAIL_DAYS = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
 const DAY_LABELS = { monday: 'Monday', tuesday: 'Tuesday', wednesday: 'Wednesday', thursday: 'Thursday', friday: 'Friday', saturday: 'Saturday', sunday: 'Sunday' };
 
 let availCourtId = null;
@@ -1253,7 +1253,7 @@ async function renderAvailabilityEditor() {
 
   editor.innerHTML = `
     <p style="font-size:12px;color:var(--text-muted);margin-bottom:12px">Toggle days on/off and set operating hours. Customers will only see available slots within these hours.</p>
-    ${DAYS.map(day => {
+    ${AVAIL_DAYS.map(day => {
       const d = avail[day] || { enabled: false, start: '06:00', end: '22:00' };
       return `
         <div class="avail-day ${d.enabled ? '' : 'avail-slot-disabled'}">
@@ -1291,7 +1291,7 @@ async function renderAvailabilityEditor() {
 
   document.getElementById('saveAvailBtn').addEventListener('click', async () => {
     const availability = {};
-    DAYS.forEach(day => {
+    AVAIL_DAYS.forEach(day => {
       const enabled = document.querySelector(`.avail-toggle[data-day="${day}"]`).checked;
       const start = document.querySelector(`.avail-start[data-day="${day}"]`).value;
       const end = document.querySelector(`.avail-end[data-day="${day}"]`).value;
@@ -1311,7 +1311,7 @@ async function renderAvailabilityEditor() {
 
 function getDefaultAvailability() {
   const avail = {};
-  DAYS.forEach(day => {
+  AVAIL_DAYS.forEach(day => {
     avail[day] = { enabled: day !== 'sunday', start: '06:00', end: '22:00' };
   });
   return avail;
@@ -1566,7 +1566,13 @@ function setupLogout() {
   const logoutBtns = ['dashLogout', 'dashLogoutBtn'];
   logoutBtns.forEach(id => {
     document.getElementById(id).addEventListener('click', async () => {
-      await PickleAuth.logout();
+      if (typeof PickleAuth !== 'undefined') {
+        await PickleAuth.logout();
+      } else {
+        // Force clear any Firebase persistence
+        try { indexedDB.deleteDatabase('firebaseLocalStorageDb'); } catch(_) {}
+        try { localStorage.removeItem('firebase:authUser'); } catch(_) {}
+      }
       window.location.reload();
     });
   });
