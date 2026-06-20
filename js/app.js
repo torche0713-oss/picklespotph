@@ -774,40 +774,111 @@ window.openBookingModal = function(courtId) {
   document.getElementById('bookingModal').style.display = 'flex';
   document.getElementById('bookingForm').reset();
   document.getElementById('slotPickerGroup').style.display = 'none';
+  document.getElementById('bookingDate').value = '';
+  // Initialize calendar
+  calendarViewDate = new Date();
+  renderCalendar(calendarViewDate);
 };
 
-// Load available time slots when date changes
-const bookingDateInput = document.getElementById('bookingDate');
-bookingDateInput.addEventListener('change', loadAvailableSlots);
-bookingDateInput.addEventListener('blur', loadAvailableSlots);
-bookingDateInput.addEventListener('input', loadAvailableSlots);
+// ============================================================
+// CALENDAR BOOKING VIEW
+// ============================================================
+let calendarViewDate = new Date();
+
+function renderCalendar(monthDate) {
+  const year = monthDate.getFullYear();
+  const month = monthDate.getMonth();
+
+  document.getElementById('calMonthLabel').textContent =
+    new Date(year, month).toLocaleDateString('en-PH', { month: 'long', year: 'numeric' });
+
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const selectedDate = document.getElementById('bookingDate').value;
+
+  let html = '';
+  ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].forEach(d => {
+    html += `<div class="calendar-day-header">${d}</div>`;
+  });
+
+  for (let i = 0; i < firstDay; i++) {
+    html += '<div></div>';
+  }
+
+  for (let day = 1; day <= daysInMonth; day++) {
+    const cellDate = new Date(year, month, day);
+    cellDate.setHours(0, 0, 0, 0);
+    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    const isPast = cellDate < today;
+    const isToday = cellDate.getTime() === today.getTime();
+    const isSelected = dateStr === selectedDate;
+
+    let cls = 'calendar-cell';
+    if (isPast) cls += ' cal-disabled';
+    if (isToday) cls += ' cal-today';
+    if (isSelected) cls += ' cal-selected';
+
+    html += `<div class="${cls}" data-date="${dateStr}"${isPast ? '' : ` onclick="selectDate('${dateStr}')"`}>${day}</div>`;
+  }
+
+  document.getElementById('calendarGrid').innerHTML = html;
+}
+
+window.selectDate = function(dateStr) {
+  document.getElementById('bookingDate').value = dateStr;
+  renderCalendar(calendarViewDate);
+  loadAvailableSlots();
+};
+
+document.getElementById('calPrev').addEventListener('click', function() {
+  calendarViewDate.setMonth(calendarViewDate.getMonth() - 1);
+  renderCalendar(calendarViewDate);
+});
+
+document.getElementById('calNext').addEventListener('click', function() {
+  calendarViewDate.setMonth(calendarViewDate.getMonth() + 1);
+  renderCalendar(calendarViewDate);
+});
 
 async function loadAvailableSlots() {
   const dateVal = document.getElementById('bookingDate').value;
   const slotGroup = document.getElementById('slotPickerGroup');
   const slotGrid = document.getElementById('slotGrid');
   const slotStatus = document.getElementById('slotStatus');
+  const dateLabel = document.getElementById('selectedDateLabel');
 
   selectedSlots = [];
   document.getElementById('bookingTime').value = '';
 
   if (!dateVal || !bookingCourtId) {
     slotGrid.innerHTML = '';
+    slotGroup.style.display = 'none';
     if (slotStatus) slotStatus.textContent = 'Select a date to see available times';
+    if (dateLabel) dateLabel.textContent = '';
     return;
   }
 
   const court = allCourts.find(c => c.id === bookingCourtId);
   if (!court) {
     slotGrid.innerHTML = '';
+    slotGroup.style.display = 'none';
     if (slotStatus) slotStatus.textContent = 'Court not found';
+    if (dateLabel) dateLabel.textContent = '';
     return;
+  }
+
+  // Show selected date label
+  if (dateLabel) {
+    const d = new Date(dateVal + 'T12:00:00');
+    dateLabel.textContent = d.toLocaleDateString('en-PH', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
   }
 
   // Check court availability (default to 6AM-10PM if not set)
   let dayAvail;
   if (court.availability) {
-    const dayName = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][new Date(dateVal).getDay()];
+    const dayName = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][new Date(dateVal + 'T12:00:00').getDay()];
     dayAvail = court.availability[dayName];
   }
 

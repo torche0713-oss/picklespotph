@@ -408,7 +408,7 @@
 
   <!-- ===== BOOKING INQUIRY MODAL ===== -->
   <div class="modal-overlay" id="bookingModal" style="display:none">
-    <div class="modal" style="max-width:450px">
+    <div class="modal" style="max-width:500px">
       <button class="modal-close" id="bookingModalClose"><i class="fas fa-times"></i></button>
       <div class="modal-header">
         <h2><i class="fas fa-calendar-check"></i> Book / Inquire</h2>
@@ -429,12 +429,18 @@
             <input type="email" id="bookingEmail" required placeholder="e.g. juan@email.com"/>
           </div>
           <div class="form-group">
-            <label>Preferred Date</label>
-            <input type="date" id="bookingDate"/>
+            <label>Select Date</label>
+            <div class="calendar-nav">
+              <button type="button" id="calPrev"><i class="fas fa-chevron-left"></i></button>
+              <span id="calMonthLabel">June 2026</span>
+              <button type="button" id="calNext"><i class="fas fa-chevron-right"></i></button>
+            </div>
+            <div class="calendar-grid" id="calendarGrid"></div>
+            <input type="hidden" id="bookingDate"/>
             <p style="font-size:12px;color:var(--text-muted);margin-top:4px" id="slotStatus">Select a date to see available times</p>
           </div>
           <div class="form-group" id="slotPickerGroup">
-            <label>Available Time Slots</label>
+            <label>Available Time Slots <span style="font-weight:400;color:var(--text-muted);font-size:12px">— <span id="selectedDateLabel"></span></span></label>
             <div class="slot-grid" id="slotGrid"></div>
             <p style="font-size:11px;color:var(--text-muted);margin-top:6px">Click multiple consecutive slots to book 2–3 hours</p>
             <input type="hidden" id="bookingTime"/>

@@ -1620,6 +1620,88 @@ body {
   resize: vertical;
 }
 
+/* Calendar booking view */
+.calendar-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  gap: 10px;
+}
+.calendar-nav button {
+  background: none;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--text);
+  transition: var(--transition);
+  line-height: 1;
+}
+.calendar-nav button:hover {
+  background: #f5f5f5;
+  border-color: var(--primary);
+}
+.calendar-nav span {
+  font-weight: 600;
+  font-size: 15px;
+}
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 3px;
+  text-align: center;
+  margin-bottom: 4px;
+}
+.calendar-day-header {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  padding: 4px 0;
+  text-transform: uppercase;
+}
+.calendar-cell {
+  padding: 7px 2px;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: var(--transition);
+  border: 1px solid transparent;
+  position: relative;
+}
+.calendar-cell:hover:not(.cal-disabled) {
+  border-color: var(--primary);
+  background: #f0f7ff;
+}
+.calendar-cell.cal-today {
+  font-weight: 700;
+  color: var(--primary);
+}
+.calendar-cell.cal-today::after {
+  content: '';
+  position: absolute;
+  bottom: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--primary);
+}
+.calendar-cell.cal-selected {
+  background: var(--primary);
+  color: white;
+  font-weight: 600;
+}
+.calendar-cell.cal-selected.cal-today::after {
+  background: white;
+}
+.calendar-cell.cal-disabled {
+  color: #ccc;
+  cursor: not-allowed;
+}
+
 /* Slot picker grid */
 #slotPickerGroup { display: none; }
 .slot-grid {
