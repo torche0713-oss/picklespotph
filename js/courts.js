@@ -326,7 +326,8 @@ const AMENITY_ICONS = {
   lights: { icon: 'fa-lightbulb', label: 'Night Lights' },
   rental: { icon: 'fa-table-tennis-paddle-ball', label: 'Equipment Rental' },
   shower: { icon: 'fa-shower', label: 'Shower/Locker' },
-  cafe: { icon: 'fa-mug-hot', label: 'Café/Food' }
+  cafe: { icon: 'fa-mug-hot', label: 'Café/Food' },
+  ac: { icon: 'fa-snowflake', label: 'A/C' }
 };
 
 // Get unique cities
