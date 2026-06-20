@@ -1566,7 +1566,13 @@ function setupLogout() {
   const logoutBtns = ['dashLogout', 'dashLogoutBtn'];
   logoutBtns.forEach(id => {
     document.getElementById(id).addEventListener('click', async () => {
-      await PickleAuth.logout();
+      if (typeof PickleAuth !== 'undefined') {
+        await PickleAuth.logout();
+      } else {
+        // Force clear any Firebase persistence
+        try { indexedDB.deleteDatabase('firebaseLocalStorageDb'); } catch(_) {}
+        try { localStorage.removeItem('firebase:authUser'); } catch(_) {}
+      }
       window.location.reload();
     });
   });
