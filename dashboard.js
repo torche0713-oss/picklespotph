@@ -902,7 +902,7 @@ async function loadOwnerCourts() {
 // OPEN PLAY SCHEDULES
 // ============================================================
 let editingScheduleId = null;
-const DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+const SCHEDULE_DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
 
 async function loadSchedules() {
   const container = document.getElementById('schedulesList');
@@ -928,7 +928,7 @@ async function loadSchedules() {
               <label>Day *</label>
               <select id="schedDay" required>
                 <option value="">Select day</option>
-                ${DAYS.map(d => `<option value="${d}">${d}</option>`).join('')}
+                ${SCHEDULE_DAYS.map(d => `<option value="${d}">${d}</option>`).join('')}
               </select>
             </div>
           </div>
