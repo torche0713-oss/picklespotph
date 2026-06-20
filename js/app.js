@@ -86,7 +86,7 @@ async function loadFirestoreCourts() {
     }));
     for (const fc of firestoreCourts) {
       if (!allCourts.find(c => c.id === fc.id)) {
-        fc.ownerPlan = ownerPlans[fc.ownerId] || 'basic';
+        fc.ownerPlan = fc.ownerPlan || ownerPlans[fc.ownerId] || 'basic';
         allCourts.push(fc);
       }
     }
