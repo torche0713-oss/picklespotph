@@ -17,11 +17,20 @@ document.addEventListener('DOMContentLoaded', () => {
   // Handle redirect auth result (Google/Facebook sign-in)
   PickleAuth.handleRedirectResult().catch(() => {});
 
+  const wantsAdd = new URLSearchParams(window.location.search).get('add') === '1';
+  if (wantsAdd) {
+    history.replaceState(null, '', window.location.pathname);
+  }
+
   PickleAuth.onAuthChanged(async (user) => {
     if (user) {
       currentUser = user;
       userProfile = await PickleAuth.getUserProfile(user.uid);
       renderDashboard();
+      if (wantsAdd) {
+        switchSection('add-court');
+        showToast('You\'re logged in! Add your court below.', 3000);
+      }
     } else {
       showLoginModal();
     }

@@ -1371,7 +1371,7 @@ function setupEventListeners() {
     const user = PickleAuth.getCurrentUser();
     if (!user) {
       showToast('Please log in to add a court — create a free account to save it permanently!');
-      setTimeout(() => window.location.href = 'dashboard.html', 2500);
+      setTimeout(() => window.location.href = 'dashboard.html?add=1', 2500);
       return;
     }
     openAddCourtModal();
