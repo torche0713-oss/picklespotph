@@ -10,6 +10,9 @@ let sidebarCollapsed = false;
 let mainAddCourtMap = null;
 let mainAddCourtMarker = null;
 let mainAddCourtMapInitialized = false;
+let currentUser = null;
+let favoriteIds = new Set();
+let savedOnly = false;
 
 // ============================================================
 // ADD COURT MAP PICKER
@@ -69,6 +72,18 @@ document.addEventListener('DOMContentLoaded', () => {
   initCustomerChatWidget();
   loadRecentlyAdded();
   loadFirestoreCourts();
+  // Auth state listener
+  if (typeof firebase !== 'undefined') {
+    firebase.auth().onAuthStateChanged(user => {
+      currentUser = user;
+      if (user) {
+        loadFavorites(user.uid);
+      } else {
+        favoriteIds = new Set();
+        refreshFavoritesUI();
+      }
+    });
+  }
 });
 
 async function loadFirestoreCourts() {
@@ -120,7 +135,9 @@ function loadRecentlyAdded() {
   const recent = sorted.slice(0, 10);
   const isStatic = c => typeof c.id === 'number';
 
-  track.innerHTML = recent.map(c => `
+  track.innerHTML = recent.map(c => {
+    const isFav = favoriteIds.has(String(c.id));
+    return `
     <div class="recent-card" onclick="openCourtModal('${c.id}')">
       <div class="rc-type">${c.type} · ${c.access}</div>
       <div class="rc-name">${c.name}</div>
@@ -129,9 +146,12 @@ function loadRecentlyAdded() {
         <span><i class="fas fa-table-tennis-paddle-ball"></i> ${c.courts}</span>
         ${c.verified ? '<span><i class="fas fa-check-circle" style="color:var(--primary)"></i> Verified</span>' : ''}
       </div>
+      <span class="recent-heart ${isFav ? 'hearted' : ''}" onclick="event.stopPropagation(); toggleFavorite('${c.id}','${encodeURIComponent(c.name)}')">
+        <i class="${isFav ? 'fas' : 'far'} fa-heart"></i>
+      </span>
       ${isStatic(c) ? '<div class="rc-sample">Sample</div>' : ''}
     </div>
-  `).join('');
+  `}).join('');
 
   section.style.display = 'block';
 
@@ -227,6 +247,50 @@ async function loadTournamentTicker() {
     wrap.style.display = 'flex';
   } catch {}
 }
+
+// ============================================================
+// FAVORITES
+// ============================================================
+async function loadFavorites(uid) {
+  try {
+    if (typeof PickleFavorites === 'undefined') return;
+    const ids = await PickleFavorites.getByUser(uid);
+    favoriteIds = new Set(ids.map(String));
+  } catch { favoriteIds = new Set(); }
+  refreshFavoritesUI();
+}
+
+window.toggleFavorite = async function(courtId, courtName) {
+  if (!currentUser) {
+    showToast('Please log in to save favorites.');
+    return;
+  }
+  const sid = String(courtId);
+  const wasFav = favoriteIds.has(sid);
+  if (!wasFav) favoriteIds.add(sid); else favoriteIds.delete(sid);
+  refreshFavoritesUI();
+  try {
+    const result = await PickleFavorites.toggle(currentUser.uid, courtId, courtName);
+    if (!result) favoriteIds.delete(sid); else favoriteIds.add(sid);
+  } catch { if (wasFav) favoriteIds.add(sid); else favoriteIds.delete(sid); }
+  refreshFavoritesUI();
+};
+
+function refreshFavoritesUI() {
+  const view = document.getElementById('listView');
+  if (view && view.style.display !== 'none') renderCourtsList(filteredCourts);
+  const sidebar = document.getElementById('sidebar');
+  if (sidebar && sidebar.style.display !== 'none') renderSidebarList(filteredCourts);
+  renderMarkers(allCourts);
+  updateFavCount();
+}
+
+function updateFavCount() {
+  const count = favoriteIds.size;
+  const el = document.getElementById('favCount');
+  if (el) el.textContent = count > 0 ? `Saved (${count})` : 'Saved';
+}
+
 function showView(view) {
   currentView = view;
 
@@ -279,13 +343,20 @@ function renderSidebarList(courts) {
     return;
   }
 
-  container.innerHTML = courts.map(court => `
+  container.innerHTML = courts.map(court => {
+    const isFav = favoriteIds.has(String(court.id));
+    return `
     <div class="sidebar-court-item" data-id="${court.id}"
          onclick="handleSidebarCourtClick('${court.id}')">
-      <div class="court-item-name">
-        ${court.name}
-        ${court.verified ? '<i class="fas fa-check-circle" style="color:var(--primary);font-size:12px" title="Verified"></i>' : ''}
-        ${court.featured ? '<span style="font-size:9px;background:var(--accent);color:white;padding:1px 6px;border-radius:8px;margin-left:4px">★</span>' : ''}
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:6px">
+        <div class="court-item-name">
+          ${court.name}
+          ${court.verified ? '<i class="fas fa-check-circle" style="color:var(--primary);font-size:12px" title="Verified"></i>' : ''}
+          ${court.featured ? '<span style="font-size:9px;background:var(--accent);color:white;padding:1px 6px;border-radius:8px;margin-left:4px">★</span>' : ''}
+        </div>
+        <span class="sidebar-heart ${isFav ? 'hearted' : ''}" onclick="event.stopPropagation(); toggleFavorite('${court.id}','${encodeURIComponent(court.name)}')" style="font-size:14px;cursor:pointer;flex-shrink:0">
+          <i class="${isFav ? 'fas' : 'far'} fa-heart"></i>
+        </span>
       </div>
       <div class="court-item-location">
         <i class="fas fa-map-marker-alt" style="font-size:10px"></i>
@@ -308,7 +379,7 @@ function renderSidebarList(courts) {
         </span>` : ''}
       </div>
     </div>
-  `).join('');
+  `}).join('');
 }
 
 function handleSidebarCourtClick(courtId) {
@@ -356,10 +427,14 @@ function renderCourtsList(courts) {
       court.access === 'Free' ? 'tag-free' :
       court.access === 'Paid' ? 'tag-paid' : 'tag-members';
 
+    const isFav = favoriteIds.has(String(court.id));
     return `
       <div class="court-card" onclick="openCourtModal('${court.id}')">
         <div class="court-card-header">
           <div class="court-number">${String(globalIdx).padStart(2, '0')}</div>
+          <div class="heart-btn ${isFav ? 'hearted' : ''}" onclick="event.stopPropagation(); toggleFavorite('${court.id}','${encodeURIComponent(court.name)}')" title="${isFav ? 'Remove from saved' : 'Save court'}">
+            <i class="${isFav ? 'fas' : 'far'} fa-heart"></i>
+          </div>
           <div class="court-card-name">
             ${court.name}
             ${court.verified ? '<i class="fas fa-check-circle" style="color:#FFD700;font-size:14px" title="Verified"></i>' : ''}
@@ -1224,6 +1299,9 @@ function populateCities() {
 function applyFilters() {
   const filters = getActiveFilters();
   filteredCourts = filterCourts(allCourts, filters);
+  if (savedOnly && currentUser) {
+    filteredCourts = filteredCourts.filter(c => favoriteIds.has(String(c.id)));
+  }
   renderMarkers(filteredCourts);
   renderSidebarList(filteredCourts);
 
@@ -1233,6 +1311,17 @@ function applyFilters() {
     renderCourtsList(sortCourts(filteredCourts, sortBy));
   }
 }
+
+window.toggleSavedFilter = function() {
+  if (!currentUser) {
+    showToast('Please log in to view saved courts.');
+    return;
+  }
+  savedOnly = !savedOnly;
+  const btn = document.getElementById('btnSaved');
+  if (btn) btn.classList.toggle('active', savedOnly);
+  applyFilters();
+};
 
 function resetFilters() {
   document.getElementById('searchInput').value = '';
@@ -1247,6 +1336,9 @@ function resetFilters() {
     .forEach(cb => { cb.checked = true; });
   document.querySelectorAll('.amenity-filter')
     .forEach(cb => { cb.checked = false; });
+  savedOnly = false;
+  const btn = document.getElementById('btnSaved');
+  if (btn) btn.classList.remove('active');
 
   applyFilters();
   showToast('✅ Filters reset');

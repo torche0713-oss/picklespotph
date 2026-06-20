@@ -85,7 +85,8 @@ const COLLECTIONS = {
   SUBSCRIBERS: 'subscribers',
   TOURNAMENTS: 'tournaments',
   CLAIMS: 'claims',
-  SCHEDULES: 'schedules'
+  SCHEDULES: 'schedules',
+  FAVORITES: 'favorites'
 };
 
 // ============================================================
@@ -821,6 +822,36 @@ async function isProUser(uid) {
   const profile = await PickleAuth.getUserProfile(uid);
   return profile?.plan === 'pro';
 }
+
+// ============================================================
+// FAVORITES SERVICE
+// ============================================================
+const PickleFavorites = {
+  async toggle(userId, courtId, courtName) {
+    const existing = await db.collection(COLLECTIONS.FAVORITES)
+      .where('userId', '==', userId)
+      .where('courtId', '==', String(courtId))
+      .get();
+    if (!existing.empty) {
+      await db.collection(COLLECTIONS.FAVORITES).doc(existing.docs[0].id).delete();
+      return false;
+    }
+    await db.collection(COLLECTIONS.FAVORITES).add({
+      userId,
+      courtId: String(courtId),
+      courtName,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    return true;
+  },
+
+  async getByUser(userId) {
+    const snapshot = await db.collection(COLLECTIONS.FAVORITES)
+      .where('userId', '==', userId)
+      .get();
+    return snapshot.docs.map(doc => doc.data().courtId);
+  }
+};
 
 // ============================================================
 // ANALYTICS

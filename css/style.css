@@ -297,6 +297,7 @@ body {
   cursor: pointer;
   transition: transform 0.2s, box-shadow 0.2s;
   border: 1px solid #f0f0f0;
+  position: relative;
 }
 .recent-card:hover {
   transform: translateY(-2px);
@@ -1205,6 +1206,71 @@ body {
   min-height: calc(100vh - var(--navbar-height));
   background: var(--bg);
 }
+
+/* Heart button on court cards */
+.heart-btn {
+  position: absolute;
+  top: 12px;
+  right: 48px;
+  background: rgba(255,255,255,0.25);
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--transition);
+  z-index: 2;
+  color: white;
+  font-size: 14px;
+}
+.heart-btn:hover { background: rgba(255,255,255,0.4); transform: scale(1.1); }
+.heart-btn.hearted { color: #e74c3c; }
+.heart-btn.hearted i { animation: heartPop 0.3s ease; }
+@keyframes heartPop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
+
+.recent-heart {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(0,0,0,0.35);
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: white;
+  font-size: 13px;
+  z-index: 2;
+  transition: var(--transition);
+}
+.recent-heart:hover { background: rgba(0,0,0,0.5); transform: scale(1.1); }
+.recent-heart.hearted { color: #e74c3c; }
+
+/* Saved filter button */
+.btn-saved {
+  background: none;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 12px;
+  cursor: pointer;
+  color: var(--text-muted);
+  transition: var(--transition);
+  font-family: 'Poppins', sans-serif;
+  margin-left: 8px;
+  white-space: nowrap;
+}
+.btn-saved:hover { border-color: var(--primary); color: var(--primary); }
+.btn-saved.active { background: #fce4ec; border-color: #e74c3c; color: #e74c3c; }
+.btn-saved.active i { color: #e74c3c; }
 
 .about-container {
   max-width: 900px;
