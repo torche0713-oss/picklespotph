@@ -445,7 +445,7 @@ function goToPage(page) {
 // ============================================================
 // COURT MODAL
 // ============================================================
-window.openCourtModal = function(courtId) {
+window.openCourtModal = async function(courtId) {
   const court = allCourts.find(c => c.id == courtId);
   if (!court) return;
 
@@ -453,6 +453,31 @@ window.openCourtModal = function(courtId) {
   if (typeof court.id === 'string' && typeof PickleAnalytics !== 'undefined') {
     PickleAnalytics.trackView(court.id);
   }
+
+  // Load open play schedules
+  let schedulesHtml = '';
+  if (typeof PickleSchedules !== 'undefined' && court.id) {
+    try {
+      const schedules = await PickleSchedules.getByCourt(String(court.id));
+      if (schedules.length > 0) {
+        const dayOrder = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+        const sorted = [...schedules].sort((a, b) => dayOrder.indexOf(a.day) - dayOrder.indexOf(b.day));
+        schedulesHtml = `
+          <div class="court-detail-section">
+            <h3><i class="fas fa-calendar-alt"></i> Open Play Schedule</h3>
+            ${sorted.map(s => `
+              <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f0f0f0;font-size:13px">
+                <span style="font-weight:600;min-width:80px">${s.day}</span>
+                <span style="color:var(--text-muted)">${s.startTime} - ${s.endTime}</span>
+                ${s.cost ? `<span style="color:var(--accent);font-weight:600">${s.cost}</span>` : ''}
+                ${s.notes ? `<span style="color:var(--text-muted);font-size:12px">· ${s.notes}</span>` : ''}
+              </div>
+            `).join('')}
+          </div>`;
+      }
+    } catch (e) {}
+  }
+  court.schedulesHtml = schedulesHtml;
 
   const modal = document.getElementById('courtModal');
   const header = document.getElementById('modalHeader');
@@ -541,6 +566,8 @@ window.openCourtModal = function(courtId) {
         <span>Rate: ${court.rate}</span>
       </div>` : ''}
     </div>
+
+    ${court.schedulesHtml || ''}
 
     <div class="court-detail-section">
       <h3>Location & Schedule</h3>

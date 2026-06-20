@@ -585,6 +585,12 @@
       <button class="dash-nav-item" data-section="analytics" style="display:none">
         <i class="fas fa-chart-bar"></i> Analytics
       </button>
+      <button class="dash-nav-item" data-section="schedules" style="display:none">
+        <i class="fas fa-calendar-alt"></i> Open Play
+      </button>
+      <button class="dash-nav-item" data-section="tournaments" style="display:none">
+        <i class="fas fa-trophy"></i> Tournaments
+      </button>
       <button class="dash-nav-item" data-section="upgrade">
         <i class="fas fa-crown"></i> Upgrade to Pro
       </button>
@@ -593,9 +599,6 @@
       </button>
       <button class="dash-nav-item" data-section="owner-courts" style="display:none">
         <i class="fas fa-building"></i> Owner Courts
-      </button>
-      <button class="dash-nav-item" data-section="tournaments" style="display:none">
-        <i class="fas fa-trophy"></i> Tournaments
       </button>
       <button class="dash-nav-item" data-section="claims" style="display:none">
         <i class="fas fa-hand-paper"></i> Claims
@@ -858,10 +861,17 @@
         <div id="ownerCourtsList"></div>
       </div>
 
-      <!-- Tournaments (Admin) -->
+      <!-- Open Play Schedules -->
+      <div class="dash-section" id="section-schedules">
+        <h1>Open Play Schedules</h1>
+        <p class="subtitle">Set recurring open play hours for your courts</p>
+        <div id="schedulesList"></div>
+      </div>
+
+      <!-- Tournaments -->
       <div class="dash-section" id="section-tournaments">
         <h1>Tournaments</h1>
-        <p class="subtitle">Manage upcoming tournaments (appear in RSS feed)</p>
+        <p class="subtitle">Manage upcoming tournaments (appear in RSS feed &amp; homepage)</p>
         <div id="tournamentsList"></div>
       </div>
 

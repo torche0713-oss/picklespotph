@@ -54,7 +54,8 @@ function renderDashboard() {
   const isAdmin = currentUser.email === ADMIN_EMAIL;
   document.querySelector('[data-section="bookings"]').style.display = isPro ? 'flex' : 'none';
   document.querySelector('[data-section="owner-courts"]').style.display = isAdmin ? 'flex' : 'none';
-  document.querySelector('[data-section="tournaments"]').style.display = isAdmin ? 'flex' : 'none';
+  document.querySelector('[data-section="schedules"]').style.display = isPro ? 'flex' : 'none';
+  document.querySelector('[data-section="tournaments"]').style.display = (isPro || isAdmin) ? 'flex' : 'none';
   document.querySelector('[data-section="claims"]').style.display = isAdmin ? 'flex' : 'none';
   document.getElementById('dashUnclaimedGroup').style.display = isAdmin ? 'block' : 'none';
   document.querySelector('[data-section="payments"]').style.display = isAdmin ? 'flex' : 'none';
@@ -82,6 +83,7 @@ function switchSection(sectionId) {
   if (sectionId === 'payments') loadPayments();
   if (sectionId === 'admin-analytics') loadAdminAnalytics();
   if (sectionId === 'owner-courts') loadOwnerCourts();
+  if (sectionId === 'schedules') loadSchedules();
   if (sectionId === 'tournaments') loadTournaments();
   if (sectionId === 'claims') loadClaims();
   if (sectionId === 'analytics') loadAnalytics();
@@ -870,6 +872,153 @@ async function loadOwnerCourts() {
 }
 
 // ============================================================
+// OPEN PLAY SCHEDULES
+// ============================================================
+let editingScheduleId = null;
+const DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+
+async function loadSchedules() {
+  const container = document.getElementById('schedulesList');
+  container.innerHTML = '<p style="color:var(--text-muted)">Loading...</p>';
+
+  try {
+    const myCourts = await PickleCourts.getByOwner(currentUser.uid);
+    const allSchedules = await PickleSchedules.getByOwner(currentUser.uid);
+
+    const formHtml = `
+      <div style="background:var(--white);border-radius:16px;padding:24px;margin-bottom:24px;box-shadow:var(--card-shadow)">
+        <h3 style="margin-bottom:16px;font-size:16px">${editingScheduleId ? 'Edit Schedule' : 'Add Open Play Schedule'}</h3>
+        <form id="scheduleForm">
+          <div class="form-row">
+            <div class="form-group" style="flex:2">
+              <label>Court *</label>
+              <select id="schedCourtId" required>
+                <option value="">Select a court</option>
+                ${myCourts.map(c => `<option value="${c.id}">${c.name}</option>`).join('')}
+              </select>
+            </div>
+            <div class="form-group" style="flex:1">
+              <label>Day *</label>
+              <select id="schedDay" required>
+                <option value="">Select day</option>
+                ${DAYS.map(d => `<option value="${d}">${d}</option>`).join('')}
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group" style="flex:1">
+              <label>Start *</label>
+              <input type="time" id="schedStart" required/>
+            </div>
+            <div class="form-group" style="flex:1">
+              <label>End *</label>
+              <input type="time" id="schedEnd" required/>
+            </div>
+            <div class="form-group" style="flex:1">
+              <label>Cost</label>
+              <input type="text" id="schedCost" placeholder="e.g. P250/head"/>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Notes (optional)</label>
+            <input type="text" id="schedNotes" placeholder="e.g. All levels welcome, bring own paddle"/>
+          </div>
+          <div class="form-actions">
+            ${editingScheduleId ? `<button type="button" class="btn-cancel" onclick="cancelEditSchedule()">Cancel</button>` : ''}
+            <button type="submit" class="btn-submit"><i class="fas fa-save"></i> ${editingScheduleId ? 'Update' : 'Add'} Schedule</button>
+          </div>
+        </form>
+        ${myCourts.length === 0 ? '<p style="color:var(--text-muted);font-size:13px;margin-top:8px">You need to <a href="#" onclick="switchSection(\'add-court\')">add a court first</a>.</p>' : ''}
+      </div>
+    `;
+
+    const listHtml = allSchedules.length ? allSchedules.map(s => {
+      const court = myCourts.find(c => c.id === s.courtId);
+      return `
+        <div style="background:var(--white);border-radius:12px;padding:16px 20px;margin-bottom:12px;box-shadow:var(--card-shadow);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+          <div>
+            <strong>${s.day}</strong> · ${s.startTime} - ${s.endTime}
+            <div style="font-size:12px;color:var(--text-muted);margin-top:2px">
+              📍 ${court ? court.name : s.courtId}
+            </div>
+            ${s.cost ? `<div style="font-size:12px;color:var(--text-muted)">💰 ${s.cost}</div>` : ''}
+            ${s.notes ? `<div style="font-size:12px;color:var(--text-muted)">📝 ${s.notes}</div>` : ''}
+          </div>
+          <div style="display:flex;gap:8px;flex-shrink:0">
+            <button class="btn-dash btn-dash-primary" onclick="editSchedule('${s.id}')"><i class="fas fa-edit"></i></button>
+            <button class="btn-dash btn-dash-danger" onclick="deleteSchedule('${s.id}')"><i class="fas fa-trash"></i></button>
+          </div>
+        </div>
+      `;
+    }).join('') : '<div class="empty-state"><i class="fas fa-calendar-alt"></i><h3>No schedules</h3><p>Add your first open play schedule above.</p></div>';
+
+    container.innerHTML = formHtml + listHtml;
+
+    document.getElementById('scheduleForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const data = {
+        courtId: document.getElementById('schedCourtId').value,
+        courtName: myCourts.find(c => c.id === document.getElementById('schedCourtId').value)?.name || '',
+        day: document.getElementById('schedDay').value,
+        startTime: document.getElementById('schedStart').value,
+        endTime: document.getElementById('schedEnd').value,
+        cost: document.getElementById('schedCost').value,
+        notes: document.getElementById('schedNotes').value,
+        ownerId: currentUser.uid
+      };
+      try {
+        if (editingScheduleId) {
+          await PickleSchedules.update(editingScheduleId, data);
+          showToast('Schedule updated!');
+        } else {
+          await PickleSchedules.add(data);
+          showToast('Open play schedule added!');
+        }
+        editingScheduleId = null;
+        loadSchedules();
+      } catch (err) {
+        showToast('Error: ' + err.message, 4000);
+      }
+    });
+
+    if (editingScheduleId) {
+      const s = allSchedules.find(x => x.id === editingScheduleId);
+      if (s) {
+        document.getElementById('schedCourtId').value = s.courtId || '';
+        document.getElementById('schedDay').value = s.day || '';
+        document.getElementById('schedStart').value = s.startTime || '';
+        document.getElementById('schedEnd').value = s.endTime || '';
+        document.getElementById('schedCost').value = s.cost || '';
+        document.getElementById('schedNotes').value = s.notes || '';
+      }
+    }
+  } catch (err) {
+    container.innerHTML = `<p style="color:#d32f2f">Error: ${err.message}</p>`;
+  }
+}
+
+window.editSchedule = function(id) {
+  editingScheduleId = id;
+  loadSchedules();
+};
+
+window.cancelEditSchedule = function() {
+  editingScheduleId = null;
+  loadSchedules();
+};
+
+window.deleteSchedule = async function(id) {
+  if (!confirm('Delete this schedule?')) return;
+  try {
+    await PickleSchedules.delete(id);
+    showToast('Schedule deleted.');
+    loadSchedules();
+  } catch (err) {
+    showToast('Error: ' + err.message, 4000);
+  }
+};
+
+// ============================================================
 // TOURNAMENTS
 // ============================================================
 let editingTournamentId = null;
@@ -879,7 +1028,9 @@ async function loadTournaments() {
   container.innerHTML = '<p style="color:var(--text-muted)">Loading...</p>';
 
   try {
-    const tournaments = await PickleTournaments.getAll();
+    const isAdmin = currentUser.email === ADMIN_EMAIL;
+    const allTournaments = await PickleTournaments.getAll();
+    const tournaments = isAdmin ? allTournaments : allTournaments.filter(t => t.ownerId === currentUser.uid);
     const now = new Date();
 
     const formHtml = `
@@ -918,9 +1069,11 @@ async function loadTournaments() {
       </div>
     `;
 
+    const isAdmin = currentUser.email === ADMIN_EMAIL;
     const listHtml = tournaments.length ? tournaments.map(t => {
       const d = new Date(t.date);
       const past = d < now;
+      const canModify = isAdmin || t.ownerId === currentUser.uid;
       return `
         <div style="background:var(--white);border-radius:12px;padding:16px 20px;margin-bottom:12px;box-shadow:var(--card-shadow);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;opacity:${past ? 0.5 : 1}">
           <div>
@@ -931,10 +1084,11 @@ async function loadTournaments() {
             ${t.details ? `<div style="font-size:12px;color:var(--text-muted);margin-top:2px">${t.details}</div>` : ''}
             ${t.link ? `<a href="${t.link}" target="_blank" style="font-size:12px;color:var(--primary)">🔗 More info</a>` : ''}
           </div>
+          ${canModify ? `
           <div style="display:flex;gap:8px;flex-shrink:0">
             <button class="btn-dash btn-dash-primary" onclick="editTournament('${t.id}')"><i class="fas fa-edit"></i></button>
             <button class="btn-dash btn-dash-danger" onclick="deleteTournament('${t.id}')"><i class="fas fa-trash"></i></button>
-          </div>
+          </div>` : ''}
         </div>
       `;
     }).join('') : '<div class="empty-state"><i class="fas fa-trophy"></i><h3>No tournaments</h3><p>Add your first tournament above.</p></div>';
@@ -948,11 +1102,14 @@ async function loadTournaments() {
         date: document.getElementById('tournDate').value,
         location: document.getElementById('tournLocation').value,
         link: document.getElementById('tournLink').value,
-        details: document.getElementById('tournDetails').value
+        details: document.getElementById('tournDetails').value,
+        ownerId: currentUser.uid
       };
       try {
         if (editingTournamentId) {
-          await PickleTournaments.update(editingTournamentId, data);
+          const updateData = { ...data };
+          delete updateData.ownerId;
+          await PickleTournaments.update(editingTournamentId, updateData);
           showToast('Tournament updated!');
         } else {
           await PickleTournaments.add(data);

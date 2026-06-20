@@ -84,7 +84,8 @@ const COLLECTIONS = {
   MESSAGES: 'messages',
   SUBSCRIBERS: 'subscribers',
   TOURNAMENTS: 'tournaments',
-  CLAIMS: 'claims'
+  CLAIMS: 'claims',
+  SCHEDULES: 'schedules'
 };
 
 // ============================================================
@@ -708,6 +709,10 @@ const PickleTournaments = {
     const snapshot = await db.collection(COLLECTIONS.TOURNAMENTS).get();
     return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
   },
+  async getByOwner(ownerId) {
+    const all = await this.getAll();
+    return all.filter(t => t.ownerId === ownerId);
+  },
   async update(id, data) {
     await db.collection(COLLECTIONS.TOURNAMENTS).doc(id).update(data);
   },
@@ -721,6 +726,37 @@ const PickleTournaments = {
       const d = new Date(t.date);
       return d >= now || isNaN(d.getTime());
     }).sort((a, b) => new Date(a.date) - new Date(b.date));
+  }
+};
+
+// ============================================================
+// OPEN PLAY SCHEDULES SERVICE
+// ============================================================
+const PickleSchedules = {
+  async add(data) {
+    const docRef = await db.collection(COLLECTIONS.SCHEDULES).add({
+      ...data,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    return docRef.id;
+  },
+  async getAll() {
+    const snapshot = await db.collection(COLLECTIONS.SCHEDULES).get();
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  },
+  async getByOwner(ownerId) {
+    const all = await this.getAll();
+    return all.filter(s => s.ownerId === ownerId);
+  },
+  async getByCourt(courtId) {
+    const all = await this.getAll();
+    return all.filter(s => s.courtId === courtId);
+  },
+  async update(id, data) {
+    await db.collection(COLLECTIONS.SCHEDULES).doc(id).update(data);
+  },
+  async delete(id) {
+    await db.collection(COLLECTIONS.SCHEDULES).doc(id).delete();
   }
 };
 

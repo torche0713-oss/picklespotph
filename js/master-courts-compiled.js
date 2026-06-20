@@ -743,25 +743,6 @@ const MASTER_COURTS = {
       source: "QuestAdventure.ph, Shopee PH blog"
     },
     {
-      name: "Quest Adventure Camp Pickleball Courts",
-      address: "Pantay Quatro, Sitio Buhangin, Antipolo-Teresa boundary, Rizal",
-      city: "Teresa",
-      province: "Rizal",
-      region: "Luzon",
-      type: "Outdoor",
-      courts: 6,
-      access: "Paid",
-      contact: "(+63) 968-533-2484 / 0969-279-8285 / info@questadventure.ph",
-      hours: "Tue-Sun 8:00 AM - 7:00 PM",
-      lat: 14.5873,
-      lng: 121.2381,
-      amenities: ["parking", "rental", "lights", "shower", "cafe"],
-      notes: "6 premium USAP-standard cushioned courts. P400/hr (w/o lights), P600/hr (with lights). P100 paddle rental. 45 min from Metro Manila.",
-      verified: false,
-      featured: false,
-      source: "QuestAdventure.ph, Shopee PH blog"
-    },
-    {
       name: "Bulacan Sports Complex",
       address: "Bulacan Sports Complex, Malolos, Bulacan",
       city: "Malolos",
@@ -1709,3 +1690,7 @@ const MASTER_COURTS = {
 //
 // Total new: ~72 detailed + 48 PPF leads = ~120 potential additions
 // ============================================================
+
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = MASTER_COURTS;
+}
