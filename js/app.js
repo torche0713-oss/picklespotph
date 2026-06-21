@@ -133,8 +133,6 @@ function loadRecentlyAdded() {
   });
 
   const recent = sorted.slice(0, 10);
-  const isStatic = c => typeof c.id === 'number';
-
   track.innerHTML = recent.map(c => {
     const isFav = favoriteIds.has(String(c.id));
     return `
@@ -149,7 +147,6 @@ function loadRecentlyAdded() {
       <span class="recent-heart ${isFav ? 'hearted' : ''}" onclick="event.stopPropagation(); toggleFavorite('${c.id}','${encodeURIComponent(c.name)}')">
         <i class="${isFav ? 'fas' : 'far'} fa-heart"></i>
       </span>
-      ${isStatic(c) ? '<div class="rc-sample">Sample</div>' : ''}
     </div>
   `}).join('');
 
@@ -438,7 +435,6 @@ function renderCourtsList(courts) {
           <div class="court-card-name">
             ${court.name}
             ${court.verified ? '<i class="fas fa-check-circle" style="color:#FFD700;font-size:14px" title="Verified"></i>' : ''}
-            ${typeof court.id === 'number' ? '<span style="font-size:9px;background:#f5f5f5;color:#999;padding:1px 6px;border-radius:8px;margin-left:4px;font-weight:500">Sample</span>' : ''}
           </div>
           ${court.featured ? '<div style="position:absolute;top:12px;left:12px;background:var(--accent);color:white;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700">★ Featured</div>' : ''}
           <div class="court-card-location">
@@ -471,9 +467,6 @@ function renderCourtsList(courts) {
             <span class="tag ${accessClass}">${court.access}</span>
             ${court.verified
               ? '<span class="tag" style="background:#e3f2fd;color:#1565c0">✓ Verified</span>'
-              : ''}
-            ${typeof court.id === 'number'
-              ? '<span class="tag" style="background:#f5f5f5;color:#999">Sample</span>'
               : ''}
           </div>
           ${court.amenities.length > 0 ? `

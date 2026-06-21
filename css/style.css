@@ -334,15 +334,7 @@ body {
 .recent-card .rc-meta i {
   margin-right: 3px;
 }
-.recent-card .rc-sample {
-  font-size: 9px;
-  color: #999;
-  background: #f5f5f5;
-  padding: 1px 6px;
-  border-radius: 6px;
-  display: inline-block;
-  margin-top: 6px;
-}
+
 
 .hero-launch-notice {
   background: rgba(255, 215, 0, 0.15);
