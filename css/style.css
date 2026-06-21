@@ -135,6 +135,26 @@ body {
   left: -30px;
   transform: rotate(-20deg);
 }
+#heroPickleball {
+  position: absolute;
+  right: 5%;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 45%;
+  max-width: 550px;
+  height: auto;
+  z-index: 0;
+  opacity: 0.3;
+  pointer-events: none;
+  animation: heroSpin 20s linear infinite;
+}
+@keyframes heroSpin {
+  from { transform: translateY(-50%) rotate(0deg); }
+  to { transform: translateY(-50%) rotate(360deg); }
+}
+@media (max-width: 768px) {
+  #heroPickleball { display: none; }
+}
 .hero-content {
   max-width: 700px;
   margin: 0 auto;
