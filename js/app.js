@@ -984,22 +984,34 @@ async function loadAvailableSlots() {
     return;
   }
 
-  // Check for already-booked (confirmed) slots
-  let taken = new Set();
+  // Check for already-booked (confirmed) slots using time overlap
   try {
     if (typeof PickleBookings !== 'undefined') {
       const existing = await PickleBookings.getByCourt(bookingCourtId);
-      taken = new Set(
-        existing.filter(b => b.status === 'confirmed' && b.date === dateVal).map(b => b.time)
-      );
+      const confirmed = existing.filter(b => b.status === 'confirmed' && b.date === dateVal);
+      slotGrid.innerHTML = slots.map(s => {
+        const slotEnd = `${String(Math.floor((toMinutes(s) + 60) / 60)).padStart(2, '0')}:${String((toMinutes(s) + 60) % 60).padStart(2, '0')}`;
+        const isTaken = confirmed.some(b => timeOverlap(b.time, `${s}-${slotEnd}`));
+        return `
+          <div class="slot-btn ${isTaken ? 'taken' : ''}" data-slot="${s}" onclick="${isTaken ? '' : `selectSlot('${s}')`}">
+            ${s}
+          </div>
+        `;
+      }).join('');
+    } else {
+      slotGrid.innerHTML = slots.map(s => `
+        <div class="slot-btn" data-slot="${s}" onclick="selectSlot('${s}')">
+          ${s}
+        </div>
+      `).join('');
     }
-  } catch {}
-
-  slotGrid.innerHTML = slots.map(s => `
-    <div class="slot-btn ${taken.has(s) ? 'taken' : ''}" data-slot="${s}" onclick="${taken.has(s) ? '' : `selectSlot('${s}')`}">
-      ${s}
-    </div>
-  `).join('');
+  } catch {
+    slotGrid.innerHTML = slots.map(s => `
+      <div class="slot-btn" data-slot="${s}" onclick="selectSlot('${s}')">
+        ${s}
+      </div>
+    `).join('');
+  }
   slotGroup.style.display = 'block';
 }
 
@@ -1138,7 +1150,9 @@ document.getElementById('bookingForm').addEventListener('submit', async (e) => {
       bookingData.chatId = chatId;
       await PickleBookings.create(bookingData);
     }
-  } catch {}
+  } catch (err) {
+    console.error('Booking creation error:', err);
+  }
 
   // Store chat access in localStorage for the customer
   if (chatId) {

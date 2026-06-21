@@ -1,575 +1,565 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Batch Import Courts - PickleSpotPH</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Batch Import — PickleSpotPH</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 600px; margin: 40px auto; padding: 0 20px; }
+  h1 { font-size: 20px; }
+  button { padding: 12px 24px; font-size: 16px; cursor: pointer; border: none; border-radius: 8px; margin: 8px 0; }
+  .btn-import { background: #1a73e8; color: #fff; }
+  .btn-danger { background: #dc3545; color: #fff; }
+  pre { background: #f5f5f5; padding: 12px; border-radius: 6px; font-size: 13px; max-height: 400px; overflow: auto; }
+  .success { color: #28a745; }
+  .error { color: #dc3545; }
+</style>
+</head>
+<body>
+  <h1>Batch Import Courts & Tournaments</h1>
+  <p>Status: <span id="status">Not started</span></p>
+  <p>Log:</p>
+  <pre id="log">Waiting...</pre>
+  <button class="btn-import" id="importCourtsBtn" disabled>Import Courts</button>
+  <button class="btn-import" id="importTournamentsBtn" disabled style="margin-left:8px">Import Tournaments</button>
+  <br>
+  <button class="btn-danger" id="logoutBtn">Logout</button>
+
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f0f2f5; color: #333; padding: 20px; }
-    .container { max-width: 800px; margin: 0 auto; background: white; border-radius: 16px; padding: 32px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
-    h1 { font-size: 24px; margin-bottom: 8px; color: #1a1a2e; }
-    p { color: #666; margin-bottom: 24px; line-height: 1.6; }
-    .status { background: #f8f9fa; border-radius: 8px; padding: 16px; margin-bottom: 20px; font-size: 14px; max-height: 400px; overflow-y: auto; font-family: monospace; white-space: pre-wrap; }
-    .status .success { color: #0a7c42; }
-    .status .error { color: #d32f2f; }
-    .status .info { color: #1565c0; }
-    .status .warn { color: #e65100; }
-    .btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 28px; border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
-    .btn-primary { background: #1a73e8; color: white; }
-    .btn-primary:hover { background: #1557b0; }
-    .btn-primary:disabled { background: #93b8f0; cursor: not-allowed; }
-    .btn-danger { background: #d32f2f; color: white; }
-    .btn-danger:hover { background: #b71c1c; }
-    .btn-outline { background: transparent; color: #1a73e8; border: 2px solid #1a73e8; }
-    .btn-outline:hover { background: #e8f0fe; }
-    .progress-bar { width: 100%; height: 8px; background: #e0e0e0; border-radius: 4px; margin: 12px 0; overflow: hidden; display: none; }
-    .progress-bar .fill { height: 100%; background: #1a73e8; border-radius: 4px; transition: width 0.3s; width: 0%; }
-    .meta { font-size: 12px; color: #999; margin-top: 20px; text-align: center; }
-    .user-info { display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: #e8f0fe; border-radius: 8px; margin-bottom: 20px; }
-    .user-info img { width: 36px; height: 36px; border-radius: 50%; }
-    .user-info .name { font-weight: 600; font-size: 14px; }
-    .user-info .email { font-size: 12px; color: #666; }
-    .actions { display: flex; gap: 12px; flex-wrap: wrap; }
-    .login-form { display: flex; flex-direction: column; gap: 12px; max-width: 320px; margin-bottom: 20px; }
-    .login-form input { padding: 10px 14px; border: 2px solid #ddd; border-radius: 8px; font-size: 14px; }
-    .login-form input:focus { border-color: #1a73e8; outline: none; }
-    .divider { border: none; border-top: 1px solid #eee; margin: 20px 0; }
-    .summary { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
-    .summary .stat { background: #f8f9fa; border-radius: 8px; padding: 12px; text-align: center; }
-    .summary .stat .num { font-size: 28px; font-weight: 700; color: #1a1a2e; }
-    .summary .stat .label { font-size: 12px; color: #666; }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <h1>Batch Import Pickleball Courts</h1>
-    <p>Import pre-researched pickleball courts into your Firestore database. All courts will be added as <strong>unclaimed</strong> listings.</p>
-
-    <div id="userSection" style="display:none">
-      <div class="user-info" id="userInfo"></div>
-    </div>
-
-    <div id="loginSection">
-      <h3>Sign in</h3>
-      <p>Option 1: Already signed in on the main site? <button class="btn btn-outline" onclick="window.location.reload()" style="padding:4px 12px;font-size:13px">Refresh</button></p>
-      <p style="margin-top:12px">Option 2: Sign in with email/password:</p>
-      <div class="login-form">
-        <input type="email" id="loginEmail" placeholder="Email" value="torche0713@gmail.com">
-        <input type="password" id="loginPassword" placeholder="Password">
-        <button class="btn btn-primary" id="emailLoginBtn">Sign In</button>
-        <span id="loginError" style="color:#d32f2f;font-size:13px"></span>
-      </div>
-    </div>
-
-    <hr class="divider">
-
-    <div class="summary" id="summarySection">
-      <div class="stat"><div class="num" id="totalCount">0</div><div class="label">Courts Ready</div></div>
-      <div class="stat"><div class="num" id="importedCount">0</div><div class="label">Imported</div></div>
-    </div>
-
-    <div class="progress-bar" id="progressBar"><div class="fill" id="progressFill"></div></div>
-
-    <div class="actions">
-      <button class="btn btn-primary" id="importBtn" disabled>Start Import</button>
-      <button class="btn btn-outline" id="previewBtn">Preview Courts</button>
-    </div>
-
-    <div class="status" id="statusLog">Ready. Sign in to begin.</div>
-  </div>
-
   <script>
-    firebase.initializeApp({
+    const FIREBASE_CONFIG = {
       apiKey: "AIzaSyC33FcO7YxNVpJE7pt8QrNfBVaQ0R6XOps",
       authDomain: "picklespotph-8553a.firebaseapp.com",
       projectId: "picklespotph-8553a",
       storageBucket: "picklespotph-8553a.firebasestorage.app",
       messagingSenderId: "847121039089",
       appId: "1:847121039089:web:b4cda36838300d33b83350"
-    });
+    };
 
+    if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
     const auth = firebase.auth();
     const db = firebase.firestore();
-
-    const COURTS_DATA = [
-      {
-        name: "The Smash City",
-        city: "Valenzuela",
-        province: "Metro Manila",
-        region: "NCR",
-        type: "indoor",
-        access: "public",
-        rate: "Php 200-400 per hour",
-        courts: 1,
-        contact: "(+63) 962 935 4912",
-        address: "30 F. Alarcon St., Malabo, Maysan Road, Valenzuela City",
-        hours: "Mon-Sun 7:00 AM - 12:00 MN",
-        email: "TheSmashCity@gmail.com",
-        amenities: ["LED Lighting", "Professional-grade surfaces"]
-      },
-      {
-        name: "Bounce at Parqal Mall",
-        city: "Parañaque",
-        province: "Metro Manila",
-        region: "NCR",
-        type: "outdoor",
-        access: "public",
-        rate: "Php 1,250-1,750 per hour",
-        courts: 3,
-        contact: "(+63)2 7001 0297",
-        address: "Parqal, J.W. Diokno, Aseana City, Parañaque City",
-        hours: "Mon-Sun 6:00 AM - 11:00 PM",
-        email: "bounceinquiries@parqal.com",
-        amenities: ["Shower", "Locker Rooms"]
-      },
-      {
-        name: "Pickleball Hub",
-        city: "Muntinlupa",
-        province: "Metro Manila",
-        region: "NCR",
-        type: "indoor",
-        access: "public",
-        rate: "Php 600/hour, Open Play Php 300/person",
-        courts: 1,
-        contact: "",
-        address: "21 W Service Rd, Muntinlupa City",
-        hours: "",
-        amenities: []
-      },
-      {
-        name: "The Zone Sports Center",
-        city: "Makati",
-        province: "Metro Manila",
-        region: "NCR",
-        type: "indoor",
-        access: "public",
-        rate: "Php 300-350/hour + Php 80/person",
-        courts: 1,
-        contact: "",
-        address: "7224 Malugay St., Makati City",
-        hours: "",
-        amenities: ["Indoor Courts"]
-      },
-      {
-        name: "The 3rd Shot",
-        city: "Makati",
-        province: "Metro Manila",
-        region: "NCR",
-        type: "indoor",
-        access: "public",
-        rate: "Php 500/hour",
-        courts: 1,
-        contact: "",
-        address: "1238 Gen. Jacinto St., Makati City",
-        hours: "",
-        amenities: ["Coaching Available"]
-      },
-      {
-        name: "Conquest Sports",
-        city: "Caloocan",
-        province: "Metro Manila",
-        region: "NCR",
-        type: "indoor",
-        access: "public",
-        rate: "Php 250/hour",
-        courts: 1,
-        contact: "",
-        address: "187 F. Roxas St., Caloocan City",
-        hours: "",
-        amenities: []
-      },
-      {
-        name: "Vantage Pickleball",
-        city: "Marikina",
-        province: "Metro Manila",
-        region: "NCR",
-        type: "indoor",
-        access: "public",
-        rate: "Php 600/hour (max 10 players)",
-        courts: 6,
-        contact: "(+63) 926 066 9235",
-        address: "41 Majestic Subdivision, Marikina",
-        hours: "Thu-Mon 10:00 AM - 10:00 PM",
-        amenities: ["Pro Shop", "Cafe", "Paddle Rental", "Air-conditioned"]
-      },
-      {
-        name: "Neapolitan Brittany Pickleball",
-        city: "Quezon City",
-        province: "Metro Manila",
-        region: "NCR",
-        type: "indoor",
-        access: "public",
-        rate: "Php 300/hour",
-        courts: 10,
-        contact: "(+63) 932 797 2030",
-        address: "Neopolitan Brittany Clubhouse, Fairview, Quezon City",
-        hours: "Mon-Sun 8:00 AM - 5:00 PM",
-        amenities: ["Rubber Cushion Flooring", "Acrylic Paint Surface"]
-      },
-      {
-        name: "SPS Pickleball Club",
-        city: "Quezon City",
-        province: "Metro Manila",
-        region: "NCR",
-        type: "indoor",
-        access: "public",
-        rate: "Php 350/hour",
-        courts: 3,
-        contact: "",
-        address: "43 General Ave., Project 8, Quezon City",
-        hours: "",
-        amenities: ["Acrylic Courts", "PPF Recognized"]
-      },
-      {
-        name: "Solaire Resort North Outdoor Fitness Deck",
-        city: "Quezon City",
-        province: "Metro Manila",
-        region: "NCR",
-        type: "outdoor",
-        access: "public",
-        rate: "Php 1,200/hr walk-in, Php 1,000/hr in-house",
-        courts: 1,
-        contact: "",
-        address: "Solaire Resort North, Quezon City",
-        hours: "Mon-Sun 7:00 AM - 12:00 MN",
-        amenities: ["Resort Facility"]
-      },
-      {
-        name: "Marconi Pickleball Club",
-        city: "Makati",
-        province: "Metro Manila",
-        region: "NCR",
-        type: "outdoor",
-        access: "public",
-        rate: "Free",
-        courts: 1,
-        contact: "",
-        address: "2359 Marconi Street, Makati City",
-        hours: "",
-        amenities: ["Public Access"]
-      },
-      {
-        name: "Ortigas Street Pickleball",
-        city: "Pasig",
-        province: "Metro Manila",
-        region: "NCR",
-        type: "outdoor",
-        access: "public",
-        rate: "Free",
-        courts: 1,
-        contact: "",
-        address: "Emerald Avenue, Ortigas Center, Pasig City",
-        hours: "Saturday 6:00 PM - 10:00 PM",
-        amenities: ["Street Play", "Equipment Provided"]
-      },
-      {
-        name: "Astra Pickleball Center",
-        city: "Cainta",
-        province: "Rizal",
-        region: "Luzon",
-        type: "indoor",
-        access: "public",
-        rate: "Php 600/hour/court + Php 100 entrance",
-        courts: 8,
-        contact: "",
-        address: "Cainta, Rizal (near Metro East)",
-        hours: "Daily 8:00 AM - 11:00 PM",
-        amenities: ["Cushioned Acrylic Flooring", "USAPA Standard", "Free Parking (40 cars)", "Air-conditioned", "Showers", "Cafe", "Pro Shop", "WiFi", "CCTV"]
-      },
-      {
-        name: "Match Point Racket Club",
-        city: "Malolos",
-        province: "Bulacan",
-        region: "Luzon",
-        type: "indoor",
-        access: "public",
-        rate: "Php 350-450/hour",
-        courts: 3,
-        contact: "+63 956 274 9263",
-        address: "Malolos, Bulacan",
-        hours: "6:00 AM - 11:00 PM",
-        amenities: ["Free Water", "Equipment Rental", "Ball Machine", "Online Booking"]
-      },
-      {
-        name: "Dink District PH",
-        city: "Bocaue",
-        province: "Bulacan",
-        region: "Luzon",
-        type: "outdoor",
-        access: "public",
-        rate: "",
-        courts: 2,
-        contact: "",
-        address: "Bocaue, Bulacan",
-        hours: "Daily",
-        amenities: ["Open Play", "Tournaments", "Coaching", "Club Membership"]
-      },
-      {
-        name: "Quest Adventure Camp Pickleball Courts",
-        city: "Tanay",
-        province: "Rizal",
-        region: "Luzon",
-        type: "mixed",
-        access: "public",
-        rate: "Php 400-600/hour",
-        courts: 6,
-        contact: "(+63) 968 533 2484 / (+63) 969 279 8285",
-        address: "Pantay Quatro, Sitio Buhangin, Teresa, Rizal",
-        hours: "Tue-Sun 8:00 AM - 7:00 PM",
-        email: "Info@questadventure.ph",
-        amenities: ["Cushioned USAP-standard Courts", "3 Indoor + 3 Outdoor", "Equipment Rental", "Team Building Venue"]
-      },
-      {
-        name: "Powerhouse Pickleball Club",
-        city: "Silang",
-        province: "Cavite",
-        region: "Luzon",
-        type: "indoor",
-        access: "public",
-        rate: "Php 350-400/hour, Open Play Php 150-250/person",
-        courts: 5,
-        contact: "",
-        address: "Eurotiles Compound, Aguinaldo Highway, Silang, Cavite (near CALAX Aguinaldo exit)",
-        hours: "8:00 AM - 12:00 MN",
-        amenities: ["Premium Acrylic Courts", "USA Pickleball Approved Balls", "Well-Ventilated", "Elevated Viewing Deck", "Showers", "Free Parking", "Cafe", "Coaching"]
-      },
-      {
-        name: "A-Team Pickleball Lab",
-        city: "Los Baños",
-        province: "Laguna",
-        region: "Luzon",
-        type: "indoor",
-        access: "public",
-        rate: "Php 500/hour",
-        courts: 1,
-        contact: "0931 112 4517",
-        address: "Block 5, Lot 8, Springdale Garden Subdivision, Victoria Street, Los Baños, Laguna",
-        hours: "Mon-Fri 7:00 AM - 12:00 MN",
-        email: "aceanderesort@gmail.com",
-        amenities: ["Ball Machine Rental"]
-      },
-      {
-        name: "Baseline Pickleball Club",
-        city: "Taguig",
-        province: "Metro Manila",
-        region: "NCR",
-        type: "indoor",
-        access: "public",
-        rate: "",
-        courts: 1,
-        contact: "",
-        address: "Taguig City (BGC area)",
-        hours: "",
-        amenities: ["Modern Indoor Facility", "Tournaments", "Open Play"]
-      },
-      {
-        name: "Pickleball Junction",
-        city: "Pasig",
-        province: "Metro Manila",
-        region: "NCR",
-        type: "indoor",
-        access: "public",
-        rate: "",
-        courts: 1,
-        contact: "",
-        address: "Kapitolyo, Pasig City",
-        hours: "",
-        amenities: ["Open Play Sessions"]
-      },
-      {
-        name: "Sweetspot Pickleball Hub",
-        city: "Pagadian",
-        province: "Zamboanga del Sur",
-        region: "Mindanao",
-        type: "indoor",
-        access: "public",
-        rate: "Php 75",
-        courts: 1,
-        contact: "",
-        address: "Brgy. Tiguma, Pagadian City, Zamboanga del Sur",
-        hours: "Mon-Sat 5:00 PM - 11:00 PM",
-        amenities: ["Covered Court"]
-      },
-      {
-        name: "NetPlay 360",
-        city: "Iloilo City",
-        province: "Iloilo",
-        region: "Visayas",
-        type: "indoor",
-        access: "public",
-        rate: "",
-        courts: 1,
-        contact: "",
-        address: "Diversion Rd., Jaro, Iloilo City",
-        hours: "",
-        amenities: ["Premium Indoor Courts", "Open Play", "Private Reservations", "Corporate Events"]
-      },
-      {
-        name: "Active Yard",
-        city: "Minglanilla",
-        province: "Cebu",
-        region: "Visayas",
-        type: "outdoor",
-        access: "public",
-        rate: "",
-        courts: 2,
-        contact: "",
-        address: "Minglanilla, Cebu",
-        hours: "",
-        amenities: []
-      },
-      {
-        name: "El Nido Pickle Park",
-        city: "El Nido",
-        province: "Palawan",
-        region: "Luzon",
-        type: "outdoor",
-        access: "public",
-        rate: "",
-        courts: 1,
-        contact: "",
-        address: "Santan Street, El Nido, Palawan",
-        hours: "",
-        amenities: []
-      },
-      {
-        name: "Kawayan Drive&Dink",
-        city: "Davao City",
-        province: "Davao del Sur",
-        region: "Mindanao",
-        type: "outdoor",
-        access: "public",
-        rate: "",
-        courts: 5,
-        contact: "",
-        address: "Davao City",
-        hours: "",
-        amenities: []
-      }
-    ];
-
+    const ADMIN_EMAIL = 'torche0713@gmail.com';
     let user = null;
-    let imported = 0;
-    let isImporting = false;
 
-    document.getElementById('totalCount').textContent = COURTS_DATA.length;
+    const $ = id => document.getElementById(id);
+    const log = (msg, type = '') => {
+      $('log').textContent += `\n${msg}`;
+      $('log').scrollTop = $('log').scrollHeight;
+    };
 
     auth.onAuthStateChanged(u => {
       user = u;
-      const loginSection = document.getElementById('loginSection');
-      const userSection = document.getElementById('userSection');
-      const importBtn = document.getElementById('importBtn');
-
-      if (u) {
-        loginSection.style.display = 'none';
-        userSection.style.display = 'block';
-        document.getElementById('userInfo').innerHTML = `
-          <img src="${u.photoURL || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(u.displayName || 'User')}" alt="">
-          <div><div class="name">${u.displayName || 'User'}</div><div class="email">${u.email}</div></div>
-        `;
-        importBtn.disabled = false;
-        log('info', 'Signed in as ' + u.email);
+      if (u && u.email === ADMIN_EMAIL) {
+        $('importCourtsBtn').disabled = false;
+        $('importTournamentsBtn').disabled = false;
+        $('status').textContent = 'Ready — logged in as admin';
+        $('status').className = 'success';
+      } else if (u) {
+        $('status').textContent = 'Not admin. Please log in as ' + ADMIN_EMAIL;
+        $('status').className = 'error';
       } else {
-        loginSection.style.display = 'block';
-        userSection.style.display = 'none';
-        importBtn.disabled = true;
-        log('info', 'Ready. Sign in to begin.');
+        $('status').textContent = 'Not logged in. Sign in with admin Google account.';
+        $('status').className = '';
       }
     });
 
-    // Email/password sign-in
-    document.getElementById('emailLoginBtn').onclick = async () => {
-      const email = document.getElementById('loginEmail').value;
-      const password = document.getElementById('loginPassword').value;
-      const errEl = document.getElementById('loginError');
-      errEl.textContent = '';
-      if (!email || !password) { errEl.textContent = 'Enter email and password'; return; }
-      try {
-        await auth.signInWithEmailAndPassword(email, password);
-      } catch (err) {
-        errEl.textContent = err.message;
-      }
-    };
+    // Auto-sign-in with redirect
+    if (!auth.currentUser && window.location.hash !== '#noauto') {
+      auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(() => {});
+    }
 
-    document.getElementById('previewBtn').onclick = () => {
-      let text = '=== COURTS TO IMPORT (' + COURTS_DATA.length + ') ===\n\n';
-      COURTS_DATA.forEach((c, i) => {
-        text += (i+1) + '. ' + c.name + '\n';
-        text += '   Location: ' + c.city + ', ' + c.province + ' (' + c.region + ')\n';
-        text += '   Rate: ' + (c.rate || 'N/A') + '\n';
-        text += '   Contact: ' + (c.contact || 'N/A') + '\n';
-        text += '   Courts: ' + c.courts + ' | Type: ' + c.type + '\n\n';
-      });
-      const win = window.open('', '_blank');
-      win.document.write('<pre>' + text + '</pre>');
-      win.document.title = 'Courts Preview';
-    };
+    $('logoutBtn').onclick = () => { auth.signOut(); location.reload(); };
 
-    document.getElementById('importBtn').onclick = async () => {
-      if (isImporting) return;
-      if (!user) { log('error', 'Please sign in first.'); return; }
+    // ===== COURT DATA =====
+    function getMetroManilaCourts() {
+      const region = 'NCR';
+      return [
+        {
+          name: 'Tierra Pickleball Club', city: 'Quezon City', province: 'Metro Manila', region,
+          type: 'outdoor', access: 'pay', rate: '₱400/hr', courts: 2,
+          contact: '0969 085 7204', address: 'Quezon City',
+          lat: 14.6507, lng: 121.0483, hours: '6:00 AM - 10:00 PM',
+          notes: 'Contact via Facebook: facebook.com/tierrapickleball'
+        },
+        {
+          name: 'CVJ Pickleball Park', city: 'Marikina', province: 'Metro Manila', region,
+          type: 'outdoor', access: 'pay', rate: '₱300/hr', courts: 2,
+          contact: '0917 531 2952', address: 'Marikina City',
+          lat: 14.6346, lng: 121.0970, hours: '6:00 AM - 10:00 PM',
+          notes: 'Facebook: facebook.com/reel/827189806281089'
+        },
+        {
+          name: '24/7 Pickle Mandaluyong', city: 'Mandaluyong', province: 'Metro Manila', region,
+          type: 'indoor', access: 'pay', rate: '₱350/hr', courts: 2,
+          contact: '0936 949 0815', address: 'Mandaluyong City',
+          lat: 14.5790, lng: 121.0354, hours: 'Open 24 hours'
+        },
+        {
+          name: 'Ground Game Pickleball Court', city: 'Quezon City', province: 'Metro Manila', region,
+          type: 'outdoor', access: 'pay', rate: '₱350/hr', courts: 2,
+          contact: '0962 554 5953', address: 'Quezon City',
+          lat: 14.6507, lng: 121.0483, hours: '6:00 AM - 10:00 PM'
+        },
+        {
+          name: 'Veterans Memorial Medical Center Pickleball Club', city: 'Quezon City', province: 'Metro Manila', region,
+          type: 'outdoor', access: 'pay', rate: '₱200/hr', courts: 2,
+          contact: '(02) 8926 1315', address: 'VMMC, Quezon City',
+          lat: 14.6507, lng: 121.0483, hours: '6:00 AM - 8:00 PM'
+        },
+        {
+          name: 'Standout Pickleball Arena', city: 'Quezon City', province: 'Metro Manila', region,
+          type: 'indoor', access: 'pay', rate: '₱400/hr', courts: 2,
+          contact: '0917 776 0909', address: 'Quezon City',
+          lat: 14.6507, lng: 121.0483, hours: '6:00 AM - 10:00 PM',
+          notes: 'Facebook: facebook.com/share/1A1gPCwZSX/'
+        },
+        {
+          name: 'Javaj Pickleball', city: 'Quezon City', province: 'Metro Manila', region,
+          type: 'outdoor', access: 'pay', rate: '₱300/hr', courts: 2,
+          contact: '0966 340 4512', address: 'Quezon City',
+          lat: 14.6507, lng: 121.0483, hours: '6:00 AM - 10:00 PM'
+        },
+        {
+          name: 'Arvo Pickleball', city: 'Quezon City', province: 'Metro Manila', region,
+          type: 'indoor', access: 'pay', rate: '₱400/hr', courts: 2,
+          contact: '0917 140 8549', address: 'Quezon City',
+          lat: 14.6507, lng: 121.0483, hours: '6:00 AM - 10:00 PM',
+          notes: 'Website: arvopickleball.com'
+        },
+        {
+          name: 'Hemady Sports Plaza', city: 'Quezon City', province: 'Metro Manila', region,
+          type: 'indoor', access: 'pay', rate: '₱350/hr', courts: 8,
+          contact: '(02) 8726 6351', address: 'Hemady St., Quezon City',
+          lat: 14.6080, lng: 121.0330, hours: '6:00 AM - 10:00 PM'
+        },
+        {
+          name: 'Tierra Pura Pickleball Court', city: 'Quezon City', province: 'Metro Manila', region,
+          type: 'outdoor', access: 'pay', rate: '₱400/hr', courts: 2,
+          contact: '0917 000 0000', address: 'Quezon City',
+          lat: 14.6507, lng: 121.0483, hours: '6:00 AM - 10:00 PM',
+          notes: 'Facebook: facebook.com/TierraPickleball'
+        },
+        {
+          name: 'Activate One', city: 'Makati', province: 'Metro Manila', region,
+          type: 'indoor', access: 'pay', rate: '₱500/hr', courts: 2,
+          contact: '0995 055 0333', address: 'Makati City',
+          lat: 14.5547, lng: 121.0244, hours: '6:00 AM - 10:00 PM',
+          notes: 'Booking: activatesportsph.rezerv.co/'
+        },
+        {
+          name: 'Dink & Shot', city: 'Marikina', province: 'Metro Manila', region,
+          type: 'indoor', access: 'pay', rate: '₱350/hr', courts: 2,
+          contact: 'marketing@dinkandshot.com', address: 'Marikina City',
+          lat: 14.6346, lng: 121.0970, hours: '6:00 AM - 10:00 PM',
+          notes: 'Facebook: facebook.com/p/Dink-Shot/'
+        },
+        {
+          name: 'RallyPoint Pickleball', city: 'Marikina', province: 'Metro Manila', region,
+          type: 'outdoor', access: 'pay', rate: '₱300/hr', courts: 2,
+          contact: '0968 439 0934', address: 'Marikina City',
+          lat: 14.6346, lng: 121.0970, hours: '6:00 AM - 10:00 PM'
+        },
+        {
+          name: 'Alset Pickleball', city: 'Makati', province: 'Metro Manila', region,
+          type: 'indoor', access: 'pay', rate: '₱500/hr', courts: 2,
+          contact: '0917 537 7878', address: 'Makati City',
+          lat: 14.5547, lng: 121.0244, hours: '6:00 AM - 10:00 PM',
+          notes: 'Website: als etpickleball.ph/'
+        },
+        {
+          name: 'Neopolitan Brittany Pickleball Courts', city: 'Quezon City', province: 'Metro Manila', region,
+          type: 'outdoor', access: 'pay', rate: '₱300/hr', courts: 10,
+          contact: '(02) 8461 3534', address: 'Neopolitan Brittany, QC',
+          lat: 14.6507, lng: 121.0483, hours: '6:00 AM - 10:00 PM'
+        },
+        {
+          name: 'TECNIQ X Dink & Drive', city: 'Las Piñas', province: 'Metro Manila', region,
+          type: 'indoor', access: 'pay', rate: '₱400/hr', courts: 2,
+          contact: '0945 653 5470', address: 'Las Piñas City',
+          lat: 14.4708, lng: 120.9827, hours: '6:00 AM - 10:00 PM',
+          notes: 'Facebook: facebook.com/share/g/'
+        },
+        {
+          name: 'Blue Ridge Covered Courts', city: 'Quezon City', province: 'Metro Manila', region,
+          type: 'indoor', access: 'pay', rate: '₱350/hr', courts: 2,
+          contact: '0917 182 2272', address: 'Blue Ridge, Quezon City',
+          lat: 14.6507, lng: 121.0483, hours: '6:00 AM - 10:00 PM',
+          notes: 'Booking:venyu.ph/venue/blue-ride-b'
+        },
+        {
+          name: 'Gameville Double Play', city: 'Pasig', province: 'Metro Manila', region,
+          type: 'indoor', access: 'pay', rate: '₱400/hr', courts: 2,
+          contact: '0932 208 6138', address: 'Pasig City',
+          lat: 14.5764, lng: 121.0851, hours: '6:00 AM - 10:00 PM',
+          notes: 'Booking:venyu.ph/venue/gameville-double-play'
+        },
+        {
+          name: 'Makati Sports Club', city: 'Makati', province: 'Metro Manila', region,
+          type: 'indoor', access: 'membership', rate: 'Membership required', courts: 2,
+          contact: '(02) 8817 8731', address: 'Makati City',
+          lat: 14.5547, lng: 121.0244, hours: '6:00 AM - 10:00 PM',
+          notes: 'Website: makatisportsclub.com/'
+        },
+        {
+          name: 'Vatic Pro Pickleball PH', city: 'Quezon City', province: 'Metro Manila', region,
+          type: 'indoor', access: 'pay', rate: '₱400/hr', courts: 2,
+          contact: '0915 266 1178', address: 'Quezon City',
+          lat: 14.6507, lng: 121.0483, hours: '6:00 AM - 10:00 PM',
+          notes: 'Facebook: facebook.com/share/'
+        },
+        {
+          name: 'Divine Light Pickleball Club', city: 'Las Piñas', province: 'Metro Manila', region,
+          type: 'outdoor', access: 'pay', rate: '₱300/hr', courts: 2,
+          contact: '0999 876 3285', address: 'Las Piñas City',
+          lat: 14.4708, lng: 120.9827, hours: '6:00 AM - 10:00 PM'
+        },
+        {
+          name: 'Penalosa Sports Center', city: 'Parañaque', province: 'Metro Manila', region,
+          type: 'indoor', access: 'pay', rate: '₱400/hr', courts: 2,
+          contact: '0906 485 2960', address: 'Parañaque City',
+          lat: 14.4795, lng: 120.9836, hours: '6:00 AM - 10:00 PM'
+        },
+        {
+          name: 'New Manila Rolling Hills Clubhouse', city: 'Quezon City', province: 'Metro Manila', region,
+          type: 'outdoor', access: 'pay', rate: '₱350/hr', courts: 2,
+          contact: '(02) 8240 3907', address: 'New Manila, Quezon City',
+          lat: 14.6080, lng: 121.0330, hours: '6:00 AM - 10:00 PM'
+        },
+        {
+          name: 'ProServe Manila', city: 'Manila', province: 'Metro Manila', region,
+          type: 'indoor', access: 'pay', rate: '₱400/hr', courts: 2,
+          contact: '0956 299 5981', address: 'Manila',
+          lat: 14.5995, lng: 120.9842, hours: '6:00 AM - 10:00 PM'
+        },
+        {
+          name: 'The Smash City', city: 'Valenzuela', province: 'Metro Manila', region,
+          type: 'indoor', access: 'pay', rate: '₱200-400/hr', courts: 4,
+          contact: '0952 479 9139', address: '30 F. Alarcon St., Malabo, Maysan Road, Valenzuela',
+          lat: 14.7029, lng: 120.9719, hours: '7:00 AM - 12:00 MN',
+          notes: 'Website: thesmashcity.com/ · USAPA-standard courts, LED lighting'
+        },
+        {
+          name: 'Quezon City Sports Club', city: 'Quezon City', province: 'Metro Manila', region,
+          type: 'outdoor', access: 'membership', rate: 'Membership required', courts: 4,
+          contact: '', address: 'Quezon City',
+          lat: 14.6507, lng: 121.0483, hours: '6:00 AM - 10:00 PM'
+        },
+        {
+          name: 'HD Pickleball', city: 'Quezon City', province: 'Metro Manila', region,
+          type: 'indoor', access: 'pay', rate: '₱400/hr', courts: 4,
+          contact: '', address: 'Quezon City',
+          lat: 14.6507, lng: 121.0483, hours: '6:00 AM - 10:00 PM'
+        },
+        {
+          name: 'Match Grounds Pickleball', city: 'Quezon City', province: 'Metro Manila', region,
+          type: 'indoor', access: 'pay', rate: '₱400/hr', courts: 2,
+          contact: '', address: 'Quezon City',
+          lat: 14.6507, lng: 121.0483, hours: '6:00 AM - 10:00 PM'
+        },
+        {
+          name: 'Zone Sports Center', city: 'Quezon City', province: 'Metro Manila', region,
+          type: 'indoor', access: 'pay', rate: '₱400/hr', courts: 6,
+          contact: '', address: 'Quezon City',
+          lat: 14.6507, lng: 121.0483, hours: '6:00 AM - 10:00 PM'
+        },
+        {
+          name: 'Picklebees VMMC-UHTPC', city: 'Quezon City', province: 'Metro Manila', region,
+          type: 'outdoor', access: 'pay', rate: '₱200/hr', courts: 3,
+          contact: '', address: 'VMMC, Quezon City',
+          lat: 14.6507, lng: 121.0483, hours: '6:00 AM - 8:00 PM'
+        },
+        {
+          name: 'Paddiemates Pickleball Hub', city: 'Manila', province: 'Metro Manila', region,
+          type: 'indoor', access: 'pay', rate: '₱400/hr', courts: 2,
+          contact: '', address: 'Malate, Manila',
+          lat: 14.5667, lng: 120.9933, hours: '6:00 AM - 10:00 PM',
+          notes: 'Facebook: facebook.com/acincph'
+        },
+        {
+          name: 'SM Center Shaw Pickleball Court', city: 'Mandaluyong', province: 'Metro Manila', region,
+          type: 'outdoor', access: 'pay', rate: '₱500/hr', courts: 3,
+          contact: '', address: '514 Shaw Boulevard, Mandaluyong',
+          lat: 14.5790, lng: 121.0354, hours: 'Mall hours',
+          notes: 'Partner: Paloo · 3 permanent outdoor courts'
+        },
+        {
+          name: 'SM Center Muntinlupa Pickleball Court', city: 'Muntinlupa', province: 'Metro Manila', region,
+          type: 'indoor', access: 'pay', rate: '₱500/hr', courts: 4,
+          contact: '', address: 'SM Center Muntinlupa',
+          lat: 14.4185, lng: 121.0412, hours: 'Mall hours',
+          notes: 'Partner: Paloo · 4 permanent indoor courts · Open play ₱280'
+        }
+      ];
+    }
 
-      if (!confirm('Import ' + COURTS_DATA.length + ' courts to Firestore? This cannot be undone.')) return;
+    function getCebuCourts() {
+      const region = 'Central Visayas';
+      return [
+        {
+          name: 'Nomads Pickleball Cebu', city: 'Cebu City', province: 'Cebu', region,
+          type: 'indoor', access: 'pay', rate: '₱450-500/hr', courts: 2,
+          contact: '0998 841 8485', address: '070 R. Duterte St, Cebu City',
+          lat: 10.3157, lng: 123.8854, hours: 'Open 24 hours',
+          notes: 'Indoor painted courts · Paddle rental ₱100 · FB: facebook.com/nomadspickleball'
+        },
+        {
+          name: 'Pickaball Sports Center', city: 'Mandaue', province: 'Cebu', region,
+          type: 'indoor', access: 'pay', rate: '₱600/hr', courts: 7,
+          contact: '', address: 'Tabok, Mandaue City, Cebu',
+          lat: 10.3301, lng: 123.9318, hours: 'Open 24 hours',
+          notes: 'US-standard acrylic+silica sand courts · Paddle rental ₱100 · Showers & parking · Booking: app.sports360.ph'
+        },
+        {
+          name: 'The Courts of Cebu', city: 'Cebu City', province: 'Cebu', region,
+          type: 'indoor', access: 'pay', rate: '₱550-700/hr', courts: 8,
+          contact: '', address: 'Pres. Magsaysay St., Cebu City',
+          lat: 10.3157, lng: 123.8854, hours: '10:00 AM - 10:00 PM',
+          notes: 'US-standard acrylic+silica sand courts · Open play available · Booking: app.onda.fit/book/the-courts-of-cebu'
+        },
+        {
+          name: 'Qusina PIQLE QLUB', city: 'Cebu City', province: 'Cebu', region,
+          type: 'outdoor', access: 'pay', rate: '₱300/hr', courts: 2,
+          contact: '', address: 'Banilad, Cebu City',
+          lat: 10.3264, lng: 123.9062, hours: 'Open 24 hours',
+          notes: 'Outdoor painted courts · Open play available · Parking available'
+        },
+        {
+          name: 'The Pickle Point Cebu', city: 'Mandaue', province: 'Cebu', region,
+          type: 'outdoor', access: 'pay', rate: '₱400/hr', courts: 2,
+          contact: '', address: 'Mandaue City, Cebu',
+          lat: 10.3301, lng: 123.9318, hours: 'Open 24 hours',
+          notes: 'Outdoor painted courts · Parking & CR available'
+        },
+        {
+          name: 'HQ Pickleball Cebu', city: 'Cebu City', province: 'Cebu', region,
+          type: 'outdoor', access: 'pay', rate: '₱500/hr', courts: 3,
+          contact: '0917 701 9131', address: 'Archbishop Reyes Ave, Cebu City (near Grand Convention Center)',
+          lat: 10.3145, lng: 123.9032, hours: 'Open 24 hours',
+          notes: 'Expanding to 9 covered courts Feb 2026 · Paddle rental ₱200/4hrs · GCash payment accepted'
+        },
+        {
+          name: 'Pickle at The Kiln', city: 'Mandaue', province: 'Cebu', region,
+          type: 'indoor', access: 'pay', rate: '₱550/hr', courts: 4,
+          contact: '', address: 'Banilad, Mandaue City, Cebu',
+          lat: 10.3264, lng: 123.9062, hours: 'Daily',
+          notes: 'Indoor US-standard courts · Parking & CR available'
+        },
+        {
+          name: 'Sayson\'s Place Private Pickleball Court', city: 'Cebu City', province: 'Cebu', region,
+          type: 'outdoor', access: 'pay', rate: '₱200/hr', courts: 1,
+          contact: '', address: 'Tisa, Cebu City',
+          lat: 10.3046, lng: 123.8745, hours: '6:00 AM - 12:00 MN',
+          notes: 'Private outdoor painted court · Parking & CR available'
+        },
+        {
+          name: 'Net and Paddle Pickleball Club', city: 'Cebu City', province: 'Cebu', region,
+          type: 'indoor', access: 'pay', rate: '₱450/hr', courts: 2,
+          contact: '', address: 'Cebu City',
+          lat: 10.3157, lng: 123.8854, hours: 'Daily',
+          notes: 'Indoor US-standard courts'
+        },
+        {
+          name: 'CitiLoft Pickleball Cebu', city: 'Cebu City', province: 'Cebu', region,
+          type: 'indoor', access: 'pay', rate: '₱400/hr', courts: 2,
+          contact: '', address: 'Cebu City',
+          lat: 10.3157, lng: 123.8854, hours: 'Afternoon/Evening',
+          notes: 'Indoor painted courts · Member & walk-in rates'
+        },
+        {
+          name: 'DH Sports Hub', city: 'Cebu City', province: 'Cebu', region,
+          type: 'indoor', access: 'pay', rate: '₱400/hr', courts: 2,
+          contact: '', address: 'Cebu City',
+          lat: 10.3157, lng: 123.8854, hours: 'Daily',
+          notes: 'Indoor wood flooring · On-site parking'
+        },
+        {
+          name: 'Pino Pickleball Court', city: 'Cebu City', province: 'Cebu', region,
+          type: 'outdoor', access: 'pay', rate: '₱300/hr', courts: 2,
+          contact: '', address: 'Cebu City',
+          lat: 10.3157, lng: 123.8854, hours: 'Daily',
+          notes: 'Outdoor painted courts · On-site parking'
+        },
+        {
+          name: 'SweetSpot Pickleball', city: 'Cebu City', province: 'Cebu', region,
+          type: 'indoor', access: 'pay', rate: '₱400/hr', courts: 2,
+          contact: '', address: 'Cebu City',
+          lat: 10.3157, lng: 123.8854, hours: 'Daily',
+          notes: 'Indoor courts'
+        }
+      ];
+    }
 
-      isImporting = true;
-      document.getElementById('importBtn').disabled = true;
-      document.getElementById('importBtn').textContent = 'Importing...';
-      document.getElementById('progressBar').style.display = 'block';
-      imported = 0;
+    async function importCourts() {
+      $('importCourtsBtn').disabled = true;
+      $('importCourtsBtn').textContent = 'Importing...';
+      $('log').textContent = '';
+      log('Starting batch import of courts...');
 
-      for (let i = 0; i < COURTS_DATA.length; i++) {
-        const court = COURTS_DATA[i];
+      const allCourts = [
+        ...getMetroManilaCourts(),
+        ...getCebuCourts()
+      ];
+      log(`Total courts to import: ${allCourts.length}`);
+
+      let success = 0, skipped = 0, errors = 0;
+
+      for (const court of allCourts) {
         try {
-          const courtData = {
-            name: court.name,
-            city: court.city,
-            province: court.province,
-            region: court.region,
-            featured: false,
-            type: court.type || 'outdoor',
-            access: court.access || 'public',
-            rate: court.rate || '',
-            courts: court.courts || 1,
-            contact: court.contact || '',
-            address: court.address || '',
-            hours: court.hours || '',
-            email: court.email || '',
-            lat: null,
-            lng: null,
-            amenities: court.amenities || [],
-            ownerId: null,
+          // Check for duplicate by name (case-insensitive)
+          const existing = await db.collection('courts')
+            .where('name', '==', court.name)
+            .get();
+          if (!existing.empty) {
+            log(`⏭ Skipped (duplicate): ${court.name}`);
+            skipped++;
+            continue;
+          }
+
+          await db.collection('courts').add({
+            ...court,
             verified: false,
             approved: true,
+            featured: false,
             photos: [],
+            amenities: [],
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
-          };
-
-          await db.collection('courts').add(courtData);
-          imported++;
-          document.getElementById('importedCount').textContent = imported;
-          document.getElementById('progressFill').style.width = ((i + 1) / COURTS_DATA.length * 100) + '%';
-          log('success', '[' + (i+1) + '/' + COURTS_DATA.length + '] Added: ' + court.name);
+          });
+          log(`✅ Added: ${court.name} (${court.city}, ${court.province})`);
+          success++;
         } catch (err) {
-          log('error', '[' + (i+1) + '/' + COURTS_DATA.length + '] FAILED: ' + court.name + ' - ' + err.message);
+          log(`❌ Error adding ${court.name}: ${err.message}`);
+          errors++;
         }
       }
 
-      log('info', '=== DONE! Imported ' + imported + '/' + COURTS_DATA.length + ' courts ===');
-      isImporting = false;
-      document.getElementById('importBtn').disabled = false;
-      document.getElementById('importBtn').textContent = 'Start Import';
-    };
-
-    function log(type, msg) {
-      const el = document.getElementById('statusLog');
-      const icon = type === 'success' ? '✓' : type === 'error' ? '✗' : type === 'warn' ? '⚠' : '→';
-      el.innerHTML += '<span class="' + type + '">' + icon + ' ' + msg + '</span>\n';
-      el.scrollTop = el.scrollHeight;
+      log(`\n=== Import complete ===`);
+      log(`Added: ${success} | Skipped (duplicates): ${skipped} | Errors: ${errors}`);
+      $('importCourtsBtn').textContent = 'Import Courts';
+      $('importCourtsBtn').disabled = false;
     }
+
+    // ===== TOURNAMENT DATA =====
+    async function importTournaments() {
+      $('importTournamentsBtn').disabled = true;
+      $('importTournamentsBtn').textContent = 'Importing...';
+      $('log').textContent = '';
+      log('Starting batch import of tournaments...');
+
+      const tournaments = [
+        {
+          name: 'PPL Visayas Open 2026',
+          location: 'PlayPro Active Courts, Sibulan, Negros Oriental',
+          date: '2026-07-15',
+          endDate: '2026-07-19',
+          type: 'Open',
+          format: 'Doubles & Mixed',
+          description: 'The Visayas leg of the Philippine Pickleball League. Powered by PlayPro Active Courts. Big prize pool!',
+          contact: 'phpickleballleague@gmail.com',
+          link: 'https://www.phpickleballleague.com/',
+          ownerId: null,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        },
+        {
+          name: 'PPL Mindanao Open 2026',
+          location: 'Pickle Town, Davao City',
+          date: '2026-05-01',
+          endDate: '2026-05-08',
+          type: 'Open',
+          format: 'Doubles & Mixed',
+          description: 'The biggest PPL tournament to date with ₱1.8M prize pool. Featured international players including Quang Duong and Phuc Huynh.',
+          contact: 'phpickleballleague@gmail.com',
+          link: 'https://www.phpickleballleague.com/',
+          ownerId: null,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        },
+        {
+          name: 'PPL Luzon Open 2026',
+          location: 'TBD, Luzon',
+          date: '2026-08-01',
+          endDate: '2026-08-04',
+          type: 'Open',
+          format: 'Doubles & Mixed',
+          description: 'The Luzon leg of the Philippine Pickleball League. Venue TBD.',
+          contact: 'phpickleballleague@gmail.com',
+          link: 'https://www.phpickleballleague.com/',
+          ownerId: null,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        },
+        {
+          name: 'Rising Stars: Cebu — U19 Team Event',
+          location: 'Cebu City',
+          date: '2026-06-20',
+          endDate: '2026-06-21',
+          type: 'Junior',
+          format: 'Team',
+          description: 'The Cebu leg of the Rising Stars U19 Team Event, part of Pickle Fest 2026 youth pathway. Showcasing emerging pickleball talent from across the Visayas.',
+          contact: '',
+          link: 'https://pickleballchampionsleague.org/tournament/rising-stars-cebu',
+          ownerId: null,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        },
+        {
+          name: 'PlanOut Pickleball Open',
+          location: 'Dumaguete City',
+          date: '2026-05-15',
+          endDate: '2026-05-17',
+          type: 'Open',
+          format: 'Doubles & Mixed',
+          description: 'The biggest pickleball tournament in the Philippines to date with a ₱1M prize pool. Hosted in Dumaguete.',
+          contact: '',
+          link: '',
+          ownerId: null,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        },
+        {
+          name: 'GenSan Pickleball Tournament',
+          location: 'GMall of GenSan, General Santos City',
+          date: '2026-04-11',
+          endDate: '2026-04-12',
+          type: 'Open',
+          format: 'Doubles',
+          description: 'Pickleball tournament at GMall of GenSan for all pickleball players.',
+          contact: '',
+          link: '',
+          ownerId: null,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        }
+      ];
+
+      let success = 0, skipped = 0, errors = 0;
+
+      for (const t of tournaments) {
+        try {
+          // Check for duplicate
+          const existing = await db.collection('tournaments')
+            .where('name', '==', t.name)
+            .get();
+          if (!existing.empty) {
+            log(`⏭ Skipped (duplicate): ${t.name}`);
+            skipped++;
+            continue;
+          }
+
+          await db.collection('tournaments').add(t);
+          log(`✅ Added tournament: ${t.name}`);
+          success++;
+        } catch (err) {
+          log(`❌ Error adding ${t.name}: ${err.message}`);
+          errors++;
+        }
+      }
+
+      log(`\n=== Import complete ===`);
+      log(`Added: ${success} | Skipped: ${skipped} | Errors: ${errors}`);
+      $('importTournamentsBtn').textContent = 'Import Tournaments';
+      $('importTournamentsBtn').disabled = false;
+    }
+
+    $('importCourtsBtn').onclick = importCourts;
+    $('importTournamentsBtn').onclick = importTournaments;
   </script>
 </body>
 </html>

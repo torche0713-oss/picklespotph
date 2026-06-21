@@ -107,6 +107,7 @@ function switchSection(sectionId) {
   if (sectionId === 'availability') loadAvailabilitySection();
   if (sectionId === 'mailing') loadMailingList();
   if (sectionId === 'add-court') initAddCourtMap();
+  if (sectionId === 'bookings') loadBookings();
   if (sectionId === 'payments') loadPayments();
   if (sectionId === 'admin-analytics') loadAdminAnalytics();
   if (sectionId === 'owner-courts') loadOwnerCourts();
@@ -212,6 +213,29 @@ document.getElementById('dashAddCourtForm').addEventListener('submit', async (e)
   };
 
   const isUnclaimed = document.getElementById('dashUnclaimedCheck').checked;
+
+  // Duplicate check
+  try {
+    const existing = await db.collection('courts')
+      .where('name', '==', courtData.name)
+      .get();
+    const match = existing.docs.find(d => {
+      const data = d.data();
+      const sameCity = data.city?.toLowerCase() === courtData.city?.toLowerCase();
+      const sameProvince = !courtData.province || data.province?.toLowerCase() === courtData.province?.toLowerCase();
+      return sameCity && sameProvince;
+    });
+    if (match) {
+      const data = match.data();
+      if (!data.ownerId) {
+        showToast('This court already exists and is unclaimed! Go to the main page and click "Is this your court? Claim it!" to take ownership.', 6000);
+      } else {
+        showToast('This court is already listed by another owner. Check the site map to view it.', 5000);
+      }
+      e.target.reset();
+      return;
+    }
+  } catch {}
 
   try {
     const ownerId = isUnclaimed ? null : currentUser.uid;
@@ -429,7 +453,16 @@ async function loadBookings() {
   const container = document.getElementById('bookingsList');
 
   try {
-    const courts = await PickleCourts.getByOwner(currentUser.uid);
+    // Get owned courts + Pro-flagged courts (for unclaimed Pro courts)
+    const ownedCourts = await PickleCourts.getByOwner(currentUser.uid);
+    const proCourts = await db.collection('courts')
+      .where('ownerPlan', '==', 'pro')
+      .get();
+    const proCourtList = proCourts.docs
+      .filter(d => !d.data().ownerId || d.data().ownerId !== currentUser.uid)
+      .map(d => ({ id: d.id, ...d.data() }));
+    const courts = [...ownedCourts, ...proCourtList];
+
     if (courts.length === 0) {
       container.innerHTML = '<div class="empty-state"><i class="fas fa-calendar-check"></i><h3>No bookings yet</h3><p>Add a court first to receive booking requests.</p></div>';
       return;
@@ -551,7 +584,14 @@ async function updateBooking(bookingId, status) {
 }
 
 async function loadAllBookingsFlat() {
-  const courts = await PickleCourts.getByOwner(currentUser.uid);
+  const ownedCourts = await PickleCourts.getByOwner(currentUser.uid);
+  const proCourts = await db.collection('courts')
+    .where('ownerPlan', '==', 'pro')
+    .get();
+  const proCourtList = proCourts.docs
+    .filter(d => !d.data().ownerId || d.data().ownerId !== currentUser.uid)
+    .map(d => ({ id: d.id, ...d.data() }));
+  const courts = [...ownedCourts, ...proCourtList];
   let all = [];
   for (const court of courts) {
     const bookings = await PickleBookings.getByCourt(court.id);
