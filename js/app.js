@@ -1364,6 +1364,8 @@ function updateStats(courts) {
   // Hero stats
   const heroCourts = document.getElementById('statCourts');
   if (heroCourts) heroCourts.textContent = courts.length;
+  const heroCities = document.getElementById('statCities');
+  if (heroCities) heroCities.textContent = getUniqueCities(courts).length;
 }
 
 // ============================================================
