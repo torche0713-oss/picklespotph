@@ -70,6 +70,9 @@
       <a href="index.html" class="nav-link"><i class="fas fa-map-marked-alt"></i> Home</a>
       <a href="about.html" class="nav-link"><i class="fas fa-info-circle"></i> About</a>
       <a href="contact.html" class="nav-link"><i class="fas fa-envelope"></i> Contact</a>
+      <button class="btn-dark-mode" id="darkModeToggle" title="Toggle Dark Mode">
+        <i class="fas fa-moon"></i>
+      </button>
     </div>
   </nav>
 
@@ -179,5 +182,29 @@
     </div>
   </footer>
 
+<script>
+(function() {
+  var toggle = document.getElementById('darkModeToggle');
+  var saved = localStorage.getItem('psp_darkMode');
+  if (saved === 'true') {
+    document.documentElement.setAttribute('data-theme', 'dark');
+    if (toggle) toggle.innerHTML = '<i class="fas fa-sun"></i>';
+  }
+  if (toggle) {
+    toggle.addEventListener('click', function() {
+      var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      if (isDark) {
+        document.documentElement.removeAttribute('data-theme');
+        toggle.innerHTML = '<i class="fas fa-moon"></i>';
+        localStorage.setItem('psp_darkMode', 'false');
+      } else {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        toggle.innerHTML = '<i class="fas fa-sun"></i>';
+        localStorage.setItem('psp_darkMode', 'true');
+      }
+    });
+  }
+})();
+</script>
 </body>
 </html>

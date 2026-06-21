@@ -62,7 +62,32 @@ function placeMainMarker(lat, lng) {
 // ============================================================
 // INIT
 // ============================================================
+// Dark mode toggle
+function initDarkMode() {
+  const toggle = document.getElementById('darkModeToggle');
+  const saved = localStorage.getItem('psp_darkMode');
+  if (saved === 'true') {
+    document.documentElement.setAttribute('data-theme', 'dark');
+    if (toggle) toggle.innerHTML = '<i class="fas fa-sun"></i>';
+  }
+  if (toggle) {
+    toggle.addEventListener('click', () => {
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      if (isDark) {
+        document.documentElement.removeAttribute('data-theme');
+        toggle.innerHTML = '<i class="fas fa-moon"></i>';
+        localStorage.setItem('psp_darkMode', 'false');
+      } else {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        toggle.innerHTML = '<i class="fas fa-sun"></i>';
+        localStorage.setItem('psp_darkMode', 'true');
+      }
+    });
+  }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
+  initDarkMode();
   initMap();
   renderMarkers(allCourts);
   renderSidebarList(allCourts);

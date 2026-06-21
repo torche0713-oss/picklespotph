@@ -14,6 +14,28 @@ let addCourtMapInitialized = false;
 // INIT
 // ============================================================
 document.addEventListener('DOMContentLoaded', () => {
+  // Dark mode init
+  const darkToggle = document.getElementById('darkModeToggle');
+  const darkSaved = localStorage.getItem('psp_darkMode');
+  if (darkSaved === 'true') {
+    document.documentElement.setAttribute('data-theme', 'dark');
+    if (darkToggle) darkToggle.innerHTML = '<i class="fas fa-sun"></i>';
+  }
+  if (darkToggle) {
+    darkToggle.addEventListener('click', function() {
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      if (isDark) {
+        document.documentElement.removeAttribute('data-theme');
+        darkToggle.innerHTML = '<i class="fas fa-moon"></i>';
+        localStorage.setItem('psp_darkMode', 'false');
+      } else {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        darkToggle.innerHTML = '<i class="fas fa-sun"></i>';
+        localStorage.setItem('psp_darkMode', 'true');
+      }
+    });
+  }
+
   let authFired = false;
 
   // Fallback: if Firebase Auth never fires, force login modal
