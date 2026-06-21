@@ -843,15 +843,21 @@ window.openBookingModal = function(courtId) {
   document.getElementById('bookingForm').reset();
   document.getElementById('slotPickerGroup').style.display = 'none';
   document.getElementById('bookingDate').value = '';
-  // Initialize calendar
-  calendarViewDate = new Date();
+  // Initialize calendar to PHT
+  calendarViewDate = getPHDate();
   renderCalendar(calendarViewDate);
 };
 
 // ============================================================
 // CALENDAR BOOKING VIEW
 // ============================================================
-let calendarViewDate = new Date();
+function getPHDate() {
+  const now = new Date();
+  const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+  return new Date(utc + 8 * 3600000);
+}
+
+let calendarViewDate = getPHDate();
 
 function renderCalendar(monthDate) {
   const year = monthDate.getFullYear();
@@ -862,8 +868,9 @@ function renderCalendar(monthDate) {
 
   const firstDay = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  // Get today's date string in PHT (YYYY-MM-DD)
+  const phNow = getPHDate();
+  const todayStr = `${phNow.getFullYear()}-${String(phNow.getMonth() + 1).padStart(2, '0')}-${String(phNow.getDate()).padStart(2, '0')}`;
   const selectedDate = document.getElementById('bookingDate').value;
 
   let html = '';
@@ -876,11 +883,9 @@ function renderCalendar(monthDate) {
   }
 
   for (let day = 1; day <= daysInMonth; day++) {
-    const cellDate = new Date(year, month, day);
-    cellDate.setHours(0, 0, 0, 0);
     const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-    const isPast = cellDate < today;
-    const isToday = cellDate.getTime() === today.getTime();
+    const isPast = dateStr < todayStr;
+    const isToday = dateStr === todayStr;
     const isSelected = dateStr === selectedDate;
 
     let cls = 'calendar-cell';
@@ -937,16 +942,21 @@ async function loadAvailableSlots() {
     return;
   }
 
-  // Show selected date label
+  // Show selected date label (PHT display)
   if (dateLabel) {
-    const d = new Date(dateVal + 'T12:00:00');
-    dateLabel.textContent = d.toLocaleDateString('en-PH', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+    const parts = dateVal.split('-').map(Number);
+    const phtDate = new Date(Date.UTC(parts[0], parts[1] - 1, parts[2], 4, 0, 0));
+    const weekday = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][phtDate.getUTCDay()];
+    const month = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'][parts[1] - 1];
+    dateLabel.textContent = `${weekday}, ${month} ${parts[2]}, ${parts[0]}`;
   }
 
   // Check court availability (default to 6AM-10PM if not set)
   let dayAvail;
   if (court.availability) {
-    const dayName = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][new Date(dateVal + 'T12:00:00').getDay()];
+    const parts = dateVal.split('-').map(Number);
+    const phtDate = new Date(Date.UTC(parts[0], parts[1] - 1, parts[2], 4, 0, 0));
+    const dayName = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][phtDate.getUTCDay()];
     dayAvail = court.availability[dayName];
   }
 
