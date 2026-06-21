@@ -135,25 +135,24 @@ body {
   left: -30px;
   transform: rotate(-20deg);
 }
-#heroPickleball {
+.hero-pb {
   position: absolute;
-  right: 5%;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 45%;
-  max-width: 550px;
   height: auto;
   z-index: 0;
-  opacity: 0.3;
   pointer-events: none;
-  animation: heroSpin 20s linear infinite;
+  animation: pbSpin 20s linear infinite;
 }
-@keyframes heroSpin {
-  from { transform: translateY(-50%) rotate(0deg); }
-  to { transform: translateY(-50%) rotate(360deg); }
+#pb1 { width: 45%; max-width: 550px; right: 5%; top: 50%; transform: translateY(-50%); opacity: 0.25; animation-duration: 22s; }
+#pb2 { width: 15%; max-width: 180px; left: 3%; top: 12%; opacity: 0.15; animation-duration: 30s; animation-direction: reverse; }
+#pb3 { width: 10%; max-width: 120px; left: 20%; bottom: 8%; opacity: 0.12; animation-duration: 18s; }
+#pb4 { width: 12%; max-width: 140px; right: 2%; bottom: 5%; opacity: 0.1; animation-duration: 25s; animation-direction: reverse; }
+#pb5 { width: 8%; max-width: 100px; left: 45%; top: 5%; opacity: 0.08; animation-duration: 15s; }
+@keyframes pbSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 @media (max-width: 768px) {
-  #heroPickleball { display: none; }
+  .hero-pb { display: none; }
 }
 .hero-content {
   max-width: 700px;
