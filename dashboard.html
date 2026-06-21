@@ -606,6 +606,9 @@
       <button class="dash-nav-item" data-section="admin-analytics" style="display:none">
         <i class="fas fa-chart-pie"></i> Site Analytics
       </button>
+      <button class="dash-nav-item" data-section="batch-import" style="display:none">
+        <i class="fas fa-database"></i> Batch Import
+      </button>
       <button class="dash-nav-item logout" id="dashLogoutBtn">
         <i class="fas fa-sign-out-alt"></i> Sign Out
       </button>
@@ -886,6 +889,17 @@
         <h1>Court Claims</h1>
         <p class="subtitle">Owners requesting to claim a court listing</p>
         <div id="claimsList"></div>
+      </div>
+
+      <!-- Batch Import (Admin) -->
+      <div class="dash-section" id="section-batch-import">
+        <h1>Batch Import</h1>
+        <p class="subtitle">Import new courts and tournaments (admin only)</p>
+        <div style="display:flex;gap:12px;flex-wrap:wrap">
+          <button class="btn-dash btn-dash-primary" id="batchImportCourtsBtn" onclick="batchImportCourts()"><i class="fas fa-database"></i> Import 34 New Courts</button>
+          <button class="btn-dash btn-dash-primary" id="batchImportTournamentsBtn" onclick="batchImportTournaments()"><i class="fas fa-trophy"></i> Import 6 Tournaments</button>
+        </div>
+        <pre id="batchImportLog" style="background:#1a1a2e;color:#0f0;padding:16px;border-radius:8px;font-size:13px;margin-top:16px;max-height:400px;overflow:auto;white-space:pre-wrap">Waiting...</pre>
       </div>
 
     </div>

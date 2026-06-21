@@ -87,6 +87,7 @@ function renderDashboard() {
   document.getElementById('dashUnclaimedGroup').style.display = isAdmin ? 'block' : 'none';
   document.querySelector('[data-section="payments"]').style.display = isAdmin ? 'flex' : 'none';
   document.querySelector('[data-section="admin-analytics"]').style.display = isAdmin ? 'flex' : 'none';
+  document.querySelector('[data-section="batch-import"]').style.display = isAdmin ? 'flex' : 'none';
   document.querySelector('[data-section="analytics"]').style.display = isPro ? 'flex' : 'none';
   if (isPro) loadBookings();
 }
@@ -102,8 +103,9 @@ function switchSection(sectionId) {
   document.querySelectorAll('.dash-section').forEach(s => s.classList.remove('active'));
   document.querySelectorAll('.dash-nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById(`section-${sectionId}`).classList.add('active');
-  document.querySelector(`[data-section="${sectionId}"]`).classList.add('active');
+    document.querySelector(`[data-section="${sectionId}"]`).classList.add('active');
 
+  if (sectionId === 'batch-import') showBatchImportSection();
   if (sectionId === 'availability') loadAvailabilitySection();
   if (sectionId === 'mailing') loadMailingList();
   if (sectionId === 'add-court') initAddCourtMap();
@@ -1978,3 +1980,118 @@ window.rejectClaim = async function(claimId) {
     showToast('Error: ' + err.message, 4000);
   }
 };
+
+// ============================================================
+// BATCH IMPORT (Admin Only)
+// ============================================================
+function showBatchImportSection() {
+  document.getElementById('batchImportLog').textContent = 'Ready. Click a button above to start importing.';
+}
+
+const IMPORT_COURTS = [
+  {name:'Tierra Pickleball Club',city:'Quezon City',province:'Metro Manila',region:'NCR',type:'outdoor',access:'pay',rate:'\u20B1400/hr',courts:2,contact:'0969 085 7204',address:'Quezon City',lat:14.6507,lng:121.0483,hours:'6:00 AM - 10:00 PM',notes:'Contact via Facebook: facebook.com/tierrapickleball'},
+  {name:'CVJ Pickleball Park',city:'Marikina',province:'Metro Manila',region:'NCR',type:'outdoor',access:'pay',rate:'\u20B1300/hr',courts:2,contact:'0917 531 2952',address:'Marikina City',lat:14.6346,lng:121.0970,hours:'6:00 AM - 10:00 PM'},
+  {name:'24/7 Pickle Mandaluyong',city:'Mandaluyong',province:'Metro Manila',region:'NCR',type:'indoor',access:'pay',rate:'\u20B1350/hr',courts:2,contact:'0936 949 0815',address:'Mandaluyong City',lat:14.5790,lng:121.0354,hours:'Open 24 hours'},
+  {name:'Ground Game Pickleball Court',city:'Quezon City',province:'Metro Manila',region:'NCR',type:'outdoor',access:'pay',rate:'\u20B1350/hr',courts:2,contact:'0962 554 5953',address:'Quezon City',lat:14.6507,lng:121.0483,hours:'6:00 AM - 10:00 PM'},
+  {name:'Veterans Memorial Medical Center Pickleball Club',city:'Quezon City',province:'Metro Manila',region:'NCR',type:'outdoor',access:'pay',rate:'\u20B1200/hr',courts:2,contact:'(02) 8926 1315',address:'VMMC, Quezon City',lat:14.6507,lng:121.0483,hours:'6:00 AM - 8:00 PM'},
+  {name:'Standout Pickleball Arena',city:'Quezon City',province:'Metro Manila',region:'NCR',type:'indoor',access:'pay',rate:'\u20B1400/hr',courts:2,contact:'0917 776 0909',address:'Quezon City',lat:14.6507,lng:121.0483,hours:'6:00 AM - 10:00 PM'},
+  {name:'Javaj Pickleball',city:'Quezon City',province:'Metro Manila',region:'NCR',type:'outdoor',access:'pay',rate:'\u20B1300/hr',courts:2,contact:'0966 340 4512',address:'Quezon City',lat:14.6507,lng:121.0483,hours:'6:00 AM - 10:00 PM'},
+  {name:'Arvo Pickleball',city:'Quezon City',province:'Metro Manila',region:'NCR',type:'indoor',access:'pay',rate:'\u20B1400/hr',courts:2,contact:'0917 140 8549',address:'Quezon City',lat:14.6507,lng:121.0483,hours:'6:00 AM - 10:00 PM',notes:'Website: arvopickleball.com'},
+  {name:'Hemady Sports Plaza',city:'Quezon City',province:'Metro Manila',region:'NCR',type:'indoor',access:'pay',rate:'\u20B1350/hr',courts:8,contact:'(02) 8726 6351',address:'Hemady St., Quezon City',lat:14.6080,lng:121.0330,hours:'6:00 AM - 10:00 PM'},
+  {name:'Tierra Pura Pickleball Court',city:'Quezon City',province:'Metro Manila',region:'NCR',type:'outdoor',access:'pay',rate:'\u20B1400/hr',courts:2,contact:'0917 000 0000',address:'Quezon City',lat:14.6507,lng:121.0483,hours:'6:00 AM - 10:00 PM'},
+  {name:'Activate One',city:'Makati',province:'Metro Manila',region:'NCR',type:'indoor',access:'pay',rate:'\u20B1500/hr',courts:2,contact:'0995 055 0333',address:'Makati City',lat:14.5547,lng:121.0244,hours:'6:00 AM - 10:00 PM'},
+  {name:'Dink & Shot',city:'Marikina',province:'Metro Manila',region:'NCR',type:'indoor',access:'pay',rate:'\u20B1350/hr',courts:2,contact:'marketing@dinkandshot.com',address:'Marikina City',lat:14.6346,lng:121.0970,hours:'6:00 AM - 10:00 PM'},
+  {name:'RallyPoint Pickleball',city:'Marikina',province:'Metro Manila',region:'NCR',type:'outdoor',access:'pay',rate:'\u20B1300/hr',courts:2,contact:'0968 439 0934',address:'Marikina City',lat:14.6346,lng:121.0970,hours:'6:00 AM - 10:00 PM'},
+  {name:'Alset Pickleball',city:'Makati',province:'Metro Manila',region:'NCR',type:'indoor',access:'pay',rate:'\u20B1500/hr',courts:2,contact:'0917 537 7878',address:'Makati City',lat:14.5547,lng:121.0244,hours:'6:00 AM - 10:00 PM',notes:'Website: alsetpickleball.ph/'},
+  {name:'Neopolitan Brittany Pickleball Courts',city:'Quezon City',province:'Metro Manila',region:'NCR',type:'outdoor',access:'pay',rate:'\u20B1300/hr',courts:10,contact:'(02) 8461 3534',address:'Neopolitan Brittany, QC',lat:14.6507,lng:121.0483,hours:'6:00 AM - 10:00 PM'},
+  {name:'TECNIQ X Dink & Drive',city:'Las Pi\u00F1as',province:'Metro Manila',region:'NCR',type:'indoor',access:'pay',rate:'\u20B1400/hr',courts:2,contact:'0945 653 5470',address:'Las Pi\u00F1as City',lat:14.4708,lng:120.9827,hours:'6:00 AM - 10:00 PM'},
+  {name:'Blue Ridge Covered Courts',city:'Quezon City',province:'Metro Manila',region:'NCR',type:'indoor',access:'pay',rate:'\u20B1350/hr',courts:2,contact:'0917 182 2272',address:'Blue Ridge, Quezon City',lat:14.6507,lng:121.0483,hours:'6:00 AM - 10:00 PM'},
+  {name:'Gameville Double Play',city:'Pasig',province:'Metro Manila',region:'NCR',type:'indoor',access:'pay',rate:'\u20B1400/hr',courts:2,contact:'0932 208 6138',address:'Pasig City',lat:14.5764,lng:121.0851,hours:'6:00 AM - 10:00 PM'},
+  {name:'Makati Sports Club',city:'Makati',province:'Metro Manila',region:'NCR',type:'indoor',access:'membership',rate:'Membership required',courts:2,contact:'(02) 8817 8731',address:'Makati City',lat:14.5547,lng:121.0244,hours:'6:00 AM - 10:00 PM'},
+  {name:'Vatic Pro Pickleball PH',city:'Quezon City',province:'Metro Manila',region:'NCR',type:'indoor',access:'pay',rate:'\u20B1400/hr',courts:2,contact:'0915 266 1178',address:'Quezon City',lat:14.6507,lng:121.0483,hours:'6:00 AM - 10:00 PM'},
+  {name:'Divine Light Pickleball Club',city:'Las Pi\u00F1as',province:'Metro Manila',region:'NCR',type:'outdoor',access:'pay',rate:'\u20B1300/hr',courts:2,contact:'0999 876 3285',address:'Las Pi\u00F1as City',lat:14.4708,lng:120.9827,hours:'6:00 AM - 10:00 PM'},
+  {name:'Penalosa Sports Center',city:'Para\u00F1aque',province:'Metro Manila',region:'NCR',type:'indoor',access:'pay',rate:'\u20B1400/hr',courts:2,contact:'0906 485 2960',address:'Para\u00F1aque City',lat:14.4795,lng:120.9836,hours:'6:00 AM - 10:00 PM'},
+  {name:'New Manila Rolling Hills Clubhouse',city:'Quezon City',province:'Metro Manila',region:'NCR',type:'outdoor',access:'pay',rate:'\u20B1350/hr',courts:2,contact:'(02) 8240 3907',address:'New Manila, Quezon City',lat:14.6080,lng:121.0330,hours:'6:00 AM - 10:00 PM'},
+  {name:'ProServe Manila',city:'Manila',province:'Metro Manila',region:'NCR',type:'indoor',access:'pay',rate:'\u20B1400/hr',courts:2,contact:'0956 299 5981',address:'Manila',lat:14.5995,lng:120.9842,hours:'6:00 AM - 10:00 PM'},
+  {name:'The Smash City',city:'Valenzuela',province:'Metro Manila',region:'NCR',type:'indoor',access:'pay',rate:'\u20B1200-400/hr',courts:4,contact:'0952 479 9139',address:'30 F. Alarcon St., Malabo, Maysan Road, Valenzuela',lat:14.7029,lng:120.9719,hours:'7:00 AM - 12:00 MN',notes:'Website: thesmashcity.com/ \u00B7 USAPA-standard courts, LED lighting'},
+  {name:'Quezon City Sports Club',city:'Quezon City',province:'Metro Manila',region:'NCR',type:'outdoor',access:'membership',rate:'Membership required',courts:4,contact:'',address:'Quezon City',lat:14.6507,lng:121.0483,hours:'6:00 AM - 10:00 PM'},
+  {name:'HD Pickleball',city:'Quezon City',province:'Metro Manila',region:'NCR',type:'indoor',access:'pay',rate:'\u20B1400/hr',courts:4,contact:'',address:'Quezon City',lat:14.6507,lng:121.0483,hours:'6:00 AM - 10:00 PM'},
+  {name:'Match Grounds Pickleball',city:'Quezon City',province:'Metro Manila',region:'NCR',type:'indoor',access:'pay',rate:'\u20B1400/hr',courts:2,contact:'',address:'Quezon City',lat:14.6507,lng:121.0483,hours:'6:00 AM - 10:00 PM'},
+  {name:'Zone Sports Center',city:'Quezon City',province:'Metro Manila',region:'NCR',type:'indoor',access:'pay',rate:'\u20B1400/hr',courts:6,contact:'',address:'Quezon City',lat:14.6507,lng:121.0483,hours:'6:00 AM - 10:00 PM'},
+  {name:'Picklebees VMMC-UHTPC',city:'Quezon City',province:'Metro Manila',region:'NCR',type:'outdoor',access:'pay',rate:'\u20B1200/hr',courts:3,contact:'',address:'VMMC, Quezon City',lat:14.6507,lng:121.0483,hours:'6:00 AM - 8:00 PM'},
+  {name:'Paddiemates Pickleball Hub',city:'Manila',province:'Metro Manila',region:'NCR',type:'indoor',access:'pay',rate:'\u20B1400/hr',courts:2,contact:'',address:'Malate, Manila',lat:14.5667,lng:120.9933,hours:'6:00 AM - 10:00 PM'},
+  {name:'SM Center Shaw Pickleball Court',city:'Mandaluyong',province:'Metro Manila',region:'NCR',type:'outdoor',access:'pay',rate:'\u20B1500/hr',courts:3,contact:'',address:'514 Shaw Boulevard, Mandaluyong',lat:14.5790,lng:121.0354,hours:'Mall hours',notes:'Partner: Paloo \u00B7 3 permanent outdoor courts'},
+  {name:'SM Center Muntinlupa Pickleball Court',city:'Muntinlupa',province:'Metro Manila',region:'NCR',type:'indoor',access:'pay',rate:'\u20B1500/hr',courts:4,contact:'',address:'SM Center Muntinlupa',lat:14.4185,lng:121.0412,hours:'Mall hours',notes:'Partner: Paloo \u00B7 4 permanent indoor courts \u00B7 Open play \u20B1280'},
+  {name:'Nomads Pickleball Cebu',city:'Cebu City',province:'Cebu',region:'Central Visayas',type:'indoor',access:'pay',rate:'\u20B1450-500/hr',courts:2,contact:'0998 841 8485',address:'070 R. Duterte St, Cebu City',lat:10.3157,lng:123.8854,hours:'Open 24 hours',notes:'Indoor painted courts \u00B7 Paddle rental \u20B1100'},
+  {name:'Pickaball Sports Center',city:'Mandaue',province:'Cebu',region:'Central Visayas',type:'indoor',access:'pay',rate:'\u20B1600/hr',courts:7,contact:'',address:'Tabok, Mandaue City, Cebu',lat:10.3301,lng:123.9318,hours:'Open 24 hours',notes:'US-standard acrylic+silica sand \u00B7 Paddle rental \u20B1100 \u00B7 Showers & parking'},
+  {name:'The Courts of Cebu',city:'Cebu City',province:'Cebu',region:'Central Visayas',type:'indoor',access:'pay',rate:'\u20B1550-700/hr',courts:8,contact:'',address:'Pres. Magsaysay St., Cebu City',lat:10.3157,lng:123.8854,hours:'10:00 AM - 10:00 PM',notes:'US-standard acrylic+silica sand \u00B7 Open play \u00B7 Booking: app.onda.fit'},
+  {name:'Qusina PIQLE QLUB',city:'Cebu City',province:'Cebu',region:'Central Visayas',type:'outdoor',access:'pay',rate:'\u20B1300/hr',courts:2,contact:'',address:'Banilad, Cebu City',lat:10.3264,lng:123.9062,hours:'Open 24 hours',notes:'Outdoor painted courts \u00B7 Open play \u00B7 Parking'},
+  {name:'The Pickle Point Cebu',city:'Mandaue',province:'Cebu',region:'Central Visayas',type:'outdoor',access:'pay',rate:'\u20B1400/hr',courts:2,contact:'',address:'Mandaue City, Cebu',lat:10.3301,lng:123.9318,hours:'Open 24 hours',notes:'Outdoor painted courts \u00B7 Parking & CR'},
+  {name:'HQ Pickleball Cebu',city:'Cebu City',province:'Cebu',region:'Central Visayas',type:'outdoor',access:'pay',rate:'\u20B1500/hr',courts:3,contact:'0917 701 9131',address:'Archbishop Reyes Ave, Cebu City (near Grand Convention Center)',lat:10.3145,lng:123.9032,hours:'Open 24 hours',notes:'Expanding to 9 covered courts Feb 2026 \u00B7 Paddle rental \u20B1200/4hrs \u00B7 GCash accepted'},
+  {name:'Pickle at The Kiln',city:'Mandaue',province:'Cebu',region:'Central Visayas',type:'indoor',access:'pay',rate:'\u20B1550/hr',courts:4,contact:'',address:'Banilad, Mandaue City, Cebu',lat:10.3264,lng:123.9062,hours:'Daily',notes:'Indoor US-standard courts \u00B7 Parking & CR'},
+  {name:'Sayson\'s Place Private Pickleball Court',city:'Cebu City',province:'Cebu',region:'Central Visayas',type:'outdoor',access:'pay',rate:'\u20B1200/hr',courts:1,contact:'',address:'Tisa, Cebu City',lat:10.3046,lng:123.8745,hours:'6:00 AM - 12:00 MN',notes:'Private outdoor painted court \u00B7 Parking & CR'},
+  {name:'Net and Paddle Pickleball Club',city:'Cebu City',province:'Cebu',region:'Central Visayas',type:'indoor',access:'pay',rate:'\u20B1450/hr',courts:2,contact:'',address:'Cebu City',lat:10.3157,lng:123.8854,hours:'Daily',notes:'Indoor US-standard courts'},
+  {name:'CitiLoft Pickleball Cebu',city:'Cebu City',province:'Cebu',region:'Central Visayas',type:'indoor',access:'pay',rate:'\u20B1400/hr',courts:2,contact:'',address:'Cebu City',lat:10.3157,lng:123.8854,hours:'Afternoon/Evening',notes:'Indoor painted courts \u00B7 Member & walk-in rates'},
+  {name:'DH Sports Hub',city:'Cebu City',province:'Cebu',region:'Central Visayas',type:'indoor',access:'pay',rate:'\u20B1400/hr',courts:2,contact:'',address:'Cebu City',lat:10.3157,lng:123.8854,hours:'Daily',notes:'Indoor wood flooring \u00B7 On-site parking'},
+  {name:'Pino Pickleball Court',city:'Cebu City',province:'Cebu',region:'Central Visayas',type:'outdoor',access:'pay',rate:'\u20B1300/hr',courts:2,contact:'',address:'Cebu City',lat:10.3157,lng:123.8854,hours:'Daily',notes:'Outdoor painted courts \u00B7 On-site parking'},
+  {name:'SweetSpot Pickleball',city:'Cebu City',province:'Cebu',region:'Central Visayas',type:'indoor',access:'pay',rate:'\u20B1400/hr',courts:2,contact:'',address:'Cebu City',lat:10.3157,lng:123.8854,hours:'Daily',notes:'Indoor courts'}
+];
+
+const IMPORT_TOURNAMENTS = [
+  {name:'PPL Visayas Open 2026',location:'PlayPro Active Courts, Sibulan, Negros Oriental',date:'2026-07-15',endDate:'2026-07-19',type:'Open',format:'Doubles & Mixed',description:'The Visayas leg of the Philippine Pickleball League. Powered by PlayPro Active Courts.',contact:'phpickleballleague@gmail.com',link:'https://www.phpickleballleague.com/',ownerId:null},
+  {name:'PPL Mindanao Open 2026',location:'Pickle Town, Davao City',date:'2026-05-01',endDate:'2026-05-08',type:'Open',format:'Doubles & Mixed',description:'The biggest PPL tournament to date with \u20B11.8M prize pool.',contact:'phpickleballleague@gmail.com',link:'https://www.phpickleballleague.com/',ownerId:null},
+  {name:'PPL Luzon Open 2026',location:'TBD, Luzon',date:'2026-08-01',endDate:'2026-08-04',type:'Open',format:'Doubles & Mixed',description:'The Luzon leg of the Philippine Pickleball League.',contact:'phpickleballleague@gmail.com',link:'https://www.phpickleballleague.com/',ownerId:null},
+  {name:'Rising Stars: Cebu \u2014 U19 Team Event',location:'Cebu City',date:'2026-06-20',endDate:'2026-06-21',type:'Junior',format:'Team',description:'The Cebu leg of the Rising Stars U19 Team Event, part of Pickle Fest 2026 youth pathway.',contact:'',link:'https://pickleballchampionsleague.org/tournament/rising-stars-cebu',ownerId:null},
+  {name:'PlanOut Pickleball Open',location:'Dumaguete City',date:'2026-05-15',endDate:'2026-05-17',type:'Open',format:'Doubles & Mixed',description:'The biggest pickleball tournament in the Philippines with a \u20B11M prize pool.',contact:'',link:'',ownerId:null},
+  {name:'GenSan Pickleball Tournament',location:'GMall of GenSan, General Santos City',date:'2026-04-11',endDate:'2026-04-12',type:'Open',format:'Doubles',description:'Pickleball tournament at GMall of GenSan.',contact:'',link:'',ownerId:null}
+];
+
+async function batchImportCourts() {
+  const log = document.getElementById('batchImportLog');
+  const btn = document.getElementById('batchImportCourtsBtn');
+  btn.disabled = true; btn.textContent = 'Importing...';
+  log.textContent = '';
+
+  function logMsg(m) { log.textContent += m + '\n'; log.scrollTop = log.scrollHeight; }
+
+  logMsg('Starting import of ' + IMPORT_COURTS.length + ' courts...\n');
+  let added = 0, skipped = 0, errors = 0;
+
+  for (const court of IMPORT_COURTS) {
+    try {
+      const existing = await db.collection('courts').where('name', '==', court.name).get();
+      if (!existing.empty) { skipped++; logMsg('\u23ED Skipped (duplicate): ' + court.name); continue; }
+      await db.collection('courts').add({...court, verified:false, approved:true, featured:false, photos:[], amenities:[], createdAt: firebase.firestore.FieldValue.serverTimestamp()});
+      added++; logMsg('\u2705 Added: ' + court.name);
+    } catch (e) { errors++; logMsg('\u274C Error: ' + court.name + ' - ' + e.message); }
+  }
+
+  logMsg('\n\u2500\u2500\u2500 Complete \u2500\u2500\u2500');
+  logMsg('Added: ' + added + ' | Skipped: ' + skipped + ' | Errors: ' + errors);
+  btn.disabled = false; btn.textContent = 'Import 34 New Courts';
+}
+
+async function batchImportTournaments() {
+  const log = document.getElementById('batchImportLog');
+  const btn = document.getElementById('batchImportTournamentsBtn');
+  btn.disabled = true; btn.textContent = 'Importing...';
+  log.textContent = '';
+
+  function logMsg(m) { log.textContent += m + '\n'; log.scrollTop = log.scrollHeight; }
+
+  logMsg('Starting import of ' + IMPORT_TOURNAMENTS.length + ' tournaments...\n');
+  let added = 0, skipped = 0, errors = 0;
+
+  for (const t of IMPORT_TOURNAMENTS) {
+    try {
+      const existing = await db.collection('tournaments').where('name', '==', t.name).get();
+      if (!existing.empty) { skipped++; logMsg('\u23ED Skipped (duplicate): ' + t.name); continue; }
+      await db.collection('tournaments').add({...t, createdAt: firebase.firestore.FieldValue.serverTimestamp()});
+      added++; logMsg('\u2705 Added: ' + t.name);
+    } catch (e) { errors++; logMsg('\u274C Error: ' + t.name + ' - ' + e.message); }
+  }
+
+  logMsg('\n\u2500\u2500\u2500 Complete \u2500\u2500\u2500');
+  logMsg('Added: ' + added + ' | Skipped: ' + skipped + ' | Errors: ' + errors);
+  btn.disabled = false; btn.textContent = 'Import 6 Tournaments';
+}
