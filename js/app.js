@@ -489,7 +489,7 @@ function renderCourtsList(courts) {
         </div>
         <div class="court-card-footer">
           <button class="btn-view-map"
-            onclick="event.stopPropagation(); viewOnMap(${court.id})">
+            onclick="event.stopPropagation(); viewOnMap('${court.id}')">
             <i class="fas fa-map-marked-alt"></i> View on Map
           </button>
           <button class="btn-directions"
