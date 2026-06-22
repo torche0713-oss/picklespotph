@@ -196,8 +196,7 @@ body {
 }
 .hero-sub-badge {
   display: inline-block;
-  background: rgba(255,255,255,0.12);
-  backdrop-filter: blur(4px);
+  background: linear-gradient(135deg,#fff8e1,#fff3e0);
   color: var(--accent);
   padding: 6px 18px;
   border-radius: 20px;
@@ -2265,7 +2264,7 @@ body {
 [data-theme="dark"] .hero-launch-notice { background: linear-gradient(135deg, #2a2a2a, #333) !important; color: var(--text) !important; }
 [data-theme="dark"] .hero-launch-notice a { color: var(--primary-light); }
 [data-theme="dark"] .hero-stat-num { color: var(--primary-light); }
-[data-theme="dark"] .hero-sub-badge { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.15); }
+[data-theme="dark"] .hero-sub-badge { background: linear-gradient(135deg,#3d2b1b,#4a3320); border-color: var(--accent); }
 [data-theme="dark"] .hero-sub { color: var(--text-muted); }
 [data-theme="dark"] input, [data-theme="dark"] select, [data-theme="dark"] textarea { background: var(--input-bg); color: var(--text); border-color: var(--border-color); }
 [data-theme="dark"] .recent-card { background: var(--card-bg); }
