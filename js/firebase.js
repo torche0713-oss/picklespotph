@@ -69,7 +69,6 @@ const auth = firebase.auth();
 const db = firebase.firestore();
 const storage = firebase.storage();
 const googleProvider = new firebase.auth.GoogleAuthProvider();
-const facebookProvider = new firebase.auth.FacebookAuthProvider();
 
 // ============================================================
 // FIRESTORE COLLECTIONS
@@ -132,30 +131,6 @@ const PickleAuth = {
     } catch (popupErr) {
       if (popupErr.code === 'auth/popup-blocked' || popupErr.code === 'auth/popup-closed-by-user') {
         await auth.signInWithRedirect(googleProvider);
-        return;
-      }
-      throw popupErr;
-    }
-  },
-
-  // Sign in with Facebook
-  async signInWithFacebook() {
-    try {
-      const cred = await auth.signInWithPopup(facebookProvider);
-      const doc = await db.collection(COLLECTIONS.USERS).doc(cred.user.uid).get();
-      if (!doc.exists) {
-        await db.collection(COLLECTIONS.USERS).doc(cred.user.uid).set({
-          displayName: cred.user.displayName,
-          email: cred.user.email,
-          role: 'owner',
-          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-          plan: 'basic'
-        });
-      }
-      return cred.user;
-    } catch (popupErr) {
-      if (popupErr.code === 'auth/popup-blocked' || popupErr.code === 'auth/popup-closed-by-user') {
-        await auth.signInWithRedirect(facebookProvider);
         return;
       }
       throw popupErr;

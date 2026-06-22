@@ -45,7 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }, 3000);
 
-  // Handle redirect auth result (Google/Facebook sign-in)
+  // Handle redirect auth result (Google sign-in)
   if (typeof PickleAuth !== 'undefined') {
     PickleAuth.handleRedirectResult().catch(() => {});
   }
@@ -1573,22 +1573,13 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
   }
 });
 
-// Social login
+// Google sign-in
 document.getElementById('googleLoginBtn').addEventListener('click', async () => {
   try {
     const result = await PickleAuth.signInWithGoogle();
     if (result) closeModal('loginModal');
   } catch (err) {
     showToast('Google sign-in failed: ' + err.message, 4000);
-  }
-});
-
-document.getElementById('facebookLoginBtn').addEventListener('click', async () => {
-  try {
-    const result = await PickleAuth.signInWithFacebook();
-    if (result) closeModal('loginModal');
-  } catch (err) {
-    showToast('Facebook sign-in failed: ' + err.message, 4000);
   }
 });
 
