@@ -846,6 +846,14 @@ async function loadAdminAnalytics() {
     });
     const proPct = totalUsers ? Math.round((proCount / totalUsers) * 100) : 0;
 
+    const courtsByOwner = {};
+    courts.forEach(c => {
+      if (c.ownerId) {
+        if (!courtsByOwner[c.ownerId]) courtsByOwner[c.ownerId] = [];
+        courtsByOwner[c.ownerId].push(c.name);
+      }
+    });
+
     const recentUsers = usersSnap.docs
       .map(doc => ({ id: doc.id, ...doc.data() }))
       .filter(u => u.createdAt)
@@ -896,12 +904,18 @@ async function loadAdminAnalytics() {
       ${recentUsers.length ? `
       <div class="admin-breakdown">
         <h3>Recent Registrations</h3>
-        ${recentUsers.map(u => `
-          <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #f5f5f5;font-size:13px">
-            <span>${u.displayName || 'Unknown'} <span style="color:var(--text-muted);font-size:11px">${u.email || ''}</span></span>
-            <span style="color:var(--text-muted);font-size:11px">${u.createdAt?.toDate?.() ? u.createdAt.toDate().toLocaleDateString() : ''} · ${u.plan === 'pro' ? '⭐ Pro' : 'Basic'}</span>
-          </div>
-        `).join('')}
+        ${recentUsers.map(u => {
+          const userCourts = courtsByOwner[u.id] || [];
+          return `
+          <div style="padding:6px 0;border-bottom:1px solid #f5f5f5;font-size:13px">
+            <div style="display:flex;justify-content:space-between">
+              <span><strong>${u.displayName || 'Unknown'}</strong></span>
+              <span style="color:var(--text-muted);font-size:11px">${u.createdAt?.toDate?.() ? u.createdAt.toDate().toLocaleDateString() : ''} · ${u.plan === 'pro' ? '⭐ Pro' : 'Basic'}</span>
+            </div>
+            <div style="color:var(--text-muted);font-size:11px">${u.email || ''}</div>
+            ${userCourts.length ? `<div style="color:var(--primary);font-size:11px;margin-top:2px">🏛 ${userCourts.join(', ')}</div>` : ''}
+          </div>`;
+        }).join('')}
       </div>` : ''}
     `;
   } catch (err) {
