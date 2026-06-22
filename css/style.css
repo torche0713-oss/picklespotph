@@ -159,16 +159,22 @@ body {
   margin: 0 auto;
   position: relative;
   z-index: 1;
+  text-align: center;
 }
 
-.hero-logo {
-  height: 130px;
+.hero-logo-wrap {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+.hero-logo-wrap .hero-logo {
+  background: rgba(255,255,255,0.95);
+  padding: 12px 30px;
+  border-radius: 16px;
+  height: 90px;
   width: auto;
-  margin-bottom: 16px;
   display: block;
-  margin-left: auto;
-  margin-right: auto;
-  filter: drop-shadow(0 4px 12px rgba(0,0,0,0.3));
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
 }
 .hero-badge {
   display: inline-block;
