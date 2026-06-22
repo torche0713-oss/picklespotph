@@ -2047,7 +2047,21 @@ const IMPORT_COURTS = [
   {name:'CitiLoft Pickleball Cebu',city:'Cebu City',province:'Cebu',region:'Central Visayas',type:'indoor',access:'pay',rate:'\u20B1400/hr',courts:2,contact:'',address:'Cebu City',lat:10.3157,lng:123.8854,hours:'Afternoon/Evening',notes:'Indoor painted courts \u00B7 Member & walk-in rates'},
   {name:'DH Sports Hub',city:'Cebu City',province:'Cebu',region:'Central Visayas',type:'indoor',access:'pay',rate:'\u20B1400/hr',courts:2,contact:'',address:'Cebu City',lat:10.3157,lng:123.8854,hours:'Daily',notes:'Indoor wood flooring \u00B7 On-site parking'},
   {name:'Pino Pickleball Court',city:'Cebu City',province:'Cebu',region:'Central Visayas',type:'outdoor',access:'pay',rate:'\u20B1300/hr',courts:2,contact:'',address:'Cebu City',lat:10.3157,lng:123.8854,hours:'Daily',notes:'Outdoor painted courts \u00B7 On-site parking'},
-  {name:'SweetSpot Pickleball',city:'Cebu City',province:'Cebu',region:'Central Visayas',type:'indoor',access:'pay',rate:'\u20B1400/hr',courts:2,contact:'',address:'Cebu City',lat:10.3157,lng:123.8854,hours:'Daily',notes:'Indoor courts'}
+  {name:'SweetSpot Pickleball',city:'Cebu City',province:'Cebu',region:'Central Visayas',type:'indoor',access:'pay',rate:'\u20B1400/hr',courts:2,contact:'',address:'Cebu City',lat:10.3157,lng:123.8854,hours:'Daily',notes:'Indoor courts'},
+
+  // ===== BATCH 2 — Added Jun 22, 2026 =====
+
+  {name:'The Pickle Yard Para\u00F1aque',city:'Para\u00F1aque',province:'Metro Manila',region:'NCR',type:'indoor',access:'pay',rate:'\u20B1500/hr',courts:3,contact:'(+63) 936-959-5004 / pickleyardph@gmail.com',address:'Warehouse 1, Emram Holdings Compound, West Service Road, Sun Valley, Bicutan, Para\u00F1aque City',lat:14.4889,lng:121.0419,hours:'Mon-Fri 7:00 AM - 12:00 MN',notes:'P500/hr court rental. P250/head open play (9PM-1AM Thu). Acrylic courts. 3 USAPA-standard courts. Sports bar & restaurant.'},
+  {name:'The Pickle Yard Dasmari\u00F1as',city:'Dasmari\u00F1as',province:'Cavite',region:'Luzon',type:'indoor',access:'pay',rate:'\u20B1500/hr',courts:3,contact:'(+63) 953-882-6297 / pickleyardph@gmail.com',address:'AON Warehouse, Governor\'s Drive, Sampaloc Uno, Dasmari\u00F1as, Cavite',lat:14.3281,lng:120.9598,hours:'Mon-Fri 7:00 AM - 12:00 MN',notes:'Branch of The Pickle Yard. P500/hr.'},
+  {name:'SMASH Sports Facilities',city:'Mandaue',province:'Cebu',region:'Central Visayas',type:'indoor',access:'pay',rate:'\u20B1500-600/hr',courts:3,contact:'FB: facebook.com/profile.php?id=61587611789121',address:'Near Guizo Barangay Hall, Mandaue City, Cebu',lat:10.3245,lng:123.9350,hours:'7:00 AM - 12:00 MN',notes:'US Standard (Acrylic + Silica Sand). Open play & paddle rental. Booking via sports360.ph.'},
+  {name:'Orosia Pickleball Court',city:'Consolacion',province:'Cebu',region:'Central Visayas',type:'indoor',access:'pay',rate:'\u20B1400-450/hr',courts:3,contact:'FB: facebook.com/profile.php?id=61589354993750',address:'Orosia Food Park, Cansaga, Consolacion, Cebu',lat:10.3766,lng:123.9592,hours:'10:00 AM - 12:00 MN',notes:'US Standard (Acrylic + Silica Sand). Located within Orosia Food Park.'},
+  {name:'Paduwa PickleBall Club',city:'Consolacion',province:'Cebu',region:'Central Visayas',type:'indoor',access:'pay',rate:'\u20B1300-350/hr',courts:7,contact:'FB: facebook.com/people/Paduwa-PickleBall-Club/61577662757877',address:'Diversion Road, Consolacion, Cebu',lat:10.3734,lng:123.9575,hours:'8:00 AM - 12:00 MN',notes:'US Standard (Acrylic + Silica Sand). Open play & paddle rental. Booking via courtsync.co.'},
+  {name:'BTC Pickleball Lapu-Lapu',city:'Lapu-Lapu City',province:'Cebu',region:'Central Visayas',type:'outdoor',access:'pay',rate:'\u20B1500/hr',courts:10,contact:'0917 321 5781',address:'1851 Pool Street, Bankal, Lapu-Lapu City, Cebu',lat:10.3080,lng:123.9830,hours:'4:00 PM - 2:00 AM',notes:'10 outdoor concrete courts. Coffee shop, food stalls, parking.'},
+  {name:'DA\' Pickle CLAN',city:'Naga',province:'Cebu',region:'Central Visayas',type:'outdoor',access:'pay',rate:'\u20B1300-350/hr',courts:1,contact:'0927 796 7996',address:'Daclan Compound, Tuyan, Naga, Cebu (beside Seaoil Gas Station)',lat:10.2270,lng:123.7500,hours:'6:00 AM - 12:00 MN (Mon-Fri)',notes:'1 outdoor concrete court. Coffee shop. Mon-Fri only.'},
+  {name:'Double A Rally Court',city:'Lapu-Lapu City',province:'Cebu',region:'Central Visayas',type:'outdoor',access:'pay',rate:'\u20B1350/hr',courts:1,contact:'0966 365 6628 / 0995 438 9006',address:'New Sangi Rd, Lapu-Lapu City, Cebu',lat:10.3150,lng:123.9650,hours:'3:00 PM - 12:00 MN',notes:'1 outdoor concrete court.'},
+  {name:'Lapu-Lapu City Cebu Pickleball Club',city:'Lapu-Lapu City',province:'Cebu',region:'Central Visayas',type:'outdoor',access:'pay',rate:'\u20B1400-450/hr',courts:1,contact:'FB page',address:'Provident Homes Kinalumsan, Canjulao, Lapu-Lapu City, Cebu',lat:10.3100,lng:123.9700,hours:'6:00 AM - 12:00 MN',notes:'1 outdoor concrete court.'},
+  {name:'Cebu Sports Hub',city:'Mandaue',province:'Cebu',region:'Central Visayas',type:'indoor',access:'pay',rate:'\u20B1350/hr',courts:3,contact:'',address:'Mardonio Ceniza, Mandaue, Cebu',lat:10.3260,lng:123.9280,hours:'Daily',notes:'3 indoor hard courts with permanent lines & portable nets. Lights.'},
+  {name:'Paddle Point Club',city:'Lapu-Lapu City',province:'Cebu',region:'Central Visayas',type:'outdoor',access:'pay',rate:'\u20B1400/hr',courts:1,contact:'',address:'Lapu-Lapu City, Cebu',lat:10.3100,lng:123.9800,hours:'Open 24 hours',notes:'1 outdoor painted court. CR available.'}
 ];
 
 const IMPORT_TOURNAMENTS = [
@@ -2056,7 +2070,9 @@ const IMPORT_TOURNAMENTS = [
   {name:'PPL Luzon Open 2026',location:'TBD, Luzon',date:'2026-08-01',endDate:'2026-08-04',type:'Open',format:'Doubles & Mixed',description:'The Luzon leg of the Philippine Pickleball League.',contact:'phpickleballleague@gmail.com',link:'https://www.phpickleballleague.com/',ownerId:null},
   {name:'Rising Stars: Cebu \u2014 U19 Team Event',location:'Cebu City',date:'2026-06-20',endDate:'2026-06-21',type:'Junior',format:'Team',description:'The Cebu leg of the Rising Stars U19 Team Event, part of Pickle Fest 2026 youth pathway.',contact:'',link:'https://pickleballchampionsleague.org/tournament/rising-stars-cebu',ownerId:null},
   {name:'PlanOut Pickleball Open',location:'Dumaguete City',date:'2026-05-15',endDate:'2026-05-17',type:'Open',format:'Doubles & Mixed',description:'The biggest pickleball tournament in the Philippines with a \u20B11M prize pool.',contact:'',link:'',ownerId:null},
-  {name:'GenSan Pickleball Tournament',location:'GMall of GenSan, General Santos City',date:'2026-04-11',endDate:'2026-04-12',type:'Open',format:'Doubles',description:'Pickleball tournament at GMall of GenSan.',contact:'',link:'',ownerId:null}
+  {name:'GenSan Pickleball Tournament',location:'GMall of GenSan, General Santos City',date:'2026-04-11',endDate:'2026-04-12',type:'Open',format:'Doubles',description:'Pickleball tournament at GMall of GenSan.',contact:'',link:'',ownerId:null},
+  {name:'PPL MMC Season 1 - Metro Manila Championships',location:'Metro Manila',date:'2026-06-01',endDate:'2026-06-07',type:'Open',format:'Doubles & Mixed',description:'Philippine Pickleball League Metro Manila Championships Season 1. Covered by One Sports (Cignal).',contact:'phpickleballleague@gmail.com',link:'https://www.phpickleballleague.com/',ownerId:null},
+  {name:'1st Philippine Pickleball Amateur Nationals by SKECHERS',location:'Metro Manila',date:'2026-03-26',endDate:'2026-03-29',type:'Amateur',format:'Doubles & Mixed',description:'First official National Rankings event for Filipino amateur players. Pathway toward SEA Games, Asian Games, and beyond.',contact:'',link:'https://www.pickleball.ph/',ownerId:null}
 ];
 
 async function batchImportCourts() {
@@ -2081,7 +2097,7 @@ async function batchImportCourts() {
 
   logMsg('\n\u2500\u2500\u2500 Complete \u2500\u2500\u2500');
   logMsg('Added: ' + added + ' | Skipped: ' + skipped + ' | Errors: ' + errors);
-  btn.disabled = false; btn.textContent = 'Import 34 New Courts';
+  btn.disabled = false; btn.textContent = 'Import ' + IMPORT_COURTS.length + ' New Courts';
 }
 
 async function batchImportTournaments() {
@@ -2106,5 +2122,5 @@ async function batchImportTournaments() {
 
   logMsg('\n\u2500\u2500\u2500 Complete \u2500\u2500\u2500');
   logMsg('Added: ' + added + ' | Skipped: ' + skipped + ' | Errors: ' + errors);
-  btn.disabled = false; btn.textContent = 'Import 6 Tournaments';
+  btn.disabled = false; btn.textContent = 'Import ' + IMPORT_TOURNAMENTS.length + ' Tournaments';
 }
