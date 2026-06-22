@@ -196,16 +196,15 @@ body {
 }
 .hero-sub-badge {
   display: inline-block;
-  background: rgba(255,255,255,0.12);
-  backdrop-filter: blur(4px);
+  background: var(--accent);
   color: #fff;
   padding: 6px 18px;
   border-radius: 20px;
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 0.3px;
   margin-bottom: 14px;
-  border: 1px solid rgba(255,255,255,0.2);
+  box-shadow: 0 2px 12px rgba(255,111,0,0.4);
   animation: pulseSubBadge 2.5s ease-in-out infinite;
 }
 .hero-sub {
