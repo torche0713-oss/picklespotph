@@ -110,6 +110,7 @@ function renderDashboard() {
   document.querySelector('[data-section="payments"]').style.display = isAdmin ? 'flex' : 'none';
   document.querySelector('[data-section="admin-analytics"]').style.display = isAdmin ? 'flex' : 'none';
   document.querySelector('[data-section="batch-import"]').style.display = isAdmin ? 'flex' : 'none';
+  document.querySelector('[data-section="email-campaign"]').style.display = isAdmin ? 'flex' : 'none';
   document.querySelector('[data-section="analytics"]').style.display = isPro ? 'flex' : 'none';
   if (isPro) loadBookings();
 }
@@ -118,7 +119,7 @@ function renderDashboard() {
 // NAVIGATION
 // ============================================================
 function switchSection(sectionId) {
-  if ((sectionId === 'payments' || sectionId === 'admin-analytics' || sectionId === 'owner-courts' || sectionId === 'tournaments' || sectionId === 'claims') && currentUser.email !== ADMIN_EMAIL) {
+  if ((sectionId === 'payments' || sectionId === 'admin-analytics' || sectionId === 'owner-courts' || sectionId === 'tournaments' || sectionId === 'claims' || sectionId === 'email-campaign') && currentUser.email !== ADMIN_EMAIL) {
     showToast('Access denied.');
     return;
   }
@@ -139,6 +140,7 @@ function switchSection(sectionId) {
   if (sectionId === 'tournaments') loadTournaments();
   if (sectionId === 'claims') loadClaims();
   if (sectionId === 'analytics') loadAnalytics();
+  if (sectionId === 'email-campaign') loadSubscriberCount();
 }
 
 // ============================================================
@@ -2138,3 +2140,59 @@ async function batchImportTournaments() {
   logMsg('Added: ' + added + ' | Skipped: ' + skipped + ' | Errors: ' + errors);
   btn.disabled = false; btn.textContent = 'Import ' + IMPORT_TOURNAMENTS.length + ' Tournaments';
 }
+
+// ============================================================
+// EMAIL CAMPAIGN
+// ============================================================
+async function loadSubscriberCount() {
+  try {
+    const subs = await PickleMailing.getAll();
+    const el = document.getElementById('campaignSubscriberCount');
+    if (el) el.textContent = subs.length + ' subscriber(s) on the mailing list.';
+  } catch {}
+}
+
+async function sendCampaign() {
+  const btn = document.getElementById('sendCampaignBtn');
+  const log = document.getElementById('campaignLog');
+  const senderName = document.getElementById('campaignSenderName').value.trim();
+  const senderEmail = document.getElementById('campaignSenderEmail').value.trim();
+  const subject = document.getElementById('campaignSubject').value.trim();
+  const htmlBody = document.getElementById('campaignBody').value.trim();
+
+  if (!subject || !htmlBody || !senderEmail) {
+    log.textContent = 'Please fill in Subject, Message, and Sender Email.';
+    return;
+  }
+
+  btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+  log.textContent = '';
+
+  function logMsg(m) { log.textContent += m + '\n'; log.scrollTop = log.scrollHeight; }
+
+  try {
+    logMsg('Sending campaign via serverless API...\n');
+    const res = await fetch('/api/campaign', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ subject, htmlBody, senderName, senderEmail })
+    });
+    const data = await res.json();
+
+    if (res.ok) {
+      logMsg('\u2705 ' + data.message);
+      if (data.emails) {
+        logMsg('\nSubscriber list (' + data.emails.length + '):');
+        data.emails.forEach(e => logMsg('  \u2022 ' + e));
+      }
+    } else {
+      logMsg('\u274C Error: ' + (data.error || 'Unknown error'));
+    }
+  } catch (err) {
+    logMsg('\u274C Failed: ' + err.message);
+  }
+
+  btn.disabled = false; btn.innerHTML = '<i class="fas fa-paper-plane"></i> Send Campaign';
+}
+
+

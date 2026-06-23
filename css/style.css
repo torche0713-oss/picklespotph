@@ -1870,8 +1870,33 @@ body {
   background: #f5f5f5;
   color: #bbb;
   border-color: #eee;
-  cursor: not-allowed;
+  cursor: pointer;
   text-decoration: line-through;
+}
+.slot-btn.taken:hover { background: #ffe0e0; border-color: #ff9999; }
+
+.slot-taken-popover {
+  position: fixed;
+  background: #333;
+  color: #fff;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  white-space: nowrap;
+  z-index: 10000;
+  pointer-events: none;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  animation: fadeIn 0.15s ease;
+}
+.slot-taken-popover::after {
+  content: '';
+  position: absolute;
+  bottom: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 5px solid #333;
 }
 
 /* Pagination */
@@ -2290,7 +2315,10 @@ body {
 [data-theme="dark"] .chat-message-left { background: #2a2a2a; color: var(--text); }
 [data-theme="dark"] .slot-btn { background: #2a2a2a; color: var(--text); border-color: var(--border-color); }
 [data-theme="dark"] .slot-btn:hover { background: #333; }
-[data-theme="dark"] .slot-btn.taken { background: #1a1a1a; color: #555; }
+[data-theme="dark"] .slot-btn.taken { background: #1a1a1a; color: #555; cursor: pointer; }
+[data-theme="dark"] .slot-btn.taken:hover { background: #2a1515; border-color: #993333; }
+[data-theme="dark"] .slot-taken-popover { background: #555; color: #fff; }
+[data-theme="dark"] .slot-taken-popover::after { border-top-color: #555; }
 [data-theme="dark"] .slot-btn.selected { background: var(--primary); color: #fff; }
 [data-theme="dark"] .calendar-cell { color: var(--text); }
 [data-theme="dark"] .calendar-cell:hover { background: #2a2a2a; }

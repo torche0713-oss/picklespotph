@@ -1019,9 +1019,18 @@ async function loadAvailableSlots() {
       const confirmed = existing.filter(b => b.status === 'confirmed' && b.date === dateVal);
       slotGrid.innerHTML = slots.map(s => {
         const slotEnd = `${String(Math.floor((toMinutes(s) + 60) / 60)).padStart(2, '0')}:${String((toMinutes(s) + 60) % 60).padStart(2, '0')}`;
-        const isTaken = confirmed.some(b => timeOverlap(b.time, `${s}-${slotEnd}`));
+        const conflict = confirmed.find(b => timeOverlap(b.time, `${s}-${slotEnd}`));
+        const isTaken = !!conflict;
+        if (isTaken) {
+          const conflictTime = conflict.time || `${s}-${slotEnd}`;
+          return `
+            <div class="slot-btn taken" data-slot="${s}" data-conflict-time="${conflictTime}" onclick="showTakenInfo(this, '${conflictTime}')">
+              ${s}
+            </div>
+          `;
+        }
         return `
-          <div class="slot-btn ${isTaken ? 'taken' : ''}" data-slot="${s}" onclick="${isTaken ? '' : `selectSlot('${s}')`}">
+          <div class="slot-btn" data-slot="${s}" onclick="selectSlot('${s}')">
             ${s}
           </div>
         `;
@@ -1040,6 +1049,10 @@ async function loadAvailableSlots() {
       </div>
     `).join('');
   }
+
+  // Dismiss popover on outside click
+  document.removeEventListener('click', dismissSlotPopover);
+  document.addEventListener('click', dismissSlotPopover);
   slotGroup.style.display = 'block';
 }
 
@@ -1095,6 +1108,27 @@ window.selectSlot = function(slot) {
 function toMinutes(s) {
   const [h, m] = s.split(':').map(Number);
   return h * 60 + m;
+}
+
+function showTakenInfo(el, conflictTime) {
+  dismissSlotPopover();
+  const popover = document.createElement('div');
+  popover.className = 'slot-taken-popover';
+  popover.textContent = `⏰ Already booked (${conflictTime})`;
+  document.body.appendChild(popover);
+  const rect = el.getBoundingClientRect();
+  const top = rect.top - popover.offsetHeight - 8;
+  const left = Math.min(rect.left + rect.width / 2 - popover.offsetWidth / 2, window.innerWidth - popover.offsetWidth - 10);
+  popover.style.top = Math.max(top, 4) + 'px';
+  popover.style.left = Math.max(left, 4) + 'px';
+  popover.dataset.active = 'true';
+}
+
+function dismissSlotPopover(e) {
+  const popover = document.querySelector('.slot-taken-popover[data-active="true"]');
+  if (!popover) return;
+  if (e && e.target.closest('.slot-taken-popover')) return;
+  popover.remove();
 }
 
 function timeOverlap(timeA, timeB) {
