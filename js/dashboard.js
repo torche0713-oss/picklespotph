@@ -2003,12 +2003,23 @@ window.approveClaim = async function(claimId) {
   try {
     const claim = (await PickleClaims.getAll()).find(c => c.id === claimId);
     if (!claim) return;
-    const usersSnap = await db.collection('users').where('email', '==', claim.email).get();
-    const userId = usersSnap.docs[0]?.id;
+    let usersSnap = await db.collection('users').where('email', '==', claim.email).get();
+    let userId = usersSnap.docs[0]?.id;
+
     if (!userId) {
-      showToast('Claimant must register an account first before approving.', 4000);
-      return;
+      // Create a user profile for the claimant so the claim can be approved
+      const newUserRef = db.collection('users').doc();
+      await newUserRef.set({
+        email: claim.email,
+        displayName: claim.name || '',
+        contact: claim.contact || '',
+        plan: 'basic',
+        role: 'owner',
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      userId = newUserRef.id;
     }
+
     await PickleClaims.approve(claimId, userId);
     await PickleNotifications.notifyClaimantApproved(claim.email, claim.name, 'their court');
     showToast('Claim approved! Owner notified.');

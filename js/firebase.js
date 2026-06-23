@@ -661,7 +661,7 @@ const PickleNotifications = {
   },
 
   async notifyClaimantApproved(email, name, courtName) {
-    const body = `Hi ${name || 'there'},\n\nYour claim for "${courtName}" has been approved! You can now manage this court from your dashboard.\n\nHappy playing!\n- The PickleSpotPH Team`;
+    const body = `Hi ${name || 'there'},\n\nYour claim for "${courtName}" has been approved! You can now manage this court from your dashboard.\n\nPlease log in at https://picklespotph.site/dashboard.html with the email you used to claim. Once logged in, you can edit your court, manage bookings, and more.\n\nHappy playing!\n- The PickleSpotPH Team`;
     await this.send(email, name, `Your claim for "${courtName}" is approved! ✅`, body);
   }
 };
