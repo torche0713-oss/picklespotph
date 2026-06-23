@@ -176,7 +176,7 @@ async function loadMyCourts() {
       <div class="court-card-owner">
         <div class="card-header">
           <div>
-            <h3>${court.name} ${court.verified ? '<i class="fas fa-check-circle" style="color:#1565c0" title="Verified"></i>' : ''} ${court.featured ? '<span class="status-badge" style="background:#fff3e0;color:#e65100">★ Featured</span>' : ''}</h3>
+            <h3>${court.name} ${court.verified ? '<i class="fas fa-check-circle" style="color:#1565c0" title="Verified"></i>' : ''} ${court.featured ? '<span class="status-badge" style="background:var(--accent);color:#fff">★ Featured</span>' : ''}</h3>
             <span style="font-size:12px;color:var(--text-muted)">${court.city}, ${court.region}</span>
           </div>
           <div>
@@ -203,7 +203,7 @@ async function loadMyCourts() {
           <button class="btn-dash btn-dash-outline" onclick="openPhotoManager('${court.id}')">
             <i class="fas fa-images"></i> Photos (${court.photos?.length || 0})
           </button>
-          ${court.ownerPlan === 'pro' ? `<span class="status-badge" style="background:#fff3e0;color:#e65100">★ Pro Court</span>` : userProfile?.plan === 'pro' ? `<button class="btn-dash btn-dash-accent" onclick="upgradeCourtToPro('${court.id}')"><i class="fas fa-crown"></i> Upgrade to Pro</button>` : ''}
+          ${court.ownerPlan === 'pro' ? `<span class="status-badge" style="background:var(--accent);color:#fff">★ Pro Court</span>` : userProfile?.plan === 'pro' ? `<button class="btn-dash btn-dash-accent" onclick="upgradeCourtToPro('${court.id}')"><i class="fas fa-crown"></i> Upgrade to Pro</button>` : ''}
           ${userProfile?.plan === 'pro' ? `
           <button class="btn-dash btn-dash-accent" onclick="toggleFeatured('${court.id}', ${court.featured})">
             <i class="fas fa-star"></i> ${court.featured ? 'Unfeature' : 'Feature'}
@@ -973,7 +973,7 @@ async function loadOwnerCourts() {
         <div class="court-card-owner">
           <div class="card-header">
             <div>
-              <h3>${court.name} ${court.verified ? '<i class="fas fa-check-circle" style="color:#1565c0" title="Verified"></i>' : ''} ${court.featured ? '<span class="status-badge" style="background:#fff3e0;color:#e65100">★ Featured</span>' : ''}</h3>
+              <h3>${court.name} ${court.verified ? '<i class="fas fa-check-circle" style="color:#1565c0" title="Verified"></i>' : ''} ${court.featured ? '<span class="status-badge" style="background:var(--accent);color:#fff">★ Featured</span>' : ''}</h3>
               <span style="font-size:12px;color:var(--text-muted)">${court.city}, ${court.region}</span>
             </div>
             <button onclick="adminDeleteCourt('${court.id}')" title="Delete this court" style="background:none;border:none;color:#d32f2f;cursor:pointer;font-size:16px;padding:4px 8px"><i class="fas fa-trash"></i></button>
