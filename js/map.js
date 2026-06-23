@@ -94,7 +94,7 @@ function createPopupContent(court) {
         <div style="display:flex;align-items:center;justify-content:space-between;gap:6px">
           <div class="popup-name">
             ${court.name}
-            ${court.featured ? '<span style="font-size:9px;background:rgba(255,255,255,0.3);padding:1px 6px;border-radius:8px;margin-left:4px">★ Featured</span>' : ''}
+            ${court.featured ? '<span style="font-size:9px;background:var(--accent);color:#fff;padding:1px 6px;border-radius:8px;margin-left:4px">★ Featured</span>' : ''}
           </div>
           <span style="font-size:16px;cursor:pointer;flex-shrink:0;color:${isFav ? '#e74c3c' : '#ccc'}" onclick="toggleFavorite('${court.id}','${encodeURIComponent(court.name)}')" title="${isFav ? 'Remove from saved' : 'Save court'}">
             <i class="${isFav ? 'fas' : 'far'} fa-heart"></i>
