@@ -857,126 +857,101 @@ document.getElementById('claimCancelBtn').onclick = () => closeModal('claimModal
 // ============================================================
 // BOOKING MODAL
 // ============================================================
-let bookingCourtId = null;
-
-window.openBookingModal = function(courtId) {
-  const court = allCourts.find(c => c.id == courtId);
-  if (!court) return;
-  bookingCourtId = courtId;
-  document.getElementById('bookingCourtName').textContent = `Send a booking request to ${court.name}`;
-  document.getElementById('bookingModal').style.display = 'flex';
-  document.getElementById('bookingForm').reset();
-  document.getElementById('slotPickerGroup').style.display = 'none';
-  document.getElementById('bookingDate').value = '';
-  // Initialize calendar to PHT
-  calendarViewDate = getPHDate();
-  renderCalendar(calendarViewDate);
-};
-
 // ============================================================
-// CALENDAR BOOKING VIEW
+// BOOKING: MULTI-COURT + DAY NAV
 // ============================================================
+let bookingMainCourtId = null;
+let bookingViewDate = getPHDate();
+// Multi-court selection: { courtId: { court, slots: ['08:00','09:00'] } }
+let multiSelected = {};
+
 function getPHDate() {
   const now = new Date();
   const utc = now.getTime() + now.getTimezoneOffset() * 60000;
   return new Date(utc + 8 * 3600000);
 }
 
-let calendarViewDate = getPHDate();
-
-function renderCalendar(monthDate) {
-  const year = monthDate.getFullYear();
-  const month = monthDate.getMonth();
-
-  document.getElementById('calMonthLabel').textContent =
-    new Date(year, month).toLocaleDateString('en-PH', { month: 'long', year: 'numeric' });
-
-  const firstDay = new Date(year, month, 1).getDay();
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-  // Get today's date string in PHT (YYYY-MM-DD)
-  const phNow = getPHDate();
-  const todayStr = `${phNow.getFullYear()}-${String(phNow.getMonth() + 1).padStart(2, '0')}-${String(phNow.getDate()).padStart(2, '0')}`;
-  const selectedDate = document.getElementById('bookingDate').value;
-
-  let html = '';
-  ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].forEach(d => {
-    html += `<div class="calendar-day-header">${d}</div>`;
-  });
-
-  for (let i = 0; i < firstDay; i++) {
-    html += '<div></div>';
-  }
-
-  for (let day = 1; day <= daysInMonth; day++) {
-    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-    const isPast = dateStr < todayStr;
-    const isToday = dateStr === todayStr;
-    const isSelected = dateStr === selectedDate;
-
-    let cls = 'calendar-cell';
-    if (isPast) cls += ' cal-disabled';
-    if (isToday) cls += ' cal-today';
-    if (isSelected) cls += ' cal-selected';
-
-    html += `<div class="${cls}" data-date="${dateStr}"${isPast ? '' : ` onclick="selectDate('${dateStr}')"`}>${day}</div>`;
-  }
-
-  document.getElementById('calendarGrid').innerHTML = html;
+function formatDateStr(d) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
-window.selectDate = function(dateStr) {
-  document.getElementById('bookingDate').value = dateStr;
-  renderCalendar(calendarViewDate);
-  loadAvailableSlots();
+function formatDateLabel(d) {
+  const weekday = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][d.getDay()];
+  const month = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'][d.getMonth()];
+  return `${weekday}, ${month} ${d.getDate()}, ${d.getFullYear()}`;
+}
+
+window.openBookingModal = function(courtId) {
+  const court = allCourts.find(c => c.id == courtId);
+  if (!court) return;
+  bookingMainCourtId = courtId;
+  multiSelected = {};
+  document.getElementById('bookingCourtName').textContent = court.name + ' — ' + court.city;
+  document.getElementById('bookingModal').style.display = 'flex';
+  document.getElementById('bookingForm').reset();
+  bookingViewDate = getPHDate();
+  updateDayNav();
+  loadCourtSlots();
+  updateSummary();
 };
 
-document.getElementById('calPrev').addEventListener('click', function() {
-  calendarViewDate.setMonth(calendarViewDate.getMonth() - 1);
-  renderCalendar(calendarViewDate);
+function updateDayNav() {
+  document.getElementById('bDayLabel').textContent = formatDateLabel(bookingViewDate);
+  document.getElementById('bookingDate').value = formatDateStr(bookingViewDate);
+}
+
+document.getElementById('bDayPrev').addEventListener('click', function() {
+  bookingViewDate.setDate(bookingViewDate.getDate() - 1);
+  updateDayNav();
+  loadCourtSlots();
 });
 
-document.getElementById('calNext').addEventListener('click', function() {
-  calendarViewDate.setMonth(calendarViewDate.getMonth() + 1);
-  renderCalendar(calendarViewDate);
+document.getElementById('bDayNext').addEventListener('click', function() {
+  bookingViewDate.setDate(bookingViewDate.getDate() + 1);
+  updateDayNav();
+  loadCourtSlots();
 });
 
-async function loadAvailableSlots() {
+async function loadCourtSlots() {
+  const scroll = document.getElementById('bCourtsScroll');
   const dateVal = document.getElementById('bookingDate').value;
-  const slotGroup = document.getElementById('slotPickerGroup');
-  const slotGrid = document.getElementById('slotGrid');
-  const slotStatus = document.getElementById('slotStatus');
-  const dateLabel = document.getElementById('selectedDateLabel');
+  if (!dateVal || !bookingMainCourtId) { scroll.innerHTML = ''; return; }
 
-  selectedSlots = [];
-  document.getElementById('bookingTime').value = '';
+  // Collect courts: main court + others in same city
+  const main = allCourts.find(c => c.id === bookingMainCourtId);
+  if (!main) { scroll.innerHTML = ''; return; }
+  const nearby = allCourts.filter(c =>
+    c.id !== bookingMainCourtId &&
+    c.city === main.city &&
+    c.lat && c.lng &&
+    Math.abs(Number(c.lat) - Number(main.lat)) < 0.5 &&
+    Math.abs(Number(c.lng) - Number(main.lng)) < 0.5
+  ).slice(0, 5);
+  const courtsToShow = [main, ...nearby];
 
-  if (!dateVal || !bookingCourtId) {
-    slotGrid.innerHTML = '';
-    slotGroup.style.display = 'none';
-    if (slotStatus) slotStatus.textContent = 'Select a date to see available times';
-    if (dateLabel) dateLabel.textContent = '';
-    return;
+  scroll.innerHTML = courtsToShow.map(c => `
+    <div class="b-court-card" data-court-id="${c.id}">
+      <div class="b-court-name">${c.name}</div>
+      <div class="b-court-location">${c.city}${c.access ? ' · ' + c.access : ''}</div>
+      <div class="b-slot-grid" id="bSlotGrid_${c.id}">
+        <div class="b-slot-loading">Loading...</div>
+      </div>
+    </div>
+  `).join('');
+
+  // Load slots for each court
+  for (const c of courtsToShow) {
+    await loadCourtSlotGrid(c.id, dateVal);
   }
+}
 
-  const court = allCourts.find(c => c.id === bookingCourtId);
-  if (!court) {
-    slotGrid.innerHTML = '';
-    slotGroup.style.display = 'none';
-    if (slotStatus) slotStatus.textContent = 'Court not found';
-    if (dateLabel) dateLabel.textContent = '';
-    return;
-  }
+async function loadCourtSlotGrid(courtId, dateVal) {
+  const grid = document.getElementById(`bSlotGrid_${courtId}`);
+  if (!grid) return;
+  const court = allCourts.find(c => c.id === courtId);
+  if (!court) { grid.innerHTML = ''; return; }
 
-  // Show selected date label (PHT display)
-  if (dateLabel) {
-    const parts = dateVal.split('-').map(Number);
-    const phtDate = new Date(Date.UTC(parts[0], parts[1] - 1, parts[2], 4, 0, 0));
-    const weekday = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][phtDate.getUTCDay()];
-    const month = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'][parts[1] - 1];
-    dateLabel.textContent = `${weekday}, ${month} ${parts[2]}, ${parts[0]}`;
-  }
-
-  // Check court availability (default to 6AM-10PM if not set)
+  // Check court availability
   let dayAvail;
   if (court.availability) {
     const parts = dateVal.split('-').map(Number);
@@ -984,126 +959,219 @@ async function loadAvailableSlots() {
     const dayName = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][phtDate.getUTCDay()];
     dayAvail = court.availability[dayName];
   }
-
-  if (!dayAvail || !dayAvail.enabled) {
-    dayAvail = { start: '06:00', end: '22:00' };
-  }
+  if (!dayAvail || !dayAvail.enabled) dayAvail = { start: '06:00', end: '22:00' };
 
   // Generate 1-hour slots
   const slots = [];
   const [startH, startM] = dayAvail.start.split(':').map(Number);
   const [endH, endM] = dayAvail.end.split(':').map(Number);
-  const startMinutes = startH * 60 + startM;
-  const endMinutes = endH * 60 + endM;
-
-  for (let m = startMinutes; m + 60 <= endMinutes; m += 60) {
-    const h = Math.floor(m / 60);
-    const min = m % 60;
-    slots.push(
-      `${String(h).padStart(2, '0')}:${String(min).padStart(2, '0')}`
-    );
+  for (let m = startH * 60 + startM; m + 60 <= endH * 60 + endM; m += 60) {
+    slots.push(`${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`);
   }
 
-  if (slotStatus) slotStatus.textContent = '';
-
   if (slots.length === 0) {
-    slotGrid.innerHTML = '<p style="font-size:12px;color:var(--text-muted);grid-column:1/-1">No available slots for this day.</p>';
-    slotGroup.style.display = 'block';
+    grid.innerHTML = '<div class="b-no-slots">No available slots</div>';
     return;
   }
 
-  // Check for already-booked (confirmed) slots using time overlap
+  // Check taken slots
   try {
     if (typeof PickleBookings !== 'undefined') {
-      const existing = await PickleBookings.getByCourt(bookingCourtId);
+      const existing = await PickleBookings.getByCourt(courtId);
       const confirmed = existing.filter(b => b.status === 'confirmed' && b.date === dateVal);
-      slotGrid.innerHTML = slots.map(s => {
+      grid.innerHTML = slots.map(s => {
         const slotEnd = `${String(Math.floor((toMinutes(s) + 60) / 60)).padStart(2, '0')}:${String((toMinutes(s) + 60) % 60).padStart(2, '0')}`;
         const conflict = confirmed.find(b => timeOverlap(b.time, `${s}-${slotEnd}`));
         const isTaken = !!conflict;
+        const selKey = `${courtId}_${s}`;
+        const isSelected = multiSelected[courtId] && multiSelected[courtId].slots.includes(s);
+
         if (isTaken) {
-          const conflictTime = conflict.time || `${s}-${slotEnd}`;
-          return `
-            <div class="slot-btn taken" data-slot="${s}" data-conflict-time="${conflictTime}" onclick="showTakenInfo(this, '${conflictTime}')">
-              ${s}
-            </div>
-          `;
+          return `<div class="b-slot b-taken" onclick="showTakenInfo(this,'${conflict.time}')">${s}</div>`;
         }
-        return `
-          <div class="slot-btn" data-slot="${s}" onclick="selectSlot('${s}')">
-            ${s}
-          </div>
-        `;
+        return `<div class="b-slot ${isSelected ? 'b-sel' : ''}" onclick="toggleMultiSlot('${courtId}','${s}')">${s}</div>`;
       }).join('');
     } else {
-      slotGrid.innerHTML = slots.map(s => `
-        <div class="slot-btn" data-slot="${s}" onclick="selectSlot('${s}')">
-          ${s}
-        </div>
-      `).join('');
+      grid.innerHTML = slots.map(s => {
+        const selKey = `${courtId}_${s}`;
+        const isSelected = multiSelected[courtId] && multiSelected[courtId].slots.includes(s);
+        return `<div class="b-slot ${isSelected ? 'b-sel' : ''}" onclick="toggleMultiSlot('${courtId}','${s}')">${s}</div>`;
+      }).join('');
     }
   } catch {
-    slotGrid.innerHTML = slots.map(s => `
-      <div class="slot-btn" data-slot="${s}" onclick="selectSlot('${s}')">
-        ${s}
-      </div>
-    `).join('');
+    grid.innerHTML = slots.map(s => {
+      return `<div class="b-slot ${isSelected ? 'b-sel' : ''}" onclick="toggleMultiSlot('${courtId}','${s}')">${s}</div>`;
+    }).join('');
   }
-
-  // Dismiss popover on outside click
-  document.removeEventListener('click', dismissSlotPopover);
-  document.addEventListener('click', dismissSlotPopover);
-  slotGroup.style.display = 'block';
 }
 
-let selectedSlots = [];
+window.toggleMultiSlot = function(courtId, slot) {
+  const court = allCourts.find(c => c.id === courtId);
+  if (!court) return;
 
-window.selectSlot = function(slot) {
-  const allSlots = [...document.querySelectorAll('.slot-btn:not(.taken)')].map(b => b.dataset.slot);
-  const idx = selectedSlots.indexOf(slot);
-
-  if (idx !== -1) {
-    // Already selected
-    if (idx === 0 || idx === selectedSlots.length - 1) {
-      selectedSlots.splice(idx, 1); // deselect edge slot
-    } else {
-      selectedSlots = [slot]; // middle slot → reset to just this one
-    }
-  } else {
-    if (selectedSlots.length === 0) {
-      selectedSlots = [slot];
-    } else {
-      const clickIdx = allSlots.indexOf(slot);
-      const firstIdx = allSlots.indexOf(selectedSlots[0]);
-      const lastIdx = allSlots.indexOf(selectedSlots[selectedSlots.length - 1]);
-
-      if (clickIdx === lastIdx + 1 || clickIdx === firstIdx - 1) {
-        selectedSlots.push(slot);
-        selectedSlots.sort((a, b) => allSlots.indexOf(a) - allSlots.indexOf(b));
-      } else {
-        selectedSlots = [slot];
-      }
-    }
+  if (!multiSelected[courtId]) {
+    multiSelected[courtId] = { court, slots: [] };
   }
 
-  // Update UI
-  document.querySelectorAll('.slot-btn').forEach(b => b.classList.remove('selected'));
-  selectedSlots.forEach(s => {
-    document.querySelector(`.slot-btn[data-slot="${s}"]`)?.classList.add('selected');
-  });
+  const idx = multiSelected[courtId].slots.indexOf(slot);
+  if (idx !== -1) {
+    multiSelected[courtId].slots.splice(idx, 1);
+    if (multiSelected[courtId].slots.length === 0) delete multiSelected[courtId];
+  } else {
+    multiSelected[courtId].slots.push(slot);
+    multiSelected[courtId].slots.sort();
+  }
 
-  // Set time range (e.g. "08:00-10:00")
-  if (selectedSlots.length > 0) {
-    const start = selectedSlots[0];
-    const last = selectedSlots[selectedSlots.length - 1];
+  // Update UI for this court's grid
+  const grid = document.getElementById(`bSlotGrid_${courtId}`);
+  if (grid) {
+    grid.querySelectorAll('.b-slot').forEach(el => {
+      if (multiSelected[courtId] && multiSelected[courtId].slots.includes(el.textContent.trim())) {
+        el.classList.add('b-sel');
+      } else {
+        el.classList.remove('b-sel');
+      }
+    });
+  }
+  updateSummary();
+  document.removeEventListener('click', dismissSlotPopover);
+  document.addEventListener('click', dismissSlotPopover);
+};
+
+function updateSummary() {
+  const container = document.getElementById('bSummary');
+  const list = document.getElementById('bSummaryList');
+  const entries = Object.entries(multiSelected);
+  if (entries.length === 0) {
+    container.style.display = 'none';
+    return;
+  }
+  let html = '';
+  for (const [id, data] of entries) {
+    const start = data.slots[0];
+    const last = data.slots[data.slots.length - 1];
     const [sh, sm] = last.split(':').map(Number);
     const endM = sh * 60 + sm + 60;
     const endStr = `${String(Math.floor(endM / 60)).padStart(2, '0')}:${String(endM % 60).padStart(2, '0')}`;
-    document.getElementById('bookingTime').value = `${start}-${endStr}`;
-  } else {
-    document.getElementById('bookingTime').value = '';
+    html += `<div class="b-summary-item">
+      <span class="b-summary-court">${data.court.name}</span>
+      <span class="b-summary-time">${start}-${endStr}${data.slots.length > 1 ? ' (' + data.slots.length + 'h)' : ''}</span>
+      <span class="b-summary-rm" onclick="removeMultiCourt('${id}')">&times;</span>
+    </div>`;
   }
+  list.innerHTML = html;
+  container.style.display = 'block';
+}
+
+window.removeMultiCourt = function(courtId) {
+  delete multiSelected[courtId];
+  // Reset visual
+  const grid = document.getElementById(`bSlotGrid_${courtId}`);
+  if (grid) grid.querySelectorAll('.b-slot').forEach(el => el.classList.remove('b-sel'));
+  updateSummary();
 };
+
+document.getElementById('bookingForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  if (!bookingMainCourtId) return;
+  const entries = Object.entries(multiSelected);
+  if (entries.length === 0) {
+    showToast('Please select at least one time slot.', 4000);
+    return;
+  }
+
+  const customerName = document.getElementById('bookingName').value;
+  const customerContact = document.getElementById('bookingContact').value;
+  const customerEmail = document.getElementById('bookingEmail').value;
+  const message = document.getElementById('bookingMessage').value;
+  const players = document.getElementById('bookingPlayers').value;
+  const dateVal = document.getElementById('bookingDate').value;
+
+  const btn = document.getElementById('bSubmitBtn');
+  btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
+
+  let success = 0, errors = 0;
+
+  for (const [courtId, data] of entries) {
+    const start = data.slots[0];
+    const last = data.slots[data.slots.length - 1];
+    const [sh, sm] = last.split(':').map(Number);
+    const timeRange = `${start}-${String(Math.floor((sh * 60 + sm + 60) / 60)).padStart(2, '0')}:${String((sh * 60 + sm + 60) % 60).padStart(2, '0')}`;
+
+    // Double-booking check
+    try {
+      if (typeof PickleBookings !== 'undefined') {
+        const existing = await PickleBookings.getByCourt(courtId);
+        const conflict = existing.find(b =>
+          b.status === 'confirmed' && b.date === dateVal && b.time && timeOverlap(b.time, timeRange)
+        );
+        if (conflict) {
+          showToast('⚠️ ' + data.court.name + ' — time slot no longer available. Skipping.', 5000);
+          errors++;
+          continue;
+        }
+      }
+    } catch {}
+
+    try {
+      let chatId = null;
+      if (typeof PickleChat !== 'undefined') {
+        chatId = await PickleChat.createRoom({
+          courtId, courtName: data.court.name,
+          ownerId: data.court.ownerId || 'unknown',
+          customerName, customerContact, customerEmail,
+          lastMessage: message || 'Inquiry sent',
+          lastSender: customerName
+        });
+        if (message) await PickleChat.sendMessage(chatId, 'customer', customerName, message);
+        await PickleBookings.create({
+          courtId, name: customerName, contact: customerContact,
+          email: customerEmail, date: dateVal, time: timeRange,
+          players, message, status: 'pending', chatId
+        });
+      }
+
+      if (chatId) {
+        const chats = JSON.parse(localStorage.getItem('psp_chats') || '[]');
+        if (!chats.find(c => c.id == chatId)) {
+          chats.push({ id: chatId, name: data.court.name, customerName, customerContact });
+          localStorage.setItem('psp_chats', JSON.stringify(chats));
+        }
+      }
+
+      try {
+        if (typeof PickleNotifications !== 'undefined' && data.court.ownerId) {
+          await PickleNotifications.notifyOwnerNewBooking(data.court.ownerId, {
+            courtId, name: customerName, contact: customerContact,
+            email: customerEmail, date: dateVal, time: timeRange,
+            players, message
+          }, data.court.name);
+        }
+      } catch {}
+      success++;
+    } catch (err) {
+      console.error('Booking error for', data.court.name, err);
+      errors++;
+    }
+  }
+
+  try {
+    if (typeof PickleMailing !== 'undefined' && customerEmail) {
+      await PickleMailing.subscribe(customerEmail, customerName);
+    }
+  } catch {}
+
+  btn.disabled = false; btn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Booking';
+
+  if (success > 0) {
+    showToast(`✅ ${success} booking(s) sent! Check Messages to chat with owners.`);
+    document.getElementById('bookingForm').reset();
+    multiSelected = {};
+    closeModal('bookingModal');
+  } else {
+    showToast('❌ All bookings failed. Please try again.', 5000);
+  }
+});
 
 function toMinutes(s) {
   const [h, m] = s.split(':').map(Number);
@@ -1144,108 +1212,6 @@ function timeOverlap(timeA, timeB) {
   const [bStart, bEnd] = parse(timeB);
   return aStart < bEnd && bStart < aEnd;
 }
-
-document.getElementById('bookingForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  if (!bookingCourtId) return;
-
-  const court = allCourts.find(c => c.id === bookingCourtId);
-  if (!court) return;
-
-  const customerName = document.getElementById('bookingName').value;
-  const customerContact = document.getElementById('bookingContact').value;
-  const customerEmail = document.getElementById('bookingEmail').value;
-
-  const bookingDate = document.getElementById('bookingDate').value;
-  const bookingTime = document.getElementById('bookingTime').value;
-
-  const bookingData = {
-    courtId: bookingCourtId,
-    name: customerName,
-    contact: customerContact,
-    email: customerEmail,
-    date: bookingDate,
-    time: bookingTime,
-    players: document.getElementById('bookingPlayers').value,
-    message: document.getElementById('bookingMessage').value,
-    status: 'pending'
-  };
-
-  // Double-booking check: look for confirmed bookings on same court + date with overlapping time
-  if (bookingDate && typeof PickleBookings !== 'undefined') {
-    try {
-      const existing = await PickleBookings.getByCourt(bookingCourtId);
-      const conflict = existing.find(b =>
-        b.status === 'confirmed' &&
-        b.date === bookingDate &&
-        b.time && timeOverlap(b.time, bookingTime)
-      );
-      if (conflict) {
-        showToast('⚠️ This time slot overlaps with an existing booking. Please choose a different date or time.', 5000);
-        return;
-      }
-    } catch {}
-  }
-
-  let chatId = null;
-
-  try {
-    if (typeof PickleChat !== 'undefined') {
-      // Create chat room
-      chatId = await PickleChat.createRoom({
-        courtId: bookingCourtId,
-        courtName: court.name,
-        ownerId: court.ownerId || 'unknown',
-        customerName,
-        customerContact,
-        customerEmail,
-        lastMessage: bookingData.message || 'Inquiry sent',
-        lastSender: customerName
-      });
-
-      // Send the first message
-      if (bookingData.message) {
-        await PickleChat.sendMessage(chatId, 'customer', customerName, bookingData.message);
-      }
-
-      // Create booking with chat reference
-      bookingData.chatId = chatId;
-      await PickleBookings.create(bookingData);
-    }
-  } catch (err) {
-    console.error('Booking creation error:', err);
-  }
-
-  // Store chat access in localStorage for the customer
-  if (chatId) {
-    const chats = JSON.parse(localStorage.getItem('psp_chats') || '[]');
-    if (!chats.find(c => c.id == chatId)) {
-      chats.push({ id: chatId, name: court.name, customerName, customerContact });
-      localStorage.setItem('psp_chats', JSON.stringify(chats));
-    }
-    // Show chat widget immediately
-    document.getElementById('customerChatWidget').style.display = 'block';
-    renderChatThreadsList();
-  }
-
-  // Notify the court owner via email
-  try {
-    if (typeof PickleNotifications !== 'undefined' && court.ownerId) {
-      await PickleNotifications.notifyOwnerNewBooking(court.ownerId, bookingData, court.name);
-    }
-  } catch {}
-
-  // Add to mailing list
-  try {
-    if (typeof PickleMailing !== 'undefined' && customerEmail) {
-      await PickleMailing.subscribe(customerEmail, customerName);
-    }
-  } catch {}
-
-  showToast('✅ Inquiry sent! Check your Messages below to chat with the owner.');
-  document.getElementById('bookingForm').reset();
-  closeModal('bookingModal');
-});
 
 document.getElementById('bookingCancelBtn').addEventListener('click', () => closeModal('bookingModal'));
 document.getElementById('bookingModalClose').addEventListener('click', () => closeModal('bookingModal'));
