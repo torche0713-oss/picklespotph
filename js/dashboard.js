@@ -203,6 +203,7 @@ async function loadMyCourts() {
           <button class="btn-dash btn-dash-outline" onclick="openPhotoManager('${court.id}')">
             <i class="fas fa-images"></i> Photos (${court.photos?.length || 0})
           </button>
+          ${court.ownerPlan === 'pro' ? `<span class="status-badge" style="background:#fff3e0;color:#e65100">★ Pro Court</span>` : userProfile?.plan === 'pro' ? `<button class="btn-dash btn-dash-accent" onclick="upgradeCourtToPro('${court.id}')"><i class="fas fa-crown"></i> Upgrade to Pro</button>` : ''}
           ${userProfile?.plan === 'pro' ? `
           <button class="btn-dash btn-dash-accent" onclick="toggleFeatured('${court.id}', ${court.featured})">
             <i class="fas fa-star"></i> ${court.featured ? 'Unfeature' : 'Feature'}
@@ -241,7 +242,8 @@ document.getElementById('dashAddCourtForm').addEventListener('submit', async (e)
     hours: document.getElementById('dashCourtHours').value,
     lat: parseFloat(document.getElementById('dashCourtLat').value) || null,
     lng: parseFloat(document.getElementById('dashCourtLng').value) || null,
-    amenities
+    amenities,
+    ownerPlan: 'basic'
   };
 
   const isUnclaimed = document.getElementById('dashUnclaimedCheck').checked;
@@ -477,6 +479,17 @@ async function toggleFeatured(courtId, current) {
     showToast('Error: ' + err.message, 4000);
   }
 }
+
+window.upgradeCourtToPro = async function(courtId) {
+  if (!confirm('Upgrade this court to Pro? It will unlock booking, analytics, and inquiries in your dashboard.')) return;
+  try {
+    await db.collection('courts').doc(courtId).update({ ownerPlan: 'pro' });
+    showToast('✅ Court upgraded to Pro!');
+    loadMyCourts();
+  } catch (err) {
+    showToast('Error: ' + err.message, 4000);
+  }
+};
 
 // ============================================================
 // BOOKINGS
