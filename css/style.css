@@ -78,17 +78,6 @@ body {
   cursor: pointer;
 }
 
-.logo-icon {
-  font-size: 24px;
-}
-
-.logo-text {
-  font-size: 22px;
-  font-weight: 700;
-  color: var(--white);
-  letter-spacing: -0.5px;
-}
-
 .logo-img {
   height: 36px;
   width: auto;
@@ -227,7 +216,7 @@ body {
   margin-right: auto;
 }
 
-/* Tournament Ticker */
+
 .ticker-wrap {
   display: flex;
   align-items: center;
@@ -673,7 +662,7 @@ body {
   background: rgba(255,255,255,0.2);
 }
 
-/* Search Box */
+
 .search-box {
   position: relative;
   padding: 16px;
@@ -718,7 +707,7 @@ body {
   padding: 2px;
 }
 
-/* Filters */
+
 .filters {
   padding: 16px;
   border-bottom: 1px solid #eee;
@@ -811,7 +800,7 @@ body {
   color: var(--text);
 }
 
-/* Results Info */
+
 .results-info {
   padding: 10px 16px;
   font-size: 12px;
@@ -824,7 +813,7 @@ body {
   color: var(--primary);
 }
 
-/* Sidebar Court List */
+
 .sidebar-court-list {
   flex: 1;
   overflow-y: auto;
@@ -898,7 +887,7 @@ body {
   height: 100%;
 }
 
-/* Map Controls */
+
 .map-controls {
   position: absolute;
   bottom: 80px;
@@ -930,7 +919,7 @@ body {
   color: var(--white);
 }
 
-/* Stats Bar */
+
 .stats-bar {
   position: absolute;
   bottom: 16px;
@@ -964,7 +953,7 @@ body {
   letter-spacing: 0.5px;
 }
 
-/* Leaflet Custom Popup */
+
 .leaflet-popup-content-wrapper {
   border-radius: 12px !important;
   padding: 0 !important;
@@ -1038,7 +1027,7 @@ body {
   background: var(--primary-dark);
 }
 
-/* Custom Marker */
+
 .custom-marker {
   background: var(--primary);
   border: 3px solid var(--white);
@@ -1134,7 +1123,7 @@ body {
   cursor: pointer;
 }
 
-/* Courts Grid */
+
 .courts-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -1288,7 +1277,7 @@ body {
   background: var(--bg);
 }
 
-/* Heart button on court cards */
+
 .heart-btn {
   position: absolute;
   top: 12px;
@@ -1335,7 +1324,7 @@ body {
 .recent-heart:hover { background: rgba(0,0,0,0.5); transform: scale(1.1); }
 .recent-heart.hearted { color: #e74c3c; }
 
-/* Saved filter button */
+
 .btn-saved {
   background: none;
   border: 1px solid #ddd;
@@ -1547,7 +1536,7 @@ body {
   padding: 0 24px 24px;
 }
 
-/* Court Detail Modal Specifics */
+
 .court-detail-section {
   margin-bottom: 20px;
 }
@@ -1767,7 +1756,7 @@ body {
   resize: vertical;
 }
 
-/* Calendar booking view */
+
 .calendar-nav {
   display: flex;
   align-items: center;
@@ -1849,7 +1838,7 @@ body {
   cursor: not-allowed;
 }
 
-/* Slot picker grid */
+
 #slotPickerGroup { display: none; }
 .slot-grid {
   display: flex;
@@ -1903,7 +1892,7 @@ body {
   border-top: 5px solid #333;
 }
 
-/* Pagination */
+
 .pagination {
   display: flex;
   justify-content: center;
@@ -2079,13 +2068,13 @@ body {
    PICKLESPOT PH - BRAND UPDATES
    =========================== */
 
-/* Updated logo color accent */
-/* Updated navbar gradient */
+
+
 .navbar {
   background: linear-gradient(135deg, #1b5e20, #2e7d32);
 }
 
-/* About Mission Section */
+
 .about-mission {
   background: linear-gradient(135deg, #1b5e20, #2e7d32);
   color: white;
@@ -2123,7 +2112,7 @@ body {
   margin-bottom: 4px;
 }
 
-/* Footer */
+
 .site-footer {
   background: #1b5e20;
   color: white;
@@ -2166,22 +2155,22 @@ body {
   opacity: 0.6;
 }
 
-/* Updated popup header */
+
 .popup-header {
   background: linear-gradient(135deg, #1b5e20, #2e7d32);
 }
 
-/* Updated modal header */
+
 .modal-header {
   background: linear-gradient(135deg, #1b5e20, #2e7d32);
 }
 
-/* Court card header gradient */
+
 .court-card-header {
   background: linear-gradient(135deg, #1b5e20, #4caf50);
 }
 
-/* Page title branding */
+
 .list-header h1 {
   background: linear-gradient(135deg, #1b5e20, #4caf50);
   -webkit-background-clip: text;

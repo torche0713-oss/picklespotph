@@ -67,7 +67,8 @@ if (!firebase.apps.length) {
 
 const auth = firebase.auth();
 const db = firebase.firestore();
-const storage = firebase.storage();
+let storage = null;
+try { if (firebase.storage) storage = firebase.storage(); } catch {}
 const googleProvider = new firebase.auth.GoogleAuthProvider();
 
 // ============================================================

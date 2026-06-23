@@ -558,7 +558,7 @@
   <!-- ===== NAVBAR ===== -->
   <nav class="navbar">
     <div class="nav-brand" onclick="window.location='index.html'">
-      <img class="logo-img" src="https://res.cloudinary.com/dfjswmnx9/image/upload/f_auto,q_auto/v1781851311/picklespotph_logo.png" alt="PickleSpotPH">
+      <img class="logo-img" src="https://res.cloudinary.com/dfjswmnx9/image/upload/f_auto,q_auto/v1781851311/picklespotph_logo.png" alt="PickleSpotPH" width="130" height="36">
     </div>
     <div class="nav-links">
       <a href="index.html" class="nav-link"><i class="fas fa-arrow-left"></i> Back to Courts</a>
@@ -630,6 +630,9 @@
       </button>
       <button class="dash-nav-item" data-section="batch-import" style="display:none">
         <i class="fas fa-database"></i> Batch Import
+      </button>
+      <button class="dash-nav-item" data-section="email-campaign" style="display:none">
+        <i class="fas fa-bullhorn"></i> Email Campaign
       </button>
       <button class="dash-nav-item logout" id="dashLogoutBtn">
         <i class="fas fa-sign-out-alt"></i> Sign Out
@@ -924,6 +927,36 @@
         <pre id="batchImportLog" style="background:#1a1a2e;color:#0f0;padding:16px;border-radius:8px;font-size:13px;margin-top:16px;max-height:400px;overflow:auto;white-space:pre-wrap">Waiting...</pre>
       </div>
 
+      <!-- ===== EMAIL CAMPAIGN ===== -->
+      <div class="dash-section" id="section-email-campaign">
+        <h1>Email Campaign</h1>
+        <p class="subtitle">Send an email blast to all mailing list subscribers</p>
+
+        <div style="max-width:600px">
+          <div class="form-group">
+            <label>Sender Name</label>
+            <input type="text" id="campaignSenderName" value="PickleSpotPH" placeholder="PickleSpotPH"/>
+          </div>
+          <div class="form-group">
+            <label>Sender Email</label>
+            <input type="email" id="campaignSenderEmail" value="apexmindagency@gmail.com" placeholder="your@email.com"/>
+          </div>
+          <div class="form-group">
+            <label>Subject</label>
+            <input type="text" id="campaignSubject" placeholder="Exciting news from PickleSpotPH!"/>
+          </div>
+          <div class="form-group">
+            <label>Message (HTML supported)</label>
+            <textarea id="campaignBody" rows="12" style="font-family:monospace;font-size:13px" placeholder="Write your email content here. HTML tags are supported."></textarea>
+          </div>
+          <p id="campaignSubscriberCount" style="font-size:13px;color:var(--text-muted);margin:8px 0">Loading subscriber count...</p>
+          <button class="btn-dash btn-dash-primary" id="sendCampaignBtn" onclick="sendCampaign()">
+            <i class="fas fa-paper-plane"></i> Send Campaign
+          </button>
+          <pre id="campaignLog" style="background:#1a1a2e;color:#0f0;padding:16px;border-radius:8px;font-size:13px;margin-top:16px;max-height:300px;overflow:auto;white-space:pre-wrap">Ready.</pre>
+        </div>
+      </div>
+
     </div>
   </div>
 
@@ -1157,7 +1190,7 @@
     <div class="footer-content">
       <div class="footer-brand">
         <span>📍</span>
-        <span class="footer-logo"><img class="logo-img" src="https://res.cloudinary.com/dfjswmnx9/image/upload/f_auto,q_auto/v1781851311/picklespotph_logo.png" alt="PickleSpotPH"></span>
+        <span class="footer-logo"><img class="logo-img" src="https://res.cloudinary.com/dfjswmnx9/image/upload/f_auto,q_auto/v1781851311/picklespotph_logo.png" alt="PickleSpotPH" width="130" height="36"></span>
       </div>
       <p class="footer-tagline">Finding pickleball courts made easy 🇵🇭</p>
       <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-bottom:10px;font-size:13px">
