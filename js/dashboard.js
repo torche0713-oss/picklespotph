@@ -112,6 +112,7 @@ function renderDashboard() {
   document.querySelector('[data-section="batch-import"]').style.display = isAdmin ? 'flex' : 'none';
   document.querySelector('[data-section="email-campaign"]').style.display = isAdmin ? 'flex' : 'none';
   document.querySelector('[data-section="analytics"]').style.display = isPro ? 'flex' : 'none';
+  document.querySelector('[data-section="mailing"]').style.display = isAdmin ? 'flex' : 'none';
   if (isPro) loadBookings();
 }
 
@@ -119,7 +120,12 @@ function renderDashboard() {
 // NAVIGATION
 // ============================================================
 function switchSection(sectionId) {
-  if ((sectionId === 'payments' || sectionId === 'admin-analytics' || sectionId === 'owner-courts' || sectionId === 'tournaments' || sectionId === 'claims' || sectionId === 'email-campaign') && currentUser.email !== ADMIN_EMAIL) {
+  const adminOnly = ['payments', 'admin-analytics', 'owner-courts', 'claims', 'email-campaign', 'mailing'];
+  if (adminOnly.includes(sectionId) && currentUser.email !== ADMIN_EMAIL) {
+    showToast('Access denied.');
+    return;
+  }
+  if (sectionId === 'tournaments' && currentUser.email !== ADMIN_EMAIL && userProfile?.plan !== 'pro') {
     showToast('Access denied.');
     return;
   }
