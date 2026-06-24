@@ -337,6 +337,51 @@ async function openEditCourt(courtId) {
   document.getElementById('editCourtHours').value = court.hours || '';
 
   document.getElementById('editCourtModal').style.display = 'flex';
+
+  // Init map picker
+  setTimeout(() => {
+    const existing = document.getElementById('editCourtMap')._leafletMap;
+    if (existing) existing.remove();
+    const lat = court.lat || 12.8797;
+    const lng = court.lng || 121.7740;
+    const map = L.map('editCourtMap', {
+      center: [lat, lng],
+      zoom: court.lat ? 15 : 6,
+      zoomControl: true
+    });
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: 'Map data &copy; OpenStreetMap',
+      maxZoom: 19
+    }).addTo(map);
+    document.getElementById('editCourtMap')._leafletMap = map;
+
+    let marker = null;
+    if (court.lat && court.lng) {
+      marker = L.marker([lat, lng], { draggable: true }).addTo(map);
+      document.getElementById('editCourtLat').value = lat;
+      document.getElementById('editCourtLng').value = lng;
+      document.getElementById('editLatDisplay').textContent = lat.toFixed(5);
+      document.getElementById('editLngDisplay').textContent = lng.toFixed(5);
+      marker.on('dragend', () => updateEditCoords(marker));
+    }
+
+    map.on('click', function(e) {
+      if (marker) map.removeLayer(marker);
+      marker = L.marker([e.latlng.lat, e.latlng.lng], { draggable: true }).addTo(map);
+      updateEditCoords(marker);
+      marker.on('dragend', () => updateEditCoords(marker));
+    });
+
+    setTimeout(() => map.invalidateSize(), 200);
+  }, 200);
+}
+
+function updateEditCoords(marker) {
+  const pos = marker.getLatLng();
+  document.getElementById('editCourtLat').value = pos.lat.toFixed(6);
+  document.getElementById('editCourtLng').value = pos.lng.toFixed(6);
+  document.getElementById('editLatDisplay').textContent = pos.lat.toFixed(5);
+  document.getElementById('editLngDisplay').textContent = pos.lng.toFixed(5);
 }
 
 document.getElementById('editCourtForm').addEventListener('submit', async (e) => {
@@ -354,18 +399,26 @@ document.getElementById('editCourtForm').addEventListener('submit', async (e) =>
       rate: document.getElementById('editCourtRate').value,
       contact: document.getElementById('editCourtContact').value,
       address: document.getElementById('editCourtAddress').value,
-      hours: document.getElementById('editCourtHours').value
+      hours: document.getElementById('editCourtHours').value,
+      lat: parseFloat(document.getElementById('editCourtLat').value) || null,
+      lng: parseFloat(document.getElementById('editCourtLng').value) || null
     });
     showToast('Court updated!');
     closeModal('editCourtModal');
+    cleanupEditMap();
     loadMyCourts();
   } catch (err) {
     showToast('Error: ' + err.message, 4000);
   }
 });
 
-document.getElementById('editCancelBtn').addEventListener('click', () => closeModal('editCourtModal'));
-document.getElementById('editModalClose').addEventListener('click', () => closeModal('editCourtModal'));
+document.getElementById('editCancelBtn').addEventListener('click', () => { closeModal('editCourtModal'); cleanupEditMap(); });
+document.getElementById('editModalClose').addEventListener('click', () => { closeModal('editCourtModal'); cleanupEditMap(); });
+
+function cleanupEditMap() {
+  const map = document.getElementById('editCourtMap')._leafletMap;
+  if (map) { map.remove(); document.getElementById('editCourtMap')._leafletMap = null; }
+}
 
 // ============================================================
 // DELETE COURT
