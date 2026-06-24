@@ -634,6 +634,9 @@
       <button class="dash-nav-item" data-section="email-campaign" style="display:none">
         <i class="fas fa-bullhorn"></i> Email Campaign
       </button>
+      <button class="dash-nav-item" data-section="outreach" style="display:none">
+        <i class="fas fa-handshake"></i> Outreach
+      </button>
       <button class="dash-nav-item logout" id="dashLogoutBtn">
         <i class="fas fa-sign-out-alt"></i> Sign Out
       </button>
@@ -954,6 +957,74 @@
             <i class="fas fa-paper-plane"></i> Send Campaign
           </button>
           <pre id="campaignLog" style="background:#1a1a2e;color:#0f0;padding:16px;border-radius:8px;font-size:13px;margin-top:16px;max-height:300px;overflow:auto;white-space:pre-wrap">Ready.</pre>
+        </div>
+      </div>
+
+      <!-- ===== OUTREACH TRACKER ===== -->
+      <div class="dash-section" id="section-outreach">
+        <h1>Outreach Tracker</h1>
+        <p class="subtitle">Track backlink & partnership outreach to pickleball groups and clubs</p>
+
+        <div style="max-width:800px">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Group/Club Name *</label>
+              <input type="text" id="outreachName" placeholder="e.g. Dink Dynasty SJDM"/>
+            </div>
+            <div class="form-group">
+              <label>Type</label>
+              <select id="outreachType">
+                <option value="facebook-group">Facebook Group</option>
+                <option value="facebook-page">Facebook Page</option>
+                <option value="website">Website</option>
+                <option value="club">Physical Club</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Link / URL</label>
+            <input type="url" id="outreachUrl" placeholder="https://facebook.com/groups/... or website URL"/>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Status</label>
+              <select id="outreachStatus">
+                <option value="pending">Pending</option>
+                <option value="contacted">Contacted</option>
+                <option value="linked">Got Link</option>
+                <option value="no-response">No Response</option>
+                <option value="declined">Declined</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Notes</label>
+              <input type="text" id="outreachNotes" placeholder="Any notes about this contact"/>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="btn-dash btn-dash-primary" onclick="addOutreachEntry()">
+              <i class="fas fa-plus"></i> Add Entry
+            </button>
+          </div>
+
+          <hr style="margin:24px 0;border-color:var(--border-color)">
+
+          <div class="form-row" style="gap:8px;align-items:center;margin-bottom:16px">
+            <div style="flex:1"><input type="text" id="outreachFilter" placeholder="Filter by name or URL..." style="width:100%;padding:8px 12px;border:1px solid var(--border-color);border-radius:6px;font-size:13px;background:var(--input-bg);color:var(--text)"/></div>
+            <div><select id="outreachStatusFilter" style="padding:8px 12px;border:1px solid var(--border-color);border-radius:6px;font-size:13px;background:var(--input-bg);color:var(--text)">
+              <option value="">All Statuses</option>
+              <option value="pending">Pending</option>
+              <option value="contacted">Contacted</option>
+              <option value="linked">Got Link</option>
+              <option value="no-response">No Response</option>
+              <option value="declined">Declined</option>
+            </select></div>
+            <button class="btn-dash" style="padding:8px 14px" onclick="loadOutreachEntries()"><i class="fas fa-search"></i></button>
+          </div>
+          <div id="outreachList"></div>
+          <pre id="outreachSuggestions" style="background:var(--card-bg);color:var(--text);padding:16px;border-radius:8px;font-size:13px;margin-top:16px;max-height:400px;overflow:auto;white-space:pre-wrap;border:1px solid var(--border-color)"><strong>Suggested Groups to Contact:</strong>
+Click a group to auto-fill the form above.</pre>
         </div>
       </div>
 

@@ -111,6 +111,7 @@ function renderDashboard() {
   document.querySelector('[data-section="admin-analytics"]').style.display = isAdmin ? 'flex' : 'none';
   document.querySelector('[data-section="batch-import"]').style.display = isAdmin ? 'flex' : 'none';
   document.querySelector('[data-section="email-campaign"]').style.display = isAdmin ? 'flex' : 'none';
+  document.querySelector('[data-section="outreach"]').style.display = isAdmin ? 'flex' : 'none';
   document.querySelector('[data-section="analytics"]').style.display = isPro ? 'flex' : 'none';
   document.querySelector('[data-section="mailing"]').style.display = isAdmin ? 'flex' : 'none';
   if (isPro) loadBookings();
@@ -120,7 +121,7 @@ function renderDashboard() {
 // NAVIGATION
 // ============================================================
 function switchSection(sectionId) {
-  const adminOnly = ['payments', 'admin-analytics', 'owner-courts', 'claims', 'email-campaign', 'mailing'];
+  const adminOnly = ['payments', 'admin-analytics', 'owner-courts', 'claims', 'email-campaign', 'mailing', 'outreach'];
   if (adminOnly.includes(sectionId) && currentUser.email !== ADMIN_EMAIL) {
     showToast('Access denied.');
     return;
@@ -147,6 +148,7 @@ function switchSection(sectionId) {
   if (sectionId === 'claims') loadClaims();
   if (sectionId === 'analytics') loadAnalytics();
   if (sectionId === 'email-campaign') loadSubscriberCount();
+  if (sectionId === 'outreach') { loadOutreachEntries(); loadOutreachSuggestions(); }
 }
 
 // ============================================================
@@ -2224,5 +2226,150 @@ async function sendCampaign() {
 
   btn.disabled = false; btn.innerHTML = '<i class="fas fa-paper-plane"></i> Send Campaign';
 }
+
+// ============================================================
+// OUTREACH TRACKER
+// ============================================================
+async function addOutreachEntry() {
+  const name = document.getElementById('outreachName').value.trim();
+  const type = document.getElementById('outreachType').value;
+  const url = document.getElementById('outreachUrl').value.trim();
+  const status = document.getElementById('outreachStatus').value;
+  const notes = document.getElementById('outreachNotes').value.trim();
+
+  if (!name) { showToast('Please enter a group/club name.'); return; }
+
+  try {
+    await db.collection('outreach').add({
+      name, type, url, status, notes,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      createdBy: currentUser.email
+    });
+    showToast('Outreach entry added!');
+    document.getElementById('outreachName').value = '';
+    document.getElementById('outreachUrl').value = '';
+    document.getElementById('outreachNotes').value = '';
+    document.getElementById('outreachStatus').value = 'pending';
+    loadOutreachEntries();
+  } catch (err) {
+    showToast('Error: ' + err.message, 4000);
+  }
+}
+
+async function loadOutreachEntries() {
+  const container = document.getElementById('outreachList');
+  const filterText = document.getElementById('outreachFilter').value.toLowerCase().trim();
+  const filterStatus = document.getElementById('outreachStatusFilter').value;
+
+  container.innerHTML = '<p style="color:var(--text-muted)">Loading...</p>';
+
+  try {
+    let query = db.collection('outreach').orderBy('createdAt', 'desc').limit(100);
+    const snapshot = await query.get();
+    let entries = [];
+    snapshot.forEach(doc => entries.push({ id: doc.id, ...doc.data() }));
+
+    if (filterText) {
+      entries = entries.filter(e =>
+        (e.name || '').toLowerCase().includes(filterText) ||
+        (e.url || '').toLowerCase().includes(filterText)
+      );
+    }
+    if (filterStatus) {
+      entries = entries.filter(e => e.status === filterStatus);
+    }
+
+    if (!entries.length) {
+      container.innerHTML = '<p style="color:var(--text-muted)">No entries yet. Add your first outreach target above.</p>';
+      return;
+    }
+
+    const statusColors = {
+      pending: '#f59e0b', contacted: '#3b82f6', linked: '#10b981',
+      'no-response': '#6b7280', declined: '#ef4444'
+    };
+    const statusLabels = {
+      pending: 'Pending', contacted: 'Contacted', linked: 'Got Link',
+      'no-response': 'No Response', declined: 'Declined'
+    };
+
+    container.innerHTML = entries.map(e => {
+      const dateStr = e.createdAt ? new Date(e.createdAt.seconds * 1000).toLocaleDateString() : '—';
+      return `<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;margin-bottom:8px;background:var(--card-bg);border:1px solid var(--border-color);border-radius:8px">
+        <div style="flex:1">
+          <strong style="color:var(--text)">${escHtml(e.name)}</strong>
+          <span style="display:inline-block;margin-left:8px;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;color:#fff;background:${statusColors[e.status] || '#6b7280'}">${statusLabels[e.status] || e.status}</span>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:4px">
+            ${e.type ? escHtml(e.type) : ''}
+            ${e.url ? ' | <a href="' + escHtml(e.url) + '" target="_blank" style="color:var(--primary)">' + escHtml(e.url) + '</a>' : ''}
+            ${e.notes ? ' | ' + escHtml(e.notes) : ''}
+            <span style="margin-left:8px;opacity:0.6">' + dateStr + '</span>
+          </div>
+        </div>
+        <div style="display:flex;gap:6px;flex-shrink:0;margin-left:12px">
+          <select onchange="updateOutreachStatus('${e.id}',this.value)" style="padding:4px 8px;border:1px solid var(--border-color);border-radius:4px;font-size:11px;background:var(--input-bg);color:var(--text)">
+            ${Object.entries(statusLabels).map(([k,v]) => `<option value="${k}" ${e.status === k ? 'selected' : ''}>${v}</option>`).join('')}
+          </select>
+          <button onclick="deleteOutreachEntry('${e.id}')" style="padding:4px 8px;border:1px solid #ef4444;border-radius:4px;background:transparent;color:#ef4444;cursor:pointer;font-size:11px"><i class="fas fa-trash"></i></button>
+        </div>
+      </div>`;
+    }).join('');
+  } catch (err) {
+    container.innerHTML = '<p style="color:#ef4444">Error: ' + err.message + '</p>';
+  }
+}
+
+async function updateOutreachStatus(id, status) {
+  try {
+    await db.collection('outreach').doc(id).update({ status });
+    showToast('Status updated!');
+  } catch (err) {
+    showToast('Error: ' + err.message, 4000);
+  }
+}
+
+async function deleteOutreachEntry(id) {
+  if (!confirm('Delete this outreach entry?')) return;
+  try {
+    await db.collection('outreach').doc(id).delete();
+    showToast('Entry deleted.');
+    loadOutreachEntries();
+  } catch (err) {
+    showToast('Error: ' + err.message, 4000);
+  }
+}
+
+async function loadOutreachSuggestions() {
+  const el = document.getElementById('outreachSuggestions');
+  try {
+    const res = await fetch('outreach-suggestions.json');
+    const data = await res.json();
+    el.innerHTML = '<strong>Suggested Groups to Contact:</strong>\n' +
+      '(Click a group to auto-fill the form above)\n\n' +
+      data.groups.map((g, i) =>
+        `${i + 1}. ${g.name} (${g.type})\n   ${g.url}\n   ${g.notes || ''}`
+      ).join('\n\n') +
+      '\n\n--- ' + data.groups.length + ' groups loaded ---';
+  } catch (e) {
+    // silently handle — file may not exist yet
+  }
+}
+
+function escHtml(str) {
+  if (!str) return '';
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// Click-to-fill from suggestions
+document.addEventListener('click', function(e) {
+  const pre = document.getElementById('outreachSuggestions');
+  if (pre && pre.contains(e.target) && e.target.tagName !== 'A') {
+    const text = e.target.textContent.trim();
+    // Only fill if it looks like a group name
+    if (text && text.length > 2 && !text.startsWith('http') && !text.startsWith('(') && !text.startsWith('-')) {
+      document.getElementById('outreachName').value = text.replace(/^\d+\.\s*/, '');
+    }
+  }
+});
 
 
