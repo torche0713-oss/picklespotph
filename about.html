@@ -23,7 +23,8 @@
   }
   </script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;700;900&display=swap" rel="stylesheet"/>
+  <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet"/>
   <link rel="stylesheet" href="css/style.css"/>
   <style>
     .legal-page { min-height: 100vh; display: flex; flex-direction: column; }
@@ -86,13 +87,13 @@
         <a href="contact.html">Contact</a>
       </div>
 
-      <div class="about-hero">
+      <div class="about-hero" data-aos="fade-up">
         <span class="about-emoji">📍</span>
         <h1>About PickleSpotPH</h1>
         <p>Your go-to resource for finding pickleball courts across the Philippines</p>
       </div>
 
-      <div class="about-team">
+      <div class="about-team" data-aos="fade-up" data-aos-delay="100">
         <h2>Meet the Founders</h2>
         <div style="display:flex;align-items:center;gap:24px;flex-wrap:wrap;justify-content:center;margin-top:16px">
           <div style="width:120px;height:120px;border-radius:50%;background:#e0e0e0;display:flex;align-items:center;justify-content:center;font-size:48px;color:#999;flex-shrink:0;overflow:hidden">
@@ -111,29 +112,29 @@
       </div>
 
       <div class="about-grid">
-        <div class="about-card">
+        <div class="about-card" data-aos="fade-up" data-aos-delay="0">
           <i class="fas fa-map-marked-alt"></i>
           <h3>Find Your Spot</h3>
           <p>Discover pickleball courts near you with our interactive map. Filter by region, court type, and amenities.</p>
         </div>
-        <div class="about-card">
+        <div class="about-card" data-aos="fade-up" data-aos-delay="100">
           <i class="fas fa-users"></i>
           <h3>Community Driven</h3>
           <p>Courts are added and verified by the Philippine pickleball community. Help us grow by adding courts!</p>
         </div>
-        <div class="about-card">
+        <div class="about-card" data-aos="fade-up" data-aos-delay="200">
           <i class="fas fa-mobile-alt"></i>
           <h3>Mobile Friendly</h3>
           <p>Use PickleSpotPH on your phone while on the go to find courts wherever you are in the Philippines.</p>
         </div>
-        <div class="about-card">
+        <div class="about-card" data-aos="fade-up" data-aos-delay="300">
           <i class="fas fa-heart"></i>
           <h3>Made with Love</h3>
           <p>Built by pickleball enthusiasts for the growing Filipino pickleball community. Dink responsibly! 🏓</p>
         </div>
       </div>
 
-      <div class="about-mission">
+      <div class="about-mission" data-aos="fade-up">
         <h2>Our Mission</h2>
         <p>
           PickleSpotPH was created to help grow the pickleball community in the Philippines
@@ -206,5 +207,7 @@
   }
 })();
 </script>
+<script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+<script>AOS.init({ duration: 800, once: true, offset: 80 });</script>
 </body>
 </html>

@@ -24,7 +24,8 @@
   }
   </script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;700;900&display=swap" rel="stylesheet"/>
+  <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet"/>
   <link rel="stylesheet" href="css/style.css"/>
   <style>
     .legal-page { min-height: 100vh; display: flex; flex-direction: column; }
@@ -95,26 +96,26 @@
         <a href="contact.html">Contact</a>
       </div>
 
-      <h1>Contact Us</h1>
-      <p class="last-updated">We'd love to hear from you</p>
+      <h1 data-aos="fade-up">Contact Us</h1>
+      <p class="last-updated" data-aos="fade-up" data-aos-delay="50">We'd love to hear from you</p>
 
-      <p>Have a question, suggestion, or need help? Reach out through any of the channels below.</p>
+      <p data-aos="fade-up" data-aos-delay="100">Have a question, suggestion, or need help? Reach out through any of the channels below.</p>
 
-      <div class="contact-grid">
-        <div class="contact-card">
+      <div class="contact-grid" data-aos="fade-up" data-aos-delay="150">
+        <div class="contact-card" data-aos="fade-up" data-aos-delay="0">
           <i class="fas fa-envelope"></i>
           <h3>Email</h3>
           <p><a href="mailto:apexmindagency@gmail.com">apexmindagency@gmail.com</a></p>
         </div>
-        <div class="contact-card">
+        <div class="contact-card" data-aos="fade-up" data-aos-delay="100">
           <i class="fas fa-phone"></i>
           <h3>Phone / GCash</h3>
           <p><a href="tel:+639998830291">+63 999 883 0291</a></p>
         </div>
       </div>
 
-      <h2 style="margin-top:40px">Send Us a Message</h2>
-      <form class="contact-form" id="contactForm">
+      <h2 style="margin-top:40px" data-aos="fade-up">Send Us a Message</h2>
+      <form class="contact-form" id="contactForm" data-aos="fade-up" data-aos-delay="100">
         <div class="form-group">
           <label for="contactName">Your Name</label>
           <input type="text" id="contactName" required placeholder="John Doe"/>
@@ -134,7 +135,7 @@
         <button type="submit" class="btn-submit"><i class="fas fa-paper-plane"></i> Send Message</button>
       </form>
 
-      <div class="social-section">
+      <div class="social-section" data-aos="fade-up">
         <h3>Follow Us</h3>
         <p style="font-size:13px;color:var(--text-muted);margin-top:4px">Stay updated on new courts and pickleball events</p>
         <div class="social-links">
@@ -252,6 +253,7 @@
   }
 })();
   </script>
-
+  <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+  <script>AOS.init({ duration: 800, once: true, offset: 80 });</script>
 </body>
 </html>

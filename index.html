@@ -47,7 +47,9 @@
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
   <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;700;900&display=swap" rel="stylesheet"/>
+  <!-- AOS (scroll animations) -->
+  <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet"/>
 
   <link rel="stylesheet" href="css/style.css"/>
 </head>
@@ -99,10 +101,10 @@
     <img class="hero-pb" id="pb3" src="logo4.png" alt="">
     <img class="hero-pb" id="pb4" src="logo4.png" alt="">
     <img class="hero-pb" id="pb5" src="logo4.png" alt="">
-    <div class="hero-content">
+    <div class="hero-content" data-aos="fade-up" data-aos-duration="1000">
       <div class="hero-logo-wrap"><img class="hero-logo" src="https://res.cloudinary.com/dfjswmnx9/image/upload/f_auto,q_auto/v1781851311/picklespotph_logo.png" alt="PickleSpotPH" width="180" height="90"></div>
       <span class="hero-badge">🇵🇭 Find Your Court</span>
-      <h1>Discover Pickleball Courts<br/>Across the Philippines</h1>
+      <h1><span class="gradient-text">Discover Pickleball Courts</span><br/>Across the Philippines</h1>
       <div class="hero-sub-badge">🚀 All-in-One Pickleball &amp; Business Automation System</div>
       <p class="hero-sub">Browse indoor and outdoor courts by city, book a slot, read reviews, and join the fastest-growing sport in the country.</p>
       <div class="hero-launch-notice" style="border-color:var(--accent);background:linear-gradient(135deg,#fff8e1,#fff3e0);color:var(--text)">
@@ -113,7 +115,7 @@
         <i class="fas fa-bullhorn"></i>
         <span><strong>We just launched!</strong> We're building the largest pickleball court directory in the PH. Spots are filling fast — <a href="index.html" onclick="showView('map');document.getElementById('searchInput')?.focus();return false">explore courts</a> or <a href="#" onclick="document.getElementById('heroAddBtn').click();return false">add yours</a> to help the community grow! 🏓🇵🇭</span>
       </div>
-      <div class="hero-stats">
+      <div class="hero-stats" data-aos="fade-up" data-aos-delay="200">
         <div class="hero-stat">
           <span class="hero-stat-num" id="statCourts">15</span>
           <span class="hero-stat-label">Courts Listed</span>
@@ -139,13 +141,13 @@
   </section>
 
   <!-- ===== TOURNAMENT TICKER ===== -->
-  <div class="ticker-wrap" id="tickerWrap" style="display:none">
+  <div class="ticker-wrap" id="tickerWrap" style="display:none" data-aos="fade-down">
     <div class="ticker-label"><i class="fas fa-trophy"></i> Tournaments</div>
     <div class="ticker-track" id="tickerTrack"></div>
   </div>
 
   <!-- ===== RECENTLY ADDED CAROUSEL ===== -->
-  <section class="recent-section" id="recentSection" style="display:none">
+  <section class="recent-section" id="recentSection" style="display:none" data-aos="fade-up">
     <div class="recent-header">
       <h2><i class="fas fa-clock"></i> Recently Added Courts</h2>
       <a href="#" onclick="showView('map');document.getElementById('searchInput')?.focus();return false">View All</a>
@@ -568,7 +570,7 @@
       </div>
       <div class="modal-body">
         <div class="pricing-grid">
-          <div class="pricing-card">
+          <div class="pricing-card" data-aos="fade-up" data-aos-delay="0">
             <h3>Basic</h3>
             <div class="price">₱0 <span>/ month</span></div>
             <ul>
@@ -586,7 +588,7 @@
             </ul>
             <button class="plan-cta" id="basicPlanCta">Create Your Free Listing Now</button>
           </div>
-          <div class="pricing-card pro">
+          <div class="pricing-card pro" data-aos="fade-up" data-aos-delay="150">
             <div class="popular-tag">Popular</div>
             <h3>Pro</h3>
             <div class="price">₱399 <span>/ month</span></div>
@@ -873,5 +875,8 @@
   <script src="js/locations.js"></script>
   <script src="js/map.js"></script>
   <script src="js/app.js"></script>
+  <!-- AOS (scroll animations) -->
+  <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+  <script>AOS.init({ duration: 800, once: true, offset: 80 });</script>
 </body>
 </html>
