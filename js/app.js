@@ -1453,6 +1453,30 @@ function resetFilters() {
 }
 
 // ============================================================
+// NEAR ME
+// ============================================================
+window.locateAndShowNearby = function() {
+  if (!navigator.geolocation) {
+    showToast('Geolocation is not supported by your browser.');
+    return;
+  }
+  showToast('📍 Locating you...');
+  navigator.geolocation.getCurrentPosition(function(pos) {
+    userLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+    showToast('📍 Found you! Sorting by nearest...');
+    document.querySelector('[data-view="list"]')?.click();
+    document.getElementById('sortSelect').value = 'nearest';
+    applyFilters();
+    // Also fly on map
+    if (typeof map !== 'undefined') {
+      map.flyTo([userLocation.lat, userLocation.lng], 12, { duration: 1.5 });
+    }
+  }, function() {
+    showToast('Could not get your location. Check location permissions.');
+  }, { enableHighAccuracy: true, timeout: 10000 });
+};
+
+// ============================================================
 // STATS
 // ============================================================
 function updateStats(courts) {

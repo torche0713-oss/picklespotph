@@ -289,9 +289,14 @@
       <!-- Results Count -->
       <div class="results-info">
         <span id="resultsCount">0</span> courts found
-        <button class="btn-saved" id="btnSaved" onclick="toggleSavedFilter()" title="Show only saved courts">
-          <i class="fas fa-heart"></i> <span id="favCount">Saved</span>
-        </button>
+        <div style="display:flex;gap:6px;align-items:center">
+          <button class="btn-saved" id="btnNearMe" onclick="locateAndShowNearby()" title="Find courts near me" style="font-size:12px">
+            <i class="fas fa-crosshairs"></i> Near Me
+          </button>
+          <button class="btn-saved" id="btnSaved" onclick="toggleSavedFilter()" title="Show only saved courts">
+            <i class="fas fa-heart"></i> <span id="favCount">Saved</span>
+          </button>
+        </div>
       </div>
 
       <!-- Court List in Sidebar -->
@@ -350,6 +355,7 @@
           <option value="region">Region</option>
           <option value="type">Court Type</option>
           <option value="newest">Newest First</option>
+          <option value="nearest">Nearest to Me</option>
         </select>
       </div>
     </div>
