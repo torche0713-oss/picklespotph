@@ -37,10 +37,14 @@ const PickleMailing = {
   },
 
   async getAll() {
-    const snapshot = await db.collection(COLLECTIONS.SUBSCRIBERS)
-      .orderBy('subscribedAt', 'desc')
-      .get();
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const snapshot = await db.collection(COLLECTIONS.SUBSCRIBERS).get();
+    const subs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    subs.sort((a, b) => {
+      const aT = a.subscribedAt?.toDate?.() || 0;
+      const bT = b.subscribedAt?.toDate?.() || 0;
+      return bT - aT;
+    });
+    return subs;
   }
 };
 
