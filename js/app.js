@@ -844,6 +844,7 @@ document.getElementById('claimForm').addEventListener('submit', async (e) => {
   try {
     await PickleClaims.add(data);
     await PickleNotifications.notifyAdminNewClaim(data, data.courtName);
+    try { await PickleMailing.subscribe(data.email, data.name); } catch {}
     closeModal('claimModal');
     showToast('Claim submitted! The admin will review and notify you.');
   } catch (err) {
