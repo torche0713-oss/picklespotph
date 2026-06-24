@@ -33,8 +33,13 @@ document.addEventListener('DOMContentLoaded', () => {
         darkToggle.innerHTML = '<i class="fas fa-sun"></i>';
         localStorage.setItem('psp_darkMode', 'true');
       }
-    });
-  }
+  });
+
+  // Set batch import counts dynamically
+  const cc = document.getElementById('batchCourtCount');
+  if (cc) cc.textContent = IMPORT_COURTS.length;
+  const tc = document.getElementById('batchTourneyCount');
+  if (tc) tc.textContent = IMPORT_TOURNAMENTS.length;
 
   let authFired = false;
 
