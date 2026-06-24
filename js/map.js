@@ -176,6 +176,13 @@ function flyToMarker(courtId) {
   if (marker) {
     map.flyTo(marker.getLatLng(), 16, { duration: 1 });
     setTimeout(() => marker.openPopup(), 1000);
+  } else {
+    const court = allCourts.find(c => c.id == courtId);
+    if (court && !court.lat && !court.lng) {
+      showToast('This court has no map location yet.');
+    } else if (court) {
+      showToast('Court not visible on current map view.');
+    }
   }
 }
 

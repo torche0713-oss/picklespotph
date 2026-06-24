@@ -405,8 +405,15 @@ function renderSidebarList(courts) {
 }
 
 function handleSidebarCourtClick(courtId) {
-  flyToMarker(courtId);
-  highlightSidebarItem(courtId);
+  const court = allCourts.find(c => c.id == courtId);
+  if (!court) return;
+  if (court.lat && court.lng) {
+    flyToMarker(courtId);
+    highlightSidebarItem(courtId);
+    showView('map');
+  } else {
+    openCourtModal(courtId);
+  }
 }
 
 // ============================================================
