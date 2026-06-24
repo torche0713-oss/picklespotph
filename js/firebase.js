@@ -762,7 +762,12 @@ const PickleClaims = {
     const data = claim.data();
     if (data.courtId) {
       if (isNaN(data.courtId)) {
-        await db.collection(COLLECTIONS.COURTS).doc(data.courtId).update({ ownerId: userId, verified: true });
+        const updateData = { ownerId: userId, verified: true };
+        if (data.courtLat && data.courtLng) {
+          updateData.lat = data.courtLat;
+          updateData.lng = data.courtLng;
+        }
+        await db.collection(COLLECTIONS.COURTS).doc(data.courtId).update(updateData);
       } else {
         await db.collection(COLLECTIONS.COURTS).add({
           name: data.courtName || 'Claimed Court',

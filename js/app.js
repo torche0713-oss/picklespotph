@@ -809,12 +809,19 @@ function shareCourt(platform, courtNameEncoded, courtId) {
 function closeModal(modalId) {
   document.getElementById(modalId).style.display = 'none';
   document.body.style.overflow = '';
+  if (modalId === 'claimModal' && claimLeafletMap) {
+    claimLeafletMap.remove();
+    claimLeafletMap = null;
+    claimMarker = null;
+  }
 }
 
 // ============================================================
 // CLAIM COURT MODAL
 // ============================================================
 let claimCourtId = null;
+let claimLeafletMap = null;
+let claimMarker = null;
 
 window.openClaimModal = function(courtId, courtName) {
   claimCourtId = courtId;
@@ -822,6 +829,57 @@ window.openClaimModal = function(courtId, courtName) {
   document.getElementById('claimForm').reset();
   document.getElementById('claimModal').style.display = 'flex';
   document.body.style.overflow = 'hidden';
+
+  setTimeout(() => {
+    if (claimLeafletMap) claimLeafletMap.remove();
+    const court = allCourts.find(c => c.id == courtId);
+    const lat = court?.lat || 12.8797;
+    const lng = court?.lng || 121.7740;
+
+    claimLeafletMap = L.map('claimMap', {
+      center: [lat, lng],
+      zoom: court?.lat ? 15 : 6,
+      zoomControl: true
+    });
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: 'Map data &copy; OpenStreetMap contributors',
+      maxZoom: 19
+    }).addTo(claimLeafletMap);
+
+    if (court?.lat && court?.lng) {
+      claimMarker = L.marker([lat, lng], { draggable: true }).addTo(claimLeafletMap);
+      document.getElementById('claimLat').value = lat;
+      document.getElementById('claimLng').value = lng;
+      document.getElementById('claimLatDisplay').textContent = lat.toFixed(5);
+      document.getElementById('claimLngDisplay').textContent = lng.toFixed(5);
+      claimMarker.on('dragend', function() {
+        const pos = claimMarker.getLatLng();
+        document.getElementById('claimLat').value = pos.lat.toFixed(6);
+        document.getElementById('claimLng').value = pos.lng.toFixed(6);
+        document.getElementById('claimLatDisplay').textContent = pos.lat.toFixed(5);
+        document.getElementById('claimLngDisplay').textContent = pos.lng.toFixed(5);
+      });
+    }
+
+    claimLeafletMap.on('click', function(e) {
+      if (claimMarker) claimLeafletMap.removeLayer(claimMarker);
+      claimMarker = L.marker([e.latlng.lat, e.latlng.lng], { draggable: true }).addTo(claimLeafletMap);
+      document.getElementById('claimLat').value = e.latlng.lat.toFixed(6);
+      document.getElementById('claimLng').value = e.latlng.lng.toFixed(6);
+      document.getElementById('claimLatDisplay').textContent = e.latlng.lat.toFixed(5);
+      document.getElementById('claimLngDisplay').textContent = e.latlng.lng.toFixed(5);
+      claimMarker.on('dragend', function() {
+        const pos = claimMarker.getLatLng();
+        document.getElementById('claimLat').value = pos.lat.toFixed(6);
+        document.getElementById('claimLng').value = pos.lng.toFixed(6);
+        document.getElementById('claimLatDisplay').textContent = pos.lat.toFixed(5);
+        document.getElementById('claimLngDisplay').textContent = pos.lng.toFixed(5);
+      });
+    });
+
+    setTimeout(() => claimLeafletMap.invalidateSize(), 200);
+  }, 200);
 };
 
 document.getElementById('claimForm').addEventListener('submit', async (e) => {
@@ -839,8 +897,8 @@ document.getElementById('claimForm').addEventListener('submit', async (e) => {
     courtContact: court?.contact || '',
     courtAddress: court?.address || '',
     courtHours: court?.hours || '',
-    courtLat: court?.lat || null,
-    courtLng: court?.lng || null,
+    courtLat: document.getElementById('claimLat').value || court?.lat || null,
+    courtLng: document.getElementById('claimLng').value || court?.lng || null,
     courtCourts: court?.courts || 1,
     courtAmenities: court?.amenities || [],
     name: document.getElementById('claimName').value,
