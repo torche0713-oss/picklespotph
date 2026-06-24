@@ -33,7 +33,8 @@ document.addEventListener('DOMContentLoaded', () => {
         darkToggle.innerHTML = '<i class="fas fa-sun"></i>';
         localStorage.setItem('psp_darkMode', 'true');
       }
-  });
+    });
+  }
 
   // Set batch import counts dynamically
   const cc = document.getElementById('batchCourtCount');
