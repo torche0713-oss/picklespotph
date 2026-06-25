@@ -2234,7 +2234,30 @@ const IMPORT_COURTS = [
   {name:'Smash & Brew Antipolo',city:'Antipolo',province:'Rizal',region:'Calabarzon',type:'indoor',access:'pay',rate:'\u20B1350-400/hr',courts:2,contact:'',address:'Antipolo City, Rizal',lat:14.5860,lng:121.1760,hours:'Daily',notes:'Indoor court + cafe concept.'},
   {name:'Athlete Central Cainta',city:'Cainta',province:'Rizal',region:'Calabarzon',type:'indoor',access:'pay',rate:'\u20B1350/hr',courts:2,contact:'',address:'Cainta, Rizal',lat:14.5690,lng:121.1230,hours:'Daily',notes:'Indoor sports facility with pickleball.'},
   {name:'The Pickler Pod Angono',city:'Angono',province:'Rizal',region:'Calabarzon',type:'indoor',access:'pay',rate:'\u20B1350/hr',courts:2,contact:'',address:'Angono, Rizal',lat:14.5240,lng:121.1520,hours:'Daily',notes:'Indoor pickleball court.'},
-  {name:'Palm Pickleball Club',city:'Muntinlupa',province:'Metro Manila',region:'NCR',type:'indoor',access:'pay',rate:'\u20B1500/hr',courts:2,contact:'',address:'1410 Laguna Heights Drive, Alabang, Muntinlupa',lat:14.4190,lng:121.0370,hours:'Daily',notes:'Premium indoor club.'}
+  {name:'Palm Pickleball Club',city:'Muntinlupa',province:'Metro Manila',region:'NCR',type:'indoor',access:'pay',rate:'\u20B1500/hr',courts:2,contact:'',address:'1410 Laguna Heights Drive, Alabang, Muntinlupa',lat:14.4190,lng:121.0370,hours:'Daily',notes:'Premium indoor club.'},
+
+  // ===== BATCH 4 — Added Jun 25, 2026 =====
+
+  // --- CDO / NORTHERN MINDANAO ---
+  {name:'Unity Sports Facility (Misor Capitol)',city:'Cagayan de Oro',province:'Misamis Oriental',region:'Northern Mindanao',type:'outdoor',access:'pay',rate:'\u20B150-150',courts:4,contact:'',address:'De Lara Park, Capitol Grounds, Cagayan de Oro City',lat:8.4850,lng:124.6470,hours:'Daily',notes:'Opened June 19, 2026. Public courts with night lighting, Wi-Fi, lounge, locker rooms. Provincial govt facility. Affordable rates P50-P150.'},
+  {name:'Dink Xcape Picklehub',city:'Cagayan de Oro',province:'Misamis Oriental',region:'Northern Mindanao',type:'indoor',access:'pay',rate:'\u20B1350/hr',courts:3,contact:'',address:'Bontong, Camaman-an, Cagayan de Oro City (near AGT Petroleum)',lat:8.4720,lng:124.6460,hours:'9:00 AM - 12:00 MN',notes:'Opened June 8, 2026. 3 indoor courts. Indoor facility.'},
+  {name:'0-0-2 Pickle Courts',city:'Cagayan de Oro',province:'Misamis Oriental',region:'Northern Mindanao',type:'indoor',access:'pay',rate:'\u20B1350/hr',courts:2,contact:'',address:'JV Serina St., Carmen, Cagayan de Oro (across Madonna & Child Medical Center)',lat:8.4820,lng:124.6530,hours:'Open 24 hours',notes:'Opened June 1, 2026. 24/7 access. All skill levels welcome.'},
+
+  // --- NEGROS ORIENTAL ---
+  {name:'Hacienda Pickleball Club',city:'Bais',province:'Negros Oriental',region:'Central Visayas',type:'outdoor',access:'pay',rate:'\u20B1200-300/hr',courts:2,contact:'',address:'Bais City, Negros Oriental',lat:9.5900,lng:123.1220,hours:'Daily',notes:'New club opened June 2026. Part of growing Negros Oriental pickleball scene.'},
+
+  // --- ORMOC / LEYTE ---
+  {name:'PG Pickle Gym',city:'Ormoc',province:'Leyte',region:'Eastern Visayas',type:'indoor',access:'pay',rate:'\u20B1350-450/hr',courts:3,contact:'',address:'Ormoc City, Leyte',lat:11.0064,lng:124.6075,hours:'Daily',notes:'Opened June 19, 2026. World-class indoor pickleball facility. Ormoc Pickleball Club home court.'},
+  {name:'Uptown Pickleball Yard (UPY)',city:'Ormoc',province:'Leyte',region:'Eastern Visayas',type:'outdoor',access:'pay',rate:'\u20B1200/hr',courts:2,contact:'',address:'Brgy. San Pablo, Ormoc City, Leyte',lat:11.0020,lng:124.6130,hours:'Daily',notes:'Renovated and reopened April 15, 2026. By Zelda Ogario and family. Supported by Ormoc LGU.'},
+
+  // --- TAGUIG / METRO MANILA ---
+  {name:'Pickle Lane Taguig',city:'Taguig',province:'Metro Manila',region:'NCR',type:'indoor',access:'pay',rate:'\u20B1400/hr',courts:3,contact:'+63 976 288 3770',address:'18-A Elisco Road, Brgy. Ibayo-Tipas, Taguig City',lat:14.5170,lng:121.0670,hours:'Daily',notes:'Soft opening July 4, 2026 with free play. FB: Pickle Lane / IG: @picklelane_ph.'},
+
+  // --- BACOLOD ---
+  {name:'Northill Courtyard Pickleball',city:'Bacolod',province:'Negros Occidental',region:'Western Visayas',type:'outdoor',access:'pay',rate:'\u20B1400/hr',courts:4,contact:'',address:'Northill Gateway, Bacolod-Silay Airport Access Road, Bacolod City',lat:10.7390,lng:122.9800,hours:'Opening July 2026',notes:'By Megawand. 4 tournament-standard courts. Lounge, Northill Cafe by Quino\'s. Open play + membership.'},
+
+  // --- NUEVA ECIJA ---
+  {name:'The Prime at Highland Bali',city:'Pantabangan',province:'Nueva Ecija',region:'Central Luzon',type:'outdoor',access:'pay',rate:'\u20B1200-300/hr',courts:2,contact:'',address:'Highland Bali Villas Resort & Spa, Pantabangan, Nueva Ecija',lat:15.5900,lng:121.1420,hours:'6:00 AM - 10:00 AM / 4:00 PM - 10:00 PM',notes:'Soft opened May 29, 2026. Open-air court with mountain views. Annual membership P1,750. Resort setting.'}
 ];
 
 const IMPORT_TOURNAMENTS = [
@@ -2257,7 +2280,10 @@ const IMPORT_TOURNAMENTS = [
   {name:'Mindanao Pickleball League Leg 3',location:'FPB Sports Complex, Malita, Davao Occidental',date:'2026-07-24',endDate:'2026-07-26',type:'Open',format:'Doubles & Mixed',description:'Leg 3 of the 7-leg Mindanao Pickleball League Season 1.',contact:'',link:'',ownerId:null},
   {name:'The Dink Minor League North Luzon',location:'KingCourts Pickleball, San Fernando, Pampanga',date:'2026-07-25',endDate:'2026-07-25',type:'Team',format:'Team Event (MLPlay)',description:'The Dink Minor League Pickleball — innovative team format (2M+2W per team). DUPR-based brackets. $37/player.',contact:'',link:'https://swishtournaments.com/',ownerId:null},
   {name:'Pickleball World Cup 2026',location:'Da Nang, Vietnam',date:'2026-08-30',endDate:'2026-09-05',type:'International',format:'Open Category',description:'Inaugural Pickleball World Cup. 80+ countries expected. Philippine delegation organized by PPF.',contact:'',link:'https://www.pickleball.ph/',ownerId:null},
-  {name:'Mindanao Pickleball League Main Event',location:'FPB Sports Complex, Malita, Davao Occidental',date:'2026-12-11',endDate:'2026-12-13',type:'Open',format:'Doubles & Mixed',description:'Grand final of the 7-leg Mindanao Pickleball League Season 1. Main event with top prizes.',contact:'',link:'',ownerId:null}
+  {name:'Mindanao Pickleball League Main Event',location:'FPB Sports Complex, Malita, Davao Occidental',date:'2026-12-11',endDate:'2026-12-13',type:'Open',format:'Doubles & Mixed',description:'Grand final of the 7-leg Mindanao Pickleball League Season 1. Main event with top prizes.',contact:'',link:'',ownerId:null},
+  {name:'G Coffee Anniversary Pickleball Event',location:'Tunasan, Muntinlupa',date:'2026-07-04',endDate:'2026-07-04',type:'Social',format:'Open Play',description:'Pickleball event hosted by G Coffee. Open play for all skill levels.',contact:'',link:'',ownerId:null},
+  {name:'ActiveSync Pickleball Open Tournament',location:'Bacolod Multi-Purpose Covered Court, Lanao del Norte',date:'2026-07-10',endDate:'2026-07-12',type:'Open',format:'Doubles',description:'Novice, Beginner, Intermediate divisions. Cash prizes up to P8,000. GCash/GoTyme payment.',contact:'0963 663 8939',link:'',ownerId:null},
+  {name:'Southline Paddle Point 1st Tournament',location:'Purok 3 Oca\u00F1a, Carcar, Cebu',date:'2026-07-10',endDate:'2026-07-12',type:'Open',format:'Doubles',description:'Beginner Men\'s/Women\'s Doubles and Intermediate Men\'s/Women\'s Doubles. Contingency day on July 12.',contact:'',link:'',ownerId:null}
 ];
 
 async function batchImportCourts() {
