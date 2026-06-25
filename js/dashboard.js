@@ -936,11 +936,12 @@ async function loadAdminAnalytics() {
       }
     });
 
-    const recentUsers = usersSnap.docs
+    const allUsers = usersSnap.docs
       .map(doc => ({ id: doc.id, ...doc.data() }))
       .filter(u => u.createdAt)
-      .sort((a, b) => (b.createdAt?.toDate?.() || 0) - (a.createdAt?.toDate?.() || 0))
-      .slice(0, 10);
+      .sort((a, b) => (b.createdAt?.toDate?.() || 0) - (a.createdAt?.toDate?.() || 0));
+    window._allRegUsers = allUsers;
+    window._courtsByOwner = courtsByOwner;
 
     container.innerHTML = `
       <div class="admin-grid">
@@ -983,27 +984,47 @@ async function loadAdminAnalytics() {
         </div>
       </div>
 
-      ${recentUsers.length ? `
       <div class="admin-breakdown">
-        <h3>Recent Registrations</h3>
-        ${recentUsers.map(u => {
-          const userCourts = courtsByOwner[u.id] || [];
-          return `
-          <div style="padding:6px 0;border-bottom:1px solid #f5f5f5;font-size:13px">
-            <div style="display:flex;justify-content:space-between">
-              <span><strong>${u.displayName || 'Unknown'}</strong></span>
-              <span style="color:var(--text-muted);font-size:11px">${u.createdAt?.toDate?.() ? u.createdAt.toDate().toLocaleDateString() : ''} · ${u.plan === 'pro' ? '⭐ Pro' : 'Basic'}</span>
-            </div>
-            <div style="color:var(--text-muted);font-size:11px">${u.email || ''}</div>
-            ${userCourts.length ? `<div style="color:var(--primary);font-size:11px;margin-top:2px">🏛 ${userCourts.join(', ')}</div>` : ''}
-          </div>`;
-        }).join('')}
-      </div>` : ''}
+        <h3>User Registrations <span style="font-weight:400;font-size:12px;color:var(--text-muted)">(${allUsers.length} total)</span></h3>
+        <input type="text" id="userSearchInput" placeholder="Search by name or email..." oninput="filterRegistrations()" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;margin-bottom:10px;box-sizing:border-box;background:var(--bg);color:var(--text)">
+        <div id="userRegistrationList">
+          ${allUsers.slice(0, 50).map(u => {
+            const userCourts = courtsByOwner[u.id] || [];
+            return renderUserRow(u, userCourts);
+          }).join('')}
+          ${allUsers.length > 50 ? '<div style="color:var(--text-muted);font-size:12px;padding:8px 0;text-align:center">Showing 50 of ' + allUsers.length + ' — type to filter</div>' : ''}
+        </div>
+      </div>
     `;
   } catch (err) {
     container.innerHTML = `<p style="color:#d32f2f">Error: ${err.message}</p>`;
   }
 }
+
+// ============================================================
+// REGISTRATION SEARCH HELPERS
+// ============================================================
+function renderUserRow(u, userCourts) {
+  return '<div style="padding:6px 0;border-bottom:1px solid var(--border,#eee);font-size:13px">' +
+    '<div style="display:flex;justify-content:space-between">' +
+      '<span><strong>' + (u.displayName || 'Unknown') + '</strong></span>' +
+      '<span style="color:var(--text-muted);font-size:11px">' + (u.createdAt?.toDate?.() ? u.createdAt.toDate().toLocaleDateString() : '') + ' · ' + (u.plan === 'pro' ? '&#11088; Pro' : 'Basic') + '</span>' +
+    '</div>' +
+    '<div style="color:var(--text-muted);font-size:11px">' + (u.email || '') + '</div>' +
+    (userCourts.length ? '<div style="color:var(--primary);font-size:11px;margin-top:2px">&#127963; ' + userCourts.join(', ') + '</div>' : '<div style="color:#999;font-size:11px;margin-top:2px">No court added</div>') +
+  '</div>';
+}
+
+window.filterRegistrations = function() {
+  const q = (document.getElementById('userSearchInput').value || '').toLowerCase();
+  const list = document.getElementById('userRegistrationList');
+  const users = window._allRegUsers || [];
+  const courtsByOwner = window._courtsByOwner || {};
+  const filtered = q ? users.filter(u => (u.displayName || '').toLowerCase().includes(q) || (u.email || '').toLowerCase().includes(q)) : users;
+  list.innerHTML = filtered.length
+    ? filtered.map(u => renderUserRow(u, courtsByOwner[u.id] || [])).join('')
+    : '<div style="color:var(--text-muted);font-size:13px;padding:12px 0;text-align:center">No users match "' + q + '"</div>';
+};
 
 // ============================================================
 // OWNER COURTS (Admin View)
