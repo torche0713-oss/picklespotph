@@ -2257,7 +2257,8 @@ const IMPORT_COURTS = [
   {name:'Northill Courtyard Pickleball',city:'Bacolod',province:'Negros Occidental',region:'Western Visayas',type:'outdoor',access:'pay',rate:'\u20B1400/hr',courts:4,contact:'',address:'Northill Gateway, Bacolod-Silay Airport Access Road, Bacolod City',lat:10.7390,lng:122.9800,hours:'Opening July 2026',notes:'By Megawand. 4 tournament-standard courts. Lounge, Northill Cafe by Quino\'s. Open play + membership.'},
 
   // --- NUEVA ECIJA ---
-  {name:'The Prime at Highland Bali',city:'Pantabangan',province:'Nueva Ecija',region:'Central Luzon',type:'outdoor',access:'pay',rate:'\u20B1200-300/hr',courts:2,contact:'',address:'Highland Bali Villas Resort & Spa, Pantabangan, Nueva Ecija',lat:15.5900,lng:121.1420,hours:'6:00 AM - 10:00 AM / 4:00 PM - 10:00 PM',notes:'Soft opened May 29, 2026. Open-air court with mountain views. Annual membership P1,750. Resort setting.'}
+  {name:'The Prime at Highland Bali',city:'Pantabangan',province:'Nueva Ecija',region:'Central Luzon',type:'outdoor',access:'pay',rate:'\u20B1200-300/hr',courts:2,contact:'',address:'Highland Bali Villas Resort & Spa, Pantabangan, Nueva Ecija',lat:15.5900,lng:121.1420,hours:'6:00 AM - 10:00 AM / 4:00 PM - 10:00 PM',notes:'Soft opened May 29, 2026. Open-air court with mountain views. Annual membership P1,750. Resort setting.'},
+  {name:'Naawan Pickleball Courts',city:'Naawan',province:'Misamis Oriental',region:'Northern Mindanao',type:'outdoor',access:'pay',rate:'\u20B1175-250/hr',courts:3,contact:'',address:'Linangkayan, Naawan, Misamis Oriental',lat:8.4349,lng:124.2925,hours:'6:00 AM - 10:00 PM',notes:'Opened June 2026. 3 multi-purpose courts doubling as emergency shelter. 29 toilet bowls, 26 shower rooms, parking for 30, on-site cafe. P175/hr (6AM-2PM), P250/hr (3PM-10PM). Paddle rental P25/hr.'}
 ];
 
 const IMPORT_TOURNAMENTS = [
@@ -2283,7 +2284,8 @@ const IMPORT_TOURNAMENTS = [
   {name:'Mindanao Pickleball League Main Event',location:'FPB Sports Complex, Malita, Davao Occidental',date:'2026-12-11',endDate:'2026-12-13',type:'Open',format:'Doubles & Mixed',description:'Grand final of the 7-leg Mindanao Pickleball League Season 1. Main event with top prizes.',contact:'',link:'',ownerId:null},
   {name:'G Coffee Anniversary Pickleball Event',location:'Tunasan, Muntinlupa',date:'2026-07-04',endDate:'2026-07-04',type:'Social',format:'Open Play',description:'Pickleball event hosted by G Coffee. Open play for all skill levels.',contact:'',link:'',ownerId:null},
   {name:'ActiveSync Pickleball Open Tournament',location:'Bacolod Multi-Purpose Covered Court, Lanao del Norte',date:'2026-07-10',endDate:'2026-07-12',type:'Open',format:'Doubles',description:'Novice, Beginner, Intermediate divisions. Cash prizes up to P8,000. GCash/GoTyme payment.',contact:'0963 663 8939',link:'',ownerId:null},
-  {name:'Southline Paddle Point 1st Tournament',location:'Purok 3 Oca\u00F1a, Carcar, Cebu',date:'2026-07-10',endDate:'2026-07-12',type:'Open',format:'Doubles',description:'Beginner Men\'s/Women\'s Doubles and Intermediate Men\'s/Women\'s Doubles. Contingency day on July 12.',contact:'',link:'',ownerId:null}
+  {name:'Southline Paddle Point 1st Tournament',location:'Purok 3 Oca\u00F1a, Carcar, Cebu',date:'2026-07-10',endDate:'2026-07-12',type:'Open',format:'Doubles',description:'Beginner Men\'s/Women\'s Doubles and Intermediate Men\'s/Women\'s Doubles. Contingency day on July 12.',contact:'',link:'',ownerId:null},
+  {name:'SM Active Hub Pickleball Trio Challenge Grand Finals',location:'Four E-Com Center, SM Active Hub, Metro Manila',date:'2026-07-01',endDate:'2026-07-31',type:'Open',format:'Team (3-player)',description:'Grand Finals of SM\'s inaugural tournament series. Qualifying legs held at SM City Bicutan, Sta. Mesa, Santa Rosa, Marikina & Muntinlupa. Top teams compete for championship title.',contact:'',link:'https://gosm.link/LetsPlayPickleballAtSM',ownerId:null}
 ];
 
 async function batchImportCourts() {
