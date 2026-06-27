@@ -2429,33 +2429,33 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* ===========================
-   SHARE BUTTONS
+   SHARE BUTTONS (footer only)
    =========================== */
-.share-buttons {
+.site-footer .share-buttons {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
 }
-.share-btn {
+.site-footer .share-btn {
   width: 36px;
   height: 36px;
   border-radius: 50%;
   border: none;
   cursor: pointer;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   font-size: 16px;
   color: white;
   transition: transform 0.2s, opacity 0.2s;
 }
-.share-btn:hover { transform: scale(1.15); opacity: 0.85; }
-.share-fb { background: #1877f2; }
-.share-x { background: #000; }
-.share-wa { background: #25d366; }
-.share-tg { background: #0088cc; }
-.share-msg { background: #0099ff; }
-.share-copy { background: #757575; }
+.site-footer .share-btn:hover { transform: scale(1.15); opacity: 0.85; }
+.site-footer .share-fb { background: #1877f2; }
+.site-footer .share-x { background: #000; }
+.site-footer .share-wa { background: #25d366; }
+.site-footer .share-tg { background: #0088cc; }
+.site-footer .share-msg { background: #0099ff; }
+.site-footer .share-copy { background: #757575; }
 
 /* ===========================
    DARK MODE OVERRIDES
