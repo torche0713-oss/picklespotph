@@ -152,6 +152,16 @@ function renderBlog() {
 
   container.innerHTML = html;
   updateShareButtons();
+  var ogTitle = document.querySelector('meta[property="og:title"]');
+  var ogDesc = document.querySelector('meta[property="og:description"]');
+  var ogUrl = document.querySelector('meta[property="og:url"]');
+  var ogImage = document.querySelector('meta[property="og:image"]');
+  var canon = document.querySelector('link[rel="canonical"]');
+  if (ogTitle) ogTitle.setAttribute('content', 'News & Guides - PickleSpotPH');
+  if (ogDesc) ogDesc.setAttribute('content', 'Latest pickleball news in the Philippines, court openings, tournament updates, beginner guides, and equipment tips.');
+  if (ogUrl) ogUrl.setAttribute('content', 'https://picklespotph.site/blog.html');
+  if (ogImage) ogImage.setAttribute('content', 'https://picklespotph.site/logo.png');
+  if (canon) canon.setAttribute('href', 'https://picklespotph.site/blog.html');
 }
 
 function updateShareButtons(id) {
@@ -192,6 +202,17 @@ function renderArticle(id, container, featured) {
   document.title = escHtml(post.title) + ' - PickleSpotPH News & Guides';
   var metaDesc = document.querySelector('meta[name="description"]');
   if (metaDesc) metaDesc.content = escHtml(post.excerpt);
+  var ogTitle = document.querySelector('meta[property="og:title"]');
+  var ogDesc = document.querySelector('meta[property="og:description"]');
+  var ogUrl = document.querySelector('meta[property="og:url"]');
+  var ogImage = document.querySelector('meta[property="og:image"]');
+  var canon = document.querySelector('link[rel="canonical"]');
+  var articleUrl = 'https://picklespotph.site/blog.html?id=' + encodeURIComponent(id);
+  if (ogTitle) ogTitle.setAttribute('content', escHtml(post.title) + ' - PickleSpotPH');
+  if (ogDesc) ogDesc.setAttribute('content', escHtml(post.excerpt));
+  if (ogUrl) ogUrl.setAttribute('content', articleUrl);
+  if (ogImage && post.image) ogImage.setAttribute('content', post.image);
+  if (canon) canon.setAttribute('href', articleUrl);
 
   var html = '<article class="blog-article" data-aos="fade-up">';
   html += '  <a href="blog.html" class="blog-back"><i class="fas fa-arrow-left"></i> Back to articles</a>';
