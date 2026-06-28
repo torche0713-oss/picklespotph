@@ -8,9 +8,6 @@ on:
 jobs:
   daily-news:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: PickleSpotPH
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
