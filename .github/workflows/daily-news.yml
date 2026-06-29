@@ -8,6 +8,9 @@ on:
 jobs:
   daily-news:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: PickleSpotPH
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -31,5 +34,5 @@ jobs:
           git config user.email "bot@picklespotph.site"
           git add js/blog.js blog/ sitemap.xml
           git diff --staged --quiet || git commit -m "Daily news update $(date +'%Y-%m-%d')"
-          git remote set-url origin "https://x-access-key:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git pull --rebase
           git push
