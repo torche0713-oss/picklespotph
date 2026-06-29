@@ -308,6 +308,7 @@ async function run() {
   console.log('Generating HTML files...');
   try {
     var buildAll = require(BUILD_SCRIPT);
+    buildAll();
     console.log('Generated blog/ HTML files');
   } catch (e) {
     console.error('Error running build script: ' + e.message);
