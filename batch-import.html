@@ -10,7 +10,7 @@
   button { padding: 12px 24px; font-size: 16px; cursor: pointer; border: none; border-radius: 8px; margin: 8px 0; }
   .btn-import { background: #1a73e8; color: #fff; }
   .btn-danger { background: #dc3545; color: #fff; }
-  .btn-google { background: #fff; color: #333; border: 1px solid #ccc; display: inline-flex; align-items: center; gap: 8px; }
+
   pre { background: #f5f5f5; padding: 12px; border-radius: 6px; font-size: 13px; max-height: 400px; overflow: auto; }
   .success { color: #28a745; }
   .error { color: #dc3545; }
@@ -24,8 +24,6 @@
   <p>Status: <span id="status">Not started</span></p>
 
   <div id="loginSection">
-    <button class="btn-google" id="googleBtn"><svg width="18" height="18" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59A14.5 14.5 0 0 1 9.5 24c0-1.59.28-3.14.76-4.59l-7.98-6.19A23.99 23.99 0 0 0 0 24c0 3.77.87 7.35 2.56 10.56l7.97-5.97z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 5.97C6.51 42.62 14.62 48 24 48z"/></svg> Sign in with Google</button>
-    <p style="font-size:12px;color:#888;margin:8px 0 4px">or sign in with email:</p>
     <label>Email</label><input type="email" id="emailInput" value="torche0713@gmail.com">
     <label>Password</label><input type="password" id="passInput" type="password">
     <button class="btn-import" id="emailLoginBtn">Sign In</button>
@@ -83,12 +81,6 @@
     }
 
     auth.onAuthStateChanged(updateUI);
-
-    $('googleBtn').onclick = () => {
-      auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(err => {
-        log('Google sign-in error: ' + err.message, 'error');
-      });
-    };
 
     $('emailLoginBtn').onclick = () => {
       const email = $('emailInput').value;
@@ -418,6 +410,108 @@
       ];
     }
 
+    function getLuzonCourts() {
+      const region = 'Luzon';
+      return [
+        {
+          name: 'Clark Pickleball+', city: 'Angeles', province: 'Pampanga', region,
+          type: 'indoor', access: 'pay', rate: 'TBD', courts: 12,
+          contact: 'CDC / Bandjag Sports', address: 'Former Clark Trading Warehouse, Centennial Road, Clark Freeport',
+          lat: 15.1746, lng: 120.5451, hours: 'Check FB',
+          notes: 'P12M facility. 8 dedicated courts + tournament court + basketball court convertible to 4 pickleball courts. Café, pro shop, locker rooms.'
+        },
+        {
+          name: 'The Prime @ Highland Bali', city: 'Pantabangan', province: 'Nueva Ecija', region,
+          type: 'outdoor', access: 'pay', rate: '₱200-300/hr', courts: 1,
+          contact: '+63 917-629-4249', address: 'Highland Bali Resort, Pantabangan, Nueva Ecija',
+          lat: 15.8125, lng: 121.1437, hours: 'Daily 6-10AM & 4-10PM',
+          notes: 'Scenic mountain/lake view court. Membership ₱1,750/yr. Open play: ₱200 (member), ₱250 (guest), ₱300 (non-member).'
+        },
+        {
+          name: 'Angeles Pickleball Centre', city: 'Angeles', province: 'Pampanga', region,
+          type: 'indoor', access: 'pay', rate: 'Check FB', courts: 5,
+          contact: 'Best Western Plus Metro Clark', address: 'Best Western Plus Metro Clark, Balibago, Angeles City',
+          lat: 15.1636, lng: 120.5903, hours: 'Check FB',
+          notes: '5 ProCourt™ surface courts. Grand opening Oct 2024. Open play format.'
+        },
+        {
+          name: 'Pampanga Pickleball Center', city: 'San Fernando', province: 'Pampanga', region,
+          type: 'indoor', access: 'pay', rate: 'Check Reclub', courts: 4,
+          contact: 'Reclub: Pampanga Pickleball Center', address: 'San Fernando, Pampanga',
+          lat: 15.0289, lng: 120.6892, hours: '7:00 AM - 10:00 PM',
+          notes: "Pampanga's first-ever Center Court. 2,256 members on Reclub. Active open play."
+        }
+      ];
+    }
+
+    function getVisayasCourts() {
+      const region = 'Visayas';
+      return [
+        {
+          name: 'Thirsty Pickle', city: 'Cebu City', province: 'Cebu', region,
+          type: 'indoor', access: 'pay', rate: 'Check Onda Fit', courts: 15,
+          contact: 'Book via Onda Fit', address: 'Beside SM Seaside, Cebu City',
+          lat: 10.2891, lng: 123.8681, hours: 'Daily, book via Onda Fit',
+          notes: '7 international-standard courts + 8 more coming. Premium facility by Thirsty Juices brand. DISCO programs for beginners.'
+        },
+        {
+          name: 'Northill Courtyard', city: 'Bacolod', province: 'Negros Occidental', region,
+          type: 'outdoor', access: 'pay', rate: 'TBD', courts: 4,
+          contact: 'Megaworld / ADA Sports', address: 'Northill Gateway, Bacolod-Silay Airport Road, Bacolod',
+          lat: 10.6723, lng: 122.9583, hours: 'Opens July 2026',
+          notes: 'Megaworlds first pickleball facility. 4 tournament-standard courts. Northill Café by Quinos. Managed by ADA Sports. 1,200 sqm.'
+        },
+        {
+          name: 'Ormoc\'s Uptown Pickle Yard', city: 'Ormoc', province: 'Leyte', region,
+          type: 'indoor', access: 'pay', rate: 'Check FB', courts: 3,
+          contact: '0956-289-0530', address: 'Brgy. San Pablo, Ormoc City, Leyte',
+          lat: 11.0044, lng: 124.6042, hours: 'Mon-Sat 6:30AM-11PM, Sun 6:30AM-9PM',
+          notes: 'Newly renovated indoor facility. Blessing by Mayor Lucy Torres Gomez April 2026. Hosted Ormoc Piña Pickleball National Open.'
+        }
+      ];
+    }
+
+    function getMindanaoCourts() {
+      const region = 'Mindanao';
+      return [
+        {
+          name: 'Unity Sports Facility', city: 'Cagayan de Oro', province: 'Misamis Oriental', region,
+          type: 'outdoor', access: 'pay', rate: '₱50-150', courts: 3,
+          contact: 'MisOr Provincial Government', address: 'De Lara Park, Capitol Grounds, Cagayan de Oro',
+          lat: 8.4822, lng: 124.6472, hours: 'Daily with night lighting',
+          notes: 'Opened June 19, 2026 by Gov. Juliette Uy. Night lighting, lounge, Wi-Fi, locker rooms. Affordable public rates P50-P150.'
+        },
+        {
+          name: 'Naawan Multi-Purpose Sports Facility', city: 'Naawan', province: 'Misamis Oriental', region,
+          type: 'indoor', access: 'pay', rate: '₱175-250/hr', courts: 3,
+          contact: 'Naawan LGU Tourism', address: 'Linangkayan, Naawan, Misamis Oriental',
+          lat: 8.4344, lng: 124.2911, hours: 'Daily 6AM-10PM',
+          notes: '3 pickleball courts + emergency shelter. P175/hr (6AM-2PM), P250/hr (3PM-10PM). Paddle rental P25/hr. On-site café. Opened June 2026.'
+        },
+        {
+          name: '0-0-2 Pickle Courts', city: 'Cagayan de Oro', province: 'Misamis Oriental', region,
+          type: 'indoor', access: 'pay', rate: 'Check FB', courts: 3,
+          contact: 'Princess Go Pelaez', address: 'JV Serina Street, Carmen, Cagayan de Oro (across Madonna & Child Medical Center)',
+          lat: 8.4712, lng: 124.6512, hours: '24/7',
+          notes: 'Soft opening June 1, 2026. 24/7 access. All skill levels welcome.'
+        },
+        {
+          name: 'Dink Xcape Picklehub', city: 'Cagayan de Oro', province: 'Misamis Oriental', region,
+          type: 'indoor', access: 'pay', rate: '₱350/hr', courts: 3,
+          contact: 'FB: Dink Xcape', address: 'Bontong, Camaman-an, Cagayan de Oro (near AGT Petroleum Gas Station)',
+          lat: 8.4782, lng: 124.6532, hours: 'Daily 9:00 AM - 12:00 MN',
+          notes: 'Opened June 8, 2026. 3 indoor courts. Rates from P350/hr.'
+        },
+        {
+          name: 'C-ONE Sports Center Pickleball', city: 'Cagayan de Oro', province: 'Misamis Oriental', region,
+          type: 'indoor', access: 'pay', rate: 'Check FB', courts: 4,
+          contact: 'C-ONE Sports Center', address: '2nd Level, SM City CDO Uptown, Cagayan de Oro',
+          lat: 8.4722, lng: 124.6432, hours: 'Mall hours',
+          notes: 'Badminton facility converting to pickleball courts. Announced June 2026.'
+        }
+      ];
+    }
+
     async function importCourts() {
       $('importCourtsBtn').disabled = true;
       $('importCourtsBtn').textContent = 'Importing...';
@@ -426,7 +520,10 @@
 
       const allCourts = [
         ...getMetroManilaCourts(),
-        ...getCebuCourts()
+        ...getCebuCourts(),
+        ...getLuzonCourts(),
+        ...getVisayasCourts(),
+        ...getMindanaoCourts()
       ];
       log(`Total courts to import: ${allCourts.length}`);
 
@@ -549,6 +646,84 @@
           format: 'Doubles',
           description: 'Pickleball tournament at GMall of GenSan for all pickleball players.',
           contact: '',
+          link: '',
+          ownerId: null,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        },
+        {
+          name: 'SM Active Hub Pickleball Trio Challenge',
+          location: 'Various SM malls (Bicutan, Sta. Mesa, Santa Rosa, Marikina, Muntinlupa) — Finals at Four E-Com Center, Pasay',
+          date: '2026-05-17',
+          endDate: '2026-07-12',
+          type: 'Open',
+          format: 'Trio (3-player teams, min 1 woman)',
+          description: 'SM Supermalls inaugural tournament series. DUPR 9 & DUPR 11 categories. 5 qualifying legs + Grand Finals. P5,700/team. Partners: Paloo, Sports Central, Milo, Nature\'s Spring, Picklecrew PH.',
+          contact: 'SM Supermalls FB page',
+          link: 'https://www.smsupermalls.com/whats-new/lifestyle/sm-supermalls-serves-up-summer-action-with-pickleball-trio-challenge-and-pbf-youth-cup',
+          ownerId: null,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        },
+        {
+          name: 'The Dink Minor League Pickleball – North Luzon',
+          location: 'KingCourts Pickleball, San Fernando, Pampanga',
+          date: '2026-07-25',
+          endDate: '2026-07-25',
+          type: 'Open',
+          format: 'MLPlay Team (4 players: 2W + 2M)',
+          description: 'The Dink MiLP team competition. DUPR 14, 16, 18 divisions. MLPlay format: 4 games (WD, MD, 2x MX) + Dreambreaker if tied. $37/player.',
+          contact: 'Register via DUPR',
+          link: 'https://swishtournaments.com/product/philippines-the-dink-minor-league-pickleball-north-luzon/',
+          ownerId: null,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        },
+        {
+          name: 'Lapu-Lapu City Mayor\'s Cup Pickleball Tournament',
+          location: 'Lapu-Lapu City, Cebu',
+          date: '2026-06-27',
+          endDate: '2026-06-30',
+          type: 'Open',
+          format: 'Various divisions',
+          description: '176 teams across multiple divisions. Part of Lapu-Lapu Citys 65th Charter Anniversary. Organized by Lapu-Lapu City Sports Commission. Showcased growing pickleball passion in the city.',
+          contact: 'Lapu-Lapu City Sports Commission',
+          link: '',
+          ownerId: null,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        },
+        {
+          name: 'Cebu Pickleball Open Tournament 2026: The Blazing Torch and True Edge Cup',
+          location: 'Net and Paddle Pickleball Area, Sawang Calero, Cebu City',
+          date: '2026-06-27',
+          endDate: '2026-06-27',
+          type: 'Open',
+          format: 'MD, WD, MX',
+          description: 'Hosted by Antorcha De La Libertad Lodge No. 2. Fundraising for charitable causes. P10,000 champion prize per category. P1,500/player entry fee.',
+          contact: 'Allan Borres Delantar',
+          link: 'https://form.jotform.com/261328899981477',
+          ownerId: null,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        },
+        {
+          name: 'Ormoc Piña Pickleball National Open',
+          location: 'Uptown Pickle Yard, Brgy. San Pablo, Ormoc City, Leyte',
+          date: '2026-05-01',
+          endDate: '2026-05-03',
+          type: 'Open',
+          format: 'MD, WD, MX',
+          description: 'National open tournament hosted at Ormocs newly renovated Uptown Pickle Yard. Featured mixed doubles elimination rounds with top players from Leyte and Quezon City.',
+          contact: '',
+          link: '',
+          ownerId: null,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        },
+        {
+          name: 'Paddle City Grand Opening',
+          location: 'Magsaysay Avenue, Barangay Singcang-Airport, Bacolod City',
+          date: '2026-05-14',
+          endDate: '2026-05-14',
+          type: 'Open',
+          format: 'Exhibition & Open Play',
+          description: 'Grand opening of Paddle City, Bacolods premier pickleball destination with 7 international-standard courts. Also features co-working spaces, food court, indoor carwash. Aims to be largest pickleball playground in Visayas.',
+          contact: 'Jason Tupas / Paddle City',
           link: '',
           ownerId: null,
           createdAt: firebase.firestore.FieldValue.serverTimestamp()

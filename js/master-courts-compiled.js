@@ -781,6 +781,25 @@ const MASTER_COURTS = {
       source: "Huddl, SM Supermalls"
     },
     {
+      name: "Clark Pickleball+",
+      address: "Former Clark Trading Warehouse, Centennial Road, Clark Freeport, Pampanga",
+      city: "Angeles",
+      province: "Pampanga",
+      region: "Luzon",
+      type: "Indoor",
+      courts: 12,
+      access: "Paid",
+      contact: "CDC / Bandjag Sports & Leisure Inc.",
+      hours: "Check FB",
+      lat: 15.1746,
+      lng: 120.5451,
+      amenities: ["parking", "cafe", "rental", "lights", "shower"],
+      notes: "P12M purpose-built facility. 8 dedicated pickleball courts + 1 central tournament court + 1 basketball court convertible to 4 pickleball courts + 1 private court. Café, pro shop, locker rooms, table tennis. First dedicated pickleball facility in Clark Freeport.",
+      verified: false,
+      featured: false,
+      source: "Daily Tribune, SunStar Pampanga, CDC PR"
+    },
+    {
       name: "Pickleball Central PH (Angeles)",
       address: "Angeles City, Pampanga",
       city: "Angeles",
@@ -1178,6 +1197,25 @@ const MASTER_COURTS = {
       verified: false,
       featured: false,
       source: "PickleBoard"
+    },
+    {
+      name: "The Prime @ Highland Bali",
+      address: "Highland Bali Villas Resort & Spa, Pantabangan, Nueva Ecija",
+      city: "Pantabangan",
+      province: "Nueva Ecija",
+      region: "Luzon",
+      type: "Outdoor",
+      courts: 1,
+      access: "Paid",
+      contact: "+63 917-629-4249",
+      hours: "Daily 6:00-10:00 AM & 4:00-10:00 PM",
+      lat: 15.8125,
+      lng: 121.1437,
+      amenities: ["parking", "cafe", "scenic view"],
+      notes: "Multi-purpose court (pickleball, badminton, volleyball, basketball) at Balinese-inspired resort. Annual membership P1,750. Open play: P200 (member), P250 (guest), P300 (non-member). Scenic mountain & lake views. Mini bar on site.",
+      verified: false,
+      featured: false,
+      source: "LionhearTV, Daily Feed Planet"
     }
   ],
 
@@ -1204,6 +1242,25 @@ const MASTER_COURTS = {
       verified: false,
       featured: false,
       source: "SM Supermalls, Huddl"
+    },
+    {
+      name: "Thirsty Pickle",
+      address: "Beside SM Seaside, Cebu City",
+      city: "Cebu City",
+      province: "Cebu",
+      region: "Visayas",
+      type: "Indoor",
+      courts: 15,
+      access: "Paid",
+      contact: "Book via Onda Fit app",
+      hours: "Daily, book via Onda Fit",
+      lat: 10.2891,
+      lng: 123.8681,
+      amenities: ["parking", "rental", "lights", "cafe"],
+      notes: "Premium facility by Thirsty Juices team. Currently 7 international-standard courts, with 8 more on the way (total 15). Bookings via Onda Fit. DISCO (Discovery Days) for beginners.",
+      verified: false,
+      featured: false,
+      source: "CDN Digital, SunStar Cebu"
     },
     {
       name: "Nomads Pickleball (Cebu)",
@@ -1451,6 +1508,44 @@ const MASTER_COURTS = {
       verified: false,
       featured: false,
       source: "PPF Member Clubs"
+    },
+    {
+      name: "Northill Courtyard",
+      address: "Northill Gateway, Bacolod-Silay Airport Access Road, Bacolod City",
+      city: "Bacolod",
+      province: "Negros Occidental",
+      region: "Visayas",
+      type: "Outdoor",
+      courts: 4,
+      access: "Paid",
+      contact: "Megaworld Lifestyle Malls / ADA Sports",
+      hours: "Opens July 2026",
+      lat: 10.6723,
+      lng: 122.9583,
+      amenities: ["parking", "cafe", "lights", "lounge"],
+      notes: "Megaworld's first pickleball facility. 4 tournament-standard courts. Northill Café by Quino's. Lounge area. 1,200 sqm. Operated by ADA Sports. Open play & memberships available.",
+      verified: false,
+      featured: false,
+      source: "Visayan Daily Star, Megaworld"
+    },
+    {
+      name: "Ormoc's Uptown Pickle Yard",
+      address: "Brgy. San Pablo, Ormoc City, Leyte",
+      city: "Ormoc",
+      province: "Leyte",
+      region: "Visayas",
+      type: "Indoor",
+      courts: 3,
+      access: "Paid",
+      contact: "0956-289-0530",
+      hours: "Mon-Sat 6:30 AM - 11:00 PM, Sun 6:30 AM - 9:00 PM",
+      lat: 11.0044,
+      lng: 124.6042,
+      amenities: ["parking", "lights", "rental"],
+      notes: "Newly renovated indoor pickleball facility. Blessing & ribbon-cutting by Mayor Lucy Torres Gomez on April 15, 2026. Hosted Ormoc Piña Pickleball National Open.",
+      verified: false,
+      featured: false,
+      source: "EV Mail, Politiko Visayas, HeyPlaces"
     }
   ],
 
@@ -1610,6 +1705,44 @@ const MASTER_COURTS = {
       verified: false,
       featured: false,
       source: "PPF Member Clubs"
+    },
+    {
+      name: "Unity Sports Facility",
+      address: "De Lara Park, Provincial Capitol Grounds, Cagayan de Oro City",
+      city: "Cagayan de Oro",
+      province: "Misamis Oriental",
+      region: "Mindanao",
+      type: "Outdoor",
+      courts: 3,
+      access: "Paid",
+      contact: "Misamis Oriental Provincial Government",
+      hours: "Daily, daylight hours with night lighting",
+      lat: 8.4822,
+      lng: 124.6472,
+      amenities: ["parking", "lights", "wifi", "shower", "lounge", "locker"],
+      notes: "New public facility inaugurated June 19, 2026 by Gov. Juliette Uy. High-quality playing surface, night lighting, open-air lounge, Wi-Fi, charging stations, locker & changing rooms, refreshment areas. Fees P50-P150. Also has lawn tennis courts.",
+      verified: false,
+      featured: false,
+      source: "Mindanao Gold Star Daily, Progress Watch CDO"
+    },
+    {
+      name: "Naawan Multi-Purpose Sports Facility",
+      address: "Linangkayan, Naawan, Misamis Oriental",
+      city: "Naawan",
+      province: "Misamis Oriental",
+      region: "Mindanao",
+      type: "Indoor",
+      courts: 3,
+      access: "Paid",
+      contact: "Naawan LGU Tourism Office",
+      hours: "Daily 6:00 AM - 10:00 PM",
+      lat: 8.4344,
+      lng: 124.2911,
+      amenities: ["parking", "cafe", "shower", "rental", "lights"],
+      notes: "LGU-supported multi-purpose facility. 3 pickleball courts doubling as emergency evacuation shelter. 29 toilet bowls, 26 shower rooms, parking for 30 vehicles, on-site café. Rates: P175/hr (6AM-2PM), P250/hr (3PM-10PM). Paddle rental P25/hr. Opened June 2026.",
+      verified: false,
+      featured: false,
+      source: "Progress Watch CDO, Naawan Tourism"
     }
   ],
 
@@ -1683,12 +1816,12 @@ const MASTER_COURTS = {
 //
 // NEW courts compiled above:
 //   - NCR: ~30+ detailed listings
-//   - Luzon: ~20+ detailed listings  
-//   - Visayas: ~14 detailed listings
-//   - Mindanao: ~8 detailed listings
+//   - Luzon: ~22+ detailed listings (added: Clark Pickleball+, The Prime @ Highland Bali)
+//   - Visayas: ~17 detailed listings (added: Thirsty Pickle, Northill Courtyard, Ormoc's Uptown Pickle Yard)
+//   - Mindanao: ~12 detailed listings (added: Unity Sports Facility, Naawan Facility, 0-0-2 Pickle, Dink Xcape, C-ONE)
 //   - PPF notables: ~48 clubs needing outreach
 //
-// Total new: ~72 detailed + 48 PPF leads = ~120 potential additions
+// Total new: ~81 detailed + 48 PPF leads = ~129 potential additions
 // ============================================================
 
 if (typeof module !== 'undefined' && module.exports) {
