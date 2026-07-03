@@ -1,0 +1,13 @@
+{
+  "trailingSlash": false,
+  "cleanUrls": false,
+  "redirects": [],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Robots-Tag", "value": "index, follow" }
+      ]
+    }
+  ]
+}
