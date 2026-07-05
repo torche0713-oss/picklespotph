@@ -44,6 +44,7 @@ const MASTER_COURTS = {
         lng: 120.9964,
         amenities: ["parking"],
         notes: "Dakota Playgrounds. Free street parking. Bring own equipment.",
+        email: "",
         verified: false,
         featured: false,
         source: "Pickleball News Asia"
@@ -63,6 +64,7 @@ const MASTER_COURTS = {
         lng: 121.0361,
         amenities: ["parking", "shower", "cafe", "lights"],
         notes: "Members-only private club. Pickleball courts available for members and guests.",
+        email: "",
         verified: false,
         featured: false,
         source: "Huddl Directory"
@@ -85,6 +87,7 @@ const MASTER_COURTS = {
         lng: 121.0147,
         amenities: ["parking", "shower", "rental", "lights"],
         notes: "6 indoor wooden courts. Entrance fee P75/head + P250-350/hr court rental. Home to Makati Pickleball Club. Peak: P350/hr, Off-peak: P300/hr + P80/person.",
+        email: "thezonemakati@gmail.com",
         verified: false,
         featured: false,
         source: "Huddl, PicklePlay, Shopee PH"
@@ -104,6 +107,7 @@ const MASTER_COURTS = {
         lng: 121.0391,
         amenities: ["rental"],
         notes: "Private indoor court in repurposed factory space. P500/hr. No designated parking. Basic restroom. Bring own balls unless renting.",
+        email: "",
         verified: false,
         featured: false,
         source: "Reclub, Huddl"
@@ -123,6 +127,7 @@ const MASTER_COURTS = {
         lng: 121.0234,
         amenities: [],
         notes: "8389 members on Reclub. Active open play sessions for beginners to intermediate.",
+        email: "",
         verified: false,
         featured: false,
         source: "Reclub"
@@ -142,6 +147,7 @@ const MASTER_COURTS = {
         lng: 121.0478,
         amenities: ["parking", "shower", "cafe", "rental"],
         notes: "High-end sports facility with coaching available. Part of Shangri-La hotel. Premium pricing.",
+        email: "kerrysports.manila@shangri-la.com",
         verified: false,
         featured: false,
         source: "Huddl, Pickleball News Asia"
@@ -164,6 +170,7 @@ const MASTER_COURTS = {
         lng: 121.0598,
         amenities: ["rental", "lights"],
         notes: "P800/court/hr court rental. P350/player open play. P100 playing fee per person. GCASH/PAYMAYA only (cashless). Near Ortigas/BGC.",
+        email: "main.pbj@spryathletics.ph",
         verified: false,
         featured: false,
         source: "PlayByPoint, The POST"
@@ -183,6 +190,7 @@ const MASTER_COURTS = {
         lng: 121.0605,
         amenities: [],
         notes: "Free weekend street play on Emerald Ave. Equipment and parking free. Organized by PPF.",
+        email: "",
         verified: false,
         featured: false,
         source: "Huddl, PPF"
@@ -205,6 +213,7 @@ const MASTER_COURTS = {
         lng: 121.0224,
         amenities: ["parking", "lights", "shower"],
         notes: "8 courts. Paid membership. Badminton courts converted for pickleball.",
+        email: "",
         verified: false,
         featured: false,
         source: "Waze, Yellow Pages, Huddl"
@@ -224,6 +233,7 @@ const MASTER_COURTS = {
         lng: 121.0344,
         amenities: ["parking", "shower", "rental", "lights"],
         notes: "10 indoor hard courts (rubber cushion + acrylic) + 4 outdoor courts. PPF affiliate since Nov 2024. P300/hr. 10,015 members on Reclub.",
+        email: "neobrittanyclubhouse@gmail.com",
         verified: false,
         featured: false,
         source: "Reclub, Shopee PH, DirectMap"
@@ -243,6 +253,7 @@ const MASTER_COURTS = {
         lng: 121.0746,
         amenities: ["parking", "rental"],
         notes: "6 courts at barangay covered court. Blue Ridge B barangay. Active community.",
+        email: "contactbrpb@gmail.com",
         verified: false,
         featured: false,
         source: "PickleBoard, Huddl"
@@ -262,6 +273,7 @@ const MASTER_COURTS = {
         lng: 121.0383,
         amenities: ["parking", "lights"],
         notes: "Upper House Tennis and Pickleball Club inside VMMC. Open to public.",
+        email: "",
         verified: false,
         featured: false,
         source: "Waze, Huddl"
@@ -281,6 +293,7 @@ const MASTER_COURTS = {
         lng: 121.0417,
         amenities: ["parking", "shower", "cafe", "rental", "lights"],
         notes: "Exclusive for hotel guests. Free for in-house guests. Up to 4 guests per room can invite non-guests. Requires reservation.",
+        email: "",
         verified: false,
         featured: false,
         source: "Solaire Resort North website, Shopee PH"
@@ -300,6 +313,7 @@ const MASTER_COURTS = {
         lng: 121.0472,
         amenities: ["parking", "lights"],
         notes: "Subdivision-based club. Available on PickleBoard.",
+        email: "",
         verified: false,
         featured: false,
         source: "PickleBoard"
@@ -322,6 +336,7 @@ const MASTER_COURTS = {
         lng: 121.0419,
         amenities: ["parking", "rental", "lights", "shower"],
         notes: "P500/hr court rental. P250/head open play (9PM-1AM Thu). Acrylic courts. Book via TicketWavePH. Has branches in Dasma, Pasay, Mandaluyong, San Pedro, Laguna.",
+        email: "pickleyardph@gmail.com",
         verified: false,
         featured: false,
         source: "TicketWavePH, Shopee PH blog, PhilSTAR Life"
@@ -341,6 +356,7 @@ const MASTER_COURTS = {
         lng: 121.0503,
         amenities: ["parking", "rental", "lights"],
         notes: "P450/hr court rental, P250/head open play (5-8PM, 8-11PM). P100 paddle rental. Book via SM Tickets or walk-in.",
+        email: "paloopickleball@yahoo.com",
         verified: false,
         featured: false,
         source: "SM Supermalls, Manila Standard"
@@ -360,6 +376,7 @@ const MASTER_COURTS = {
         lng: 120.9772,
         amenities: ["parking", "shower", "rental", "lights"],
         notes: "P1,250-P1,750/hr depending on peak. 3 pickleball courts (converted from basketball/volleyball court). Shower & locker rooms. Modern facility at Aseana City.",
+        email: "bounceinquiries@parqal.com",
         verified: false,
         featured: false,
         source: "Bounce at Parqal website, Shopee PH blog"
@@ -382,6 +399,7 @@ const MASTER_COURTS = {
         lng: 121.0689,
         amenities: ["parking", "rental", "lights"],
         notes: "3 indoor hard courts with permanent lines. P250 open play. 11284 members on Reclub. Also has Sat night play at The Tent, Acacia Estates.",
+        email: "",
         verified: false,
         featured: false,
         source: "Pickleheads, KudosCourts, Reclub"
@@ -401,6 +419,7 @@ const MASTER_COURTS = {
         lng: 121.0512,
         amenities: ["parking", "lights", "rental"],
         notes: "Premium indoor venue. Modern facilities. Late operating hours. Open play through Baseline app. Popular for casual and competitive play.",
+        email: "",
         verified: false,
         featured: false,
         source: "The POST, Baseline.live"
@@ -423,6 +442,7 @@ const MASTER_COURTS = {
         lng: 121.0418,
         amenities: ["parking", "rental", "lights"],
         notes: "P600/hr court rental. P300/person open play. Also has DUPR sessions. Book via PlayByPoint.",
+        email: "pickleballhub.ph@playbypoint.com",
         verified: false,
         featured: false,
         source: "PlayByPoint, Huddl"
@@ -442,6 +462,7 @@ const MASTER_COURTS = {
         lng: 121.0412,
         amenities: ["parking", "rental", "lights"],
         notes: "4 permanent courts at SM Active Hub. Part of SM nationwide network.",
+        email: "paloopickleball@yahoo.com",
         verified: false,
         featured: false,
         source: "SM Supermalls"
@@ -464,6 +485,7 @@ const MASTER_COURTS = {
         lng: 120.9803,
         amenities: ["parking", "rental"],
         notes: "One top-tier pickleball court. P250/hr. Book ahead. Also has basketball/volleyball.",
+        email: "conquestsportsmanila@gmail.com",
         verified: false,
         featured: false,
         source: "Huddl, WorldPlaces"
@@ -483,6 +505,7 @@ const MASTER_COURTS = {
         lng: 120.9781,
         amenities: ["parking", "rental", "lights"],
         notes: "3 crystal sand finish courts. P300/head open play. Beginner & intermediate friendly. Book via Reclub.",
+        email: "caloocanpickleballclub@gmail.com",
         verified: false,
         featured: false,
         source: "Reclub"
@@ -502,6 +525,7 @@ const MASTER_COURTS = {
         lng: 120.9901,
         amenities: ["parking", "shower", "cafe", "rental", "lights"],
         notes: "3 air-conditioned acrylic cushioned pro courts. P800/hr (12NN-6PM court rental). P400/head open play (6-10PM). P60 basement parking for 4hrs. Cafe on-site.",
+        email: "aciph.manila@gmail.com",
         verified: false,
         featured: false,
         source: "Shopee PH blog"
@@ -521,6 +545,7 @@ const MASTER_COURTS = {
         lng: 120.9821,
         amenities: ["parking", "lights", "rental"],
         notes: "Built to USA Pickleball standards. P200-400/hr depending peak. LED lighting. Book via website or Reclub (@the-smash-city-valenzuela).",
+        email: "thesmashcity@gmail.com",
         verified: false,
         featured: false,
         source: "TheSmashCity.com, Shopee PH blog"
@@ -540,6 +565,7 @@ const MASTER_COURTS = {
         lng: 120.9876,
         amenities: ["parking"],
         notes: "Free play at LDS chapel. Community-focused.",
+        email: "",
         verified: false,
         featured: false,
         source: "Pickleball News Asia"
@@ -559,6 +585,7 @@ const MASTER_COURTS = {
         lng: 120.9792,
         amenities: ["parking", "rental"],
         notes: "Multi-sport complex with pickleball.",
+        email: "actifitsports@yahoo.com",
         verified: false,
         featured: false,
         source: "Pickleball News Asia"
@@ -578,6 +605,7 @@ const MASTER_COURTS = {
         lng: 121.0032,
         amenities: ["parking", "rental", "lights"],
         notes: "P450/hr court rental, P250/head open play (4-7PM, 7-10PM). Book via SM Tickets.",
+        email: "paloopickleball@yahoo.com",
         verified: false,
         featured: false,
         source: "SM Supermalls, Speed PH"
@@ -597,6 +625,7 @@ const MASTER_COURTS = {
         lng: 121.0987,
         amenities: ["parking", "rental", "lights"],
         notes: "P450/hr court rental, P250/head open play. Book via SM Tickets.",
+        email: "paloopickleball@yahoo.com",
         verified: false,
         featured: false,
         source: "SM Supermalls, Speed PH"
@@ -616,6 +645,7 @@ const MASTER_COURTS = {
         lng: 121.0512,
         amenities: ["parking", "rental", "lights"],
         notes: "3 permanent courts.",
+        email: "paloopickleball@yahoo.com",
         verified: false,
         featured: false,
         source: "SM Supermalls"
@@ -635,6 +665,7 @@ const MASTER_COURTS = {
         lng: 121.0298,
         amenities: ["parking", "rental", "lights"],
         notes: "1 permanent court. Also has 4 semi-permanent courts at MEV Events Hall (6-9PM).",
+        email: "paloopickleball@yahoo.com",
         verified: false,
         featured: false,
         source: "SM Supermalls"
@@ -654,6 +685,7 @@ const MASTER_COURTS = {
         lng: 121.0558,
         amenities: ["parking", "rental", "lights"],
         notes: "4 permanent courts + 2 semi-permanent at Mall Atrium (8AM-11PM).",
+        email: "paloopickleball@yahoo.com",
         verified: false,
         featured: false,
         source: "SM Supermalls"
@@ -673,6 +705,7 @@ const MASTER_COURTS = {
         lng: 120.6884,
         amenities: ["parking", "rental", "lights"],
         notes: "4 permanent courts.",
+        email: "paloopickleball@yahoo.com",
         verified: false,
         featured: false,
         source: "SM Supermalls"
@@ -692,6 +725,7 @@ const MASTER_COURTS = {
         lng: 121.1823,
         amenities: ["parking", "rental", "lights"],
         notes: "2 permanent courts.",
+        email: "paloopickleball@yahoo.com",
         verified: false,
         featured: false,
         source: "SM Supermalls"
@@ -711,6 +745,7 @@ const MASTER_COURTS = {
         lng: 121.1153,
         amenities: ["parking", "rental", "lights"],
         notes: "4 permanent courts at the integrated terminal.",
+        email: "paloopickleball@yahoo.com",
         verified: false,
         featured: false,
         source: "SM Supermalls"
@@ -738,6 +773,7 @@ const MASTER_COURTS = {
       lng: 121.2381,
       amenities: ["parking", "rental", "lights", "shower", "cafe"],
       notes: "6 premium USAP-standard cushioned courts. P400/hr (w/o lights), P600/hr (with lights). P100 paddle rental. 45 min from Metro Manila.",
+      email: "info@questadventure.ph",
       verified: false,
       featured: false,
       source: "QuestAdventure.ph, Shopee PH blog"
@@ -757,6 +793,7 @@ const MASTER_COURTS = {
       lng: 120.8115,
       amenities: ["parking", "lights"],
       notes: "3 courts with portable nets.",
+      email: "",
       verified: false,
       featured: false,
       source: "Huddl"
@@ -776,6 +813,7 @@ const MASTER_COURTS = {
       lng: 120.5598,
       amenities: ["parking", "rental", "lights"],
       notes: "Outdoor parking lot courts. Regular community events.",
+      email: "paloopickleball@yahoo.com",
       verified: false,
       featured: false,
       source: "Huddl, SM Supermalls"
@@ -795,6 +833,7 @@ const MASTER_COURTS = {
       lng: 120.5451,
       amenities: ["parking", "cafe", "rental", "lights", "shower"],
       notes: "P12M purpose-built facility. 8 dedicated pickleball courts + 1 central tournament court + 1 basketball court convertible to 4 pickleball courts + 1 private court. Café, pro shop, locker rooms, table tennis. First dedicated pickleball facility in Clark Freeport.",
+      email: "bandjagsports@gmail.com",
       verified: false,
       featured: false,
       source: "Daily Tribune, SunStar Pampanga, CDC PR"
@@ -814,6 +853,7 @@ const MASTER_COURTS = {
       lng: 120.5831,
       amenities: ["parking", "lights"],
       notes: "Indoor courts. Also has Tarlac location.",
+      email: "pickleballcentralph@gmail.com",
       verified: false,
       featured: false,
       source: "Huddl"
@@ -833,6 +873,7 @@ const MASTER_COURTS = {
       lng: 120.5900,
       amenities: ["parking"],
       notes: "Clubhouse play. Active community.",
+      email: "angelespickleballclub@gmail.com",
       verified: false,
       featured: false,
       source: "Huddl"
@@ -852,6 +893,7 @@ const MASTER_COURTS = {
       lng: 120.6142,
       amenities: ["parking", "lights", "rental"],
       notes: "Multi-sport pavilion. Cool mountain weather for playing.",
+      email: "bookings.johnhaysportspavilion@gmail.com",
       verified: false,
       featured: false,
       source: "Pickleball News Asia"
@@ -871,6 +913,7 @@ const MASTER_COURTS = {
       lng: 121.0831,
       amenities: ["parking", "lights", "rental"],
       notes: "Combined pickleball and badminton center.",
+      email: "",
       verified: false,
       featured: false,
       source: "Pickleball News Asia"
@@ -890,6 +933,7 @@ const MASTER_COURTS = {
       lng: 121.0732,
       amenities: ["parking", "lights"],
       notes: "Dedicated pickleball facility in Biñan, Laguna.",
+      email: "pickleballhqlaguna@gmail.com",
       verified: false,
       featured: false,
       source: "Pickleball News Asia"
@@ -909,6 +953,7 @@ const MASTER_COURTS = {
       lng: 121.2214,
       amenities: ["parking", "shower", "cafe"],
       notes: "Resort-based court. Cooler climate near Mt. Makiling.",
+      email: "aceanderesort@gmail.com",
       verified: false,
       featured: false,
       source: "Pickleball News Asia"
@@ -928,6 +973,7 @@ const MASTER_COURTS = {
       lng: 121.0368,
       amenities: ["parking", "lights"],
       notes: "Subdivision-based club in Laguna Heights area.",
+      email: "",
       verified: false,
       featured: false,
       source: "Pickleball News Asia"
@@ -947,6 +993,7 @@ const MASTER_COURTS = {
       lng: 121.1281,
       amenities: ["parking"],
       notes: "Subdivision community courts.",
+      email: "",
       verified: false,
       featured: false,
       source: "PickleBoard"
@@ -966,6 +1013,7 @@ const MASTER_COURTS = {
       lng: 120.9598,
       amenities: ["parking", "rental", "lights"],
       notes: "Branch of The Pickle Yard. P500/hr. Also has locations in Pasay, Mandaluyong, San Pedro, Laguna.",
+      email: "pickleyardph@gmail.com",
       verified: false,
       featured: false,
       source: "PhilSTAR Life, The Pickle Yard FB"
@@ -985,6 +1033,7 @@ const MASTER_COURTS = {
       lng: 120.6258,
       amenities: ["parking", "lights"],
       notes: "2 semi-permanent courts.",
+      email: "paloopickleball@yahoo.com",
       verified: false,
       featured: false,
       source: "SM Supermalls"
@@ -1004,6 +1053,7 @@ const MASTER_COURTS = {
       lng: 120.5946,
       amenities: ["parking", "lights"],
       notes: "5 semi-permanent courts at Dap-Ayan Park.",
+      email: "paloopickleball@yahoo.com",
       verified: false,
       featured: false,
       source: "SM Supermalls"
@@ -1023,6 +1073,7 @@ const MASTER_COURTS = {
       lng: 120.5781,
       amenities: ["parking", "lights"],
       notes: "2 semi-permanent courts.",
+      email: "paloopickleball@yahoo.com",
       verified: false,
       featured: false,
       source: "SM Supermalls"
@@ -1042,6 +1093,7 @@ const MASTER_COURTS = {
       lng: 120.3321,
       amenities: ["parking", "lights"],
       notes: "1 semi-permanent court.",
+      email: "paloopickleball@yahoo.com",
       verified: false,
       featured: false,
       source: "SM Supermalls"
@@ -1061,6 +1113,7 @@ const MASTER_COURTS = {
       lng: 121.7281,
       amenities: ["parking", "lights"],
       notes: "2 semi-permanent courts.",
+      email: "paloopickleball@yahoo.com",
       verified: false,
       featured: false,
       source: "SM Supermalls"
@@ -1080,6 +1133,7 @@ const MASTER_COURTS = {
       lng: 120.9667,
       amenities: ["parking", "lights"],
       notes: "2 semi-permanent courts at Garden Park. Hosts Pickleball Night Glow events.",
+      email: "paloopickleball@yahoo.com",
       verified: false,
       featured: false,
       source: "SM Supermalls"
@@ -1099,6 +1153,7 @@ const MASTER_COURTS = {
       lng: 120.2711,
       amenities: ["parking", "lights"],
       notes: "1 semi-permanent court on roofdeck.",
+      email: "paloopickleball@yahoo.com",
       verified: false,
       featured: false,
       source: "SM Supermalls"
@@ -1118,6 +1173,7 @@ const MASTER_COURTS = {
       lng: 120.8512,
       amenities: ["parking", "rental", "lights"],
       notes: "2 semi-permanent courts.",
+      email: "paloopickleball@yahoo.com",
       verified: false,
       featured: false,
       source: "SM Supermalls"
@@ -1137,6 +1193,7 @@ const MASTER_COURTS = {
       lng: 121.6151,
       amenities: ["parking", "lights"],
       notes: "1 semi-permanent court at Event Center.",
+      email: "paloopickleball@yahoo.com",
       verified: false,
       featured: false,
       source: "SM Supermalls"
@@ -1156,6 +1213,7 @@ const MASTER_COURTS = {
       lng: 121.0421,
       amenities: ["parking", "rental", "lights"],
       notes: "3 courts at ground floor.",
+      email: "paloopickleball@yahoo.com",
       verified: false,
       featured: false,
       source: "SM Supermalls"
@@ -1175,6 +1233,7 @@ const MASTER_COURTS = {
       lng: 121.0144,
       amenities: ["parking", "rental", "lights", "shower"],
       notes: "6 permanent courts. SM Active Hub's newest flagship venue. Hosts tournament finals.",
+      email: "paloopickleball@yahoo.com",
       verified: false,
       featured: false,
       source: "SM Supermalls"
@@ -1194,6 +1253,7 @@ const MASTER_COURTS = {
       lng: 119.3956,
       amenities: ["parking"],
       notes: "Pickleball courts in El Nido. Great for tourists.",
+      email: "",
       verified: false,
       featured: false,
       source: "PickleBoard"
@@ -1213,6 +1273,7 @@ const MASTER_COURTS = {
       lng: 121.1437,
       amenities: ["parking", "cafe", "scenic view"],
       notes: "Multi-purpose court (pickleball, badminton, volleyball, basketball) at Balinese-inspired resort. Annual membership P1,750. Open play: P200 (member), P250 (guest), P300 (non-member). Scenic mountain & lake views. Mini bar on site.",
+      email: "",
       verified: false,
       featured: false,
       source: "LionhearTV, Daily Feed Planet"
@@ -1232,6 +1293,7 @@ const MASTER_COURTS = {
       lng: 121.1281,
       amenities: ["parking", "rental", "lights", "cafe"],
       notes: "8 cushioned acrylic USAPA-standard courts. P600/hr/court + P100 entrance fee per person. Book via astrapickleball.com or PlayServe.",
+      email: "info@astrapickleball.com",
       verified: false,
       featured: false,
       source: "astrapickleball.com, PlayServe"
@@ -1251,6 +1313,7 @@ const MASTER_COURTS = {
       lng: 121.1291,
       amenities: ["parking", "rental", "lights", "shower", "cafe", "restaurant", "bar"],
       notes: "3,000 sqm warehouse facility. 7 dedicated pickleball courts + 4 hybrid (pickleball/badminton). No entrance fee. Pro courts P600/hr, regular courts P400-500/hr. Full-service restaurant, cocktail bar, coffee shop.",
+      email: "hello@athletecentral.fit",
       verified: false,
       featured: false,
       source: "athletecentral.fit, PPF directory"
@@ -1270,6 +1333,7 @@ const MASTER_COURTS = {
       lng: 120.9712,
       amenities: ["parking", "rental", "lights", "shower", "cafe"],
       notes: "5 dedicated courts with 4-layer premium acrylic surface. Near CALAX Aguinaldo exit. Private rental P350/hr (8AM-12NN), P400/hr (12NN-12MN). Open play P200-250/person. Elevated viewing deck. Coffee shop on site.",
+      email: "powerhousepickleballclub@gmail.com",
       verified: false,
       featured: false,
       source: "Reclub: Powerhouse Pickleball Club"
@@ -1289,6 +1353,7 @@ const MASTER_COURTS = {
       lng: 120.8912,
       amenities: ["parking", "rental", "lights"],
       notes: "8 courts. P400-500/hr. Book online via PlayServe platform.",
+      email: "pickleballelites@gmail.com",
       verified: false,
       featured: false,
       source: "PlayServe"
@@ -1308,6 +1373,7 @@ const MASTER_COURTS = {
       lng: 123.1821,
       amenities: ["parking", "rental"],
       notes: "3 courts. P150/head open play. Paddle rental available. Active Bicol community hub. Booking via Reclub.",
+      email: "thepicklebloc.naga@gmail.com",
       verified: false,
       featured: false,
       source: "Reclub, Naga City Guide"
@@ -1327,6 +1393,7 @@ const MASTER_COURTS = {
       lng: 123.2731,
       amenities: ["parking", "lights"],
       notes: "Premium court opened Jan 2026 at Camarines Sur Provincial Capitol. Online payment available. Book via FB or DM.",
+      email: "camsurpickleballclub@gmail.com",
       verified: false,
       featured: false,
       source: "camarinessur.gov.ph"
@@ -1346,6 +1413,7 @@ const MASTER_COURTS = {
       lng: 122.8312,
       amenities: ["parking", "lights"],
       notes: "3 courts at Paradiso Verde Organic Farm & Resort. Open play P100/player. Court rental P250/hr.",
+      email: "paradiso.verde.resort@gmail.com",
       verified: false,
       featured: false,
       source: "Sparrk.ph"
@@ -1365,6 +1433,7 @@ const MASTER_COURTS = {
       lng: 121.1621,
       amenities: ["parking", "rental"],
       notes: "Community-focused club. 1,118 members on Reclub. Active open play sessions for 2.75+ levels.",
+      email: "banaybanaypickleball@gmail.com",
       verified: false,
       featured: false,
       source: "Reclub"
@@ -1391,6 +1460,7 @@ const MASTER_COURTS = {
       lng: 123.8673,
       amenities: ["parking", "rental", "lights"],
       notes: "7 permanent courts at Lot 11 + 2 semi-permanent at Upper Ground Tower Garden (10AM-9PM). Largest SM Active Hub in Visayas.",
+      email: "paloopickleball@yahoo.com",
       verified: false,
       featured: false,
       source: "SM Supermalls, Huddl"
@@ -1410,6 +1480,7 @@ const MASTER_COURTS = {
       lng: 123.8681,
       amenities: ["parking", "rental", "lights", "cafe"],
       notes: "Premium facility by Thirsty Juices team. Currently 7 international-standard courts, with 8 more on the way (total 15). Bookings via Onda Fit. DISCO (Discovery Days) for beginners.",
+      email: "hello@thirstypickle.ph",
       verified: false,
       featured: false,
       source: "CDN Digital, SunStar Cebu"
@@ -1429,6 +1500,7 @@ const MASTER_COURTS = {
       lng: 123.8854,
       amenities: ["parking", "rental"],
       notes: "Featured curated venue on KudosCourts. 5.0 rating.",
+      email: "nomadspickleballcebu@gmail.com",
       verified: false,
       featured: false,
       source: "KudosCourts"
@@ -1448,6 +1520,7 @@ const MASTER_COURTS = {
       lng: 123.9012,
       amenities: ["parking"],
       notes: "Single dedicated court in Lahug area.",
+      email: "",
       verified: false,
       featured: false,
       source: "KudosCourts"
@@ -1467,6 +1540,7 @@ const MASTER_COURTS = {
       lng: 123.8812,
       amenities: ["parking", "shower", "lights", "cafe", "rental"],
       notes: "10 courts. Featured curated venue. Multi-sport complex.",
+      email: "admin.manager@magnumsportscomplex.com",
       verified: false,
       featured: false,
       source: "KudosCourts"
@@ -1486,6 +1560,7 @@ const MASTER_COURTS = {
       lng: 123.5181,
       amenities: ["parking"],
       notes: "Community-focused club in Barili, Cebu.",
+      email: "",
       verified: false,
       featured: false,
       source: "Huddl, PPF"
@@ -1505,6 +1580,7 @@ const MASTER_COURTS = {
       lng: 123.9482,
       amenities: ["parking", "rental"],
       notes: "Organizes tournaments and coaching in Lapu-Lapu.",
+      email: "",
       verified: false,
       featured: false,
       source: "Huddl"
@@ -1524,6 +1600,7 @@ const MASTER_COURTS = {
       lng: 123.9381,
       amenities: ["parking", "rental", "lights"],
       notes: "3 semi-permanent courts at parking station.",
+      email: "paloopickleball@yahoo.com",
       verified: false,
       featured: false,
       source: "SM Supermalls"
@@ -1543,6 +1620,7 @@ const MASTER_COURTS = {
       lng: 123.3117,
       amenities: ["parking"],
       notes: "Community courts in Mangnao area.",
+      email: "",
       verified: false,
       featured: false,
       source: "PickleBoard"
@@ -1562,6 +1640,7 @@ const MASTER_COURTS = {
       lng: 123.3075,
       amenities: ["parking"],
       notes: "Available on PickleBoard with 5.0 rating.",
+      email: "",
       verified: false,
       featured: false,
       source: "PickleBoard"
@@ -1581,6 +1660,7 @@ const MASTER_COURTS = {
       lng: 123.3061,
       amenities: [],
       notes: "Available on PickleBoard.",
+      email: "",
       verified: false,
       featured: false,
       source: "PickleBoard"
@@ -1600,6 +1680,7 @@ const MASTER_COURTS = {
       lng: 123.9111,
       amenities: ["parking"],
       notes: "Available on PickleBoard near Baclayon Church area.",
+      email: "",
       verified: false,
       featured: false,
       source: "PickleBoard"
@@ -1619,6 +1700,7 @@ const MASTER_COURTS = {
       lng: 123.7914,
       amenities: ["parking", "lights"],
       notes: "New club on PickleHub. 2 courts.",
+      email: "",
       verified: false,
       featured: false,
       source: "PickleHub"
@@ -1638,6 +1720,7 @@ const MASTER_COURTS = {
       lng: 122.7514,
       amenities: ["parking", "lights"],
       notes: "1 permanent court at Transport Hub.",
+      email: "paloopickleball@yahoo.com",
       verified: false,
       featured: false,
       source: "SM Supermalls"
@@ -1657,6 +1740,7 @@ const MASTER_COURTS = {
       lng: 123.3011,
       amenities: ["parking"],
       notes: "Active PPF member club in Dumaguete.",
+      email: "",
       verified: false,
       featured: false,
       source: "PPF Member Clubs"
@@ -1676,6 +1760,7 @@ const MASTER_COURTS = {
       lng: 122.9583,
       amenities: ["parking", "cafe", "lights", "lounge"],
       notes: "Megaworld's first pickleball facility. 4 tournament-standard courts. Northill Café by Quino's. Lounge area. 1,200 sqm. Operated by ADA Sports. Open play & memberships available.",
+      email: "northill@megaworld.com",
       verified: false,
       featured: false,
       source: "Visayan Daily Star, Megaworld"
@@ -1695,6 +1780,7 @@ const MASTER_COURTS = {
       lng: 124.6042,
       amenities: ["parking", "lights", "rental"],
       notes: "Newly renovated indoor pickleball facility. Blessing & ribbon-cutting by Mayor Lucy Torres Gomez on April 15, 2026. Hosted Ormoc Piña Pickleball National Open.",
+      email: "uptownpickleyard.ormoc@gmail.com",
       verified: false,
       featured: false,
       source: "EV Mail, Politiko Visayas, HeyPlaces"
@@ -1714,6 +1800,7 @@ const MASTER_COURTS = {
       lng: 122.5611,
       amenities: ["parking", "rental", "lights", "shower"],
       notes: "Premium indoor pickleball venue. Competitive play, open play, private reservations & corporate events. Modern facilities.",
+      email: "hello@netplay360.com",
       verified: false,
       featured: false,
       source: "netplay360.com"
@@ -1733,6 +1820,7 @@ const MASTER_COURTS = {
       lng: 122.6711,
       amenities: ["parking"],
       notes: "Community pickleball club in Dingle, Iloilo.",
+      email: "dinglepickleclub@gmail.com",
       verified: false,
       featured: false,
       source: "KudosCourts"
@@ -1752,6 +1840,7 @@ const MASTER_COURTS = {
       lng: 122.5621,
       amenities: ["parking"],
       notes: "Dedicated pickleball center in Iloilo City.",
+      email: "granplainsiloilo@gmail.com",
       verified: false,
       featured: false,
       source: "KudosCourts, Reclub"
@@ -1771,6 +1860,7 @@ const MASTER_COURTS = {
       lng: 125.0011,
       amenities: ["parking", "rental", "lights"],
       notes: "12 courts. Open play P150/player. Graveyard Shift open play 10PM-2AM: P100 members/students, P150 non-members. Free paddle rental for members. Largest indoor facility in Eastern Visayas.",
+      email: "smashvillete@gmail.com",
       verified: false,
       featured: false,
       source: "Reclub, PlayServe"
@@ -1790,6 +1880,7 @@ const MASTER_COURTS = {
       lng: 122.4811,
       amenities: ["parking", "rental", "lights"],
       notes: "Pickleball courts at Vista Mall Oton, Iloilo.",
+      email: "triplea.oton@gmail.com",
       verified: false,
       featured: false,
       source: "KudosCourts"
@@ -1816,6 +1907,7 @@ const MASTER_COURTS = {
       lng: 125.1681,
       amenities: ["parking", "lights", "rental"],
       notes: "4 permanent courts at Open Parking E.",
+      email: "paloopickleball@yahoo.com",
       verified: false,
       featured: false,
       source: "SM Supermalls"
@@ -1835,6 +1927,7 @@ const MASTER_COURTS = {
       lng: 124.6423,
       amenities: ["parking", "lights", "rental"],
       notes: "1 semi-permanent court. Late-night hours until 1AM.",
+      email: "paloopickleball@yahoo.com",
       verified: false,
       featured: false,
       source: "SM Supermalls"
@@ -1854,6 +1947,7 @@ const MASTER_COURTS = {
       lng: 123.4372,
       amenities: ["lights"],
       notes: "Covered court. P75/head. Western Mindanao.",
+      email: "sweetspotpickleball@gmail.com",
       verified: false,
       featured: false,
       source: "PickleBoard"
@@ -1873,6 +1967,7 @@ const MASTER_COURTS = {
       lng: 125.6012,
       amenities: ["parking", "lights", "rental"],
       notes: "5 courts. New club on PickleHub. Active Davao community.",
+      email: "kawayandriveanddink@gmail.com",
       verified: false,
       featured: false,
       source: "PickleHub"
@@ -1892,6 +1987,7 @@ const MASTER_COURTS = {
       lng: 125.8078,
       amenities: ["parking", "lights"],
       notes: "4 courts. New club on PickleHub.",
+      email: "thelobtagum@gmail.com",
       verified: false,
       featured: false,
       source: "PickleHub"
@@ -1911,6 +2007,7 @@ const MASTER_COURTS = {
       lng: 125.0867,
       amenities: ["parking", "lights"],
       notes: "3 courts. New club on PickleHub.",
+      email: "cmspicklehub@gmail.com",
       verified: false,
       featured: false,
       source: "PickleHub"
@@ -1930,6 +2027,7 @@ const MASTER_COURTS = {
       lng: 125.6201,
       amenities: ["parking"],
       notes: "Parking lot courts. Free to play. Free parking.",
+      email: "paloopickleball@yahoo.com",
       verified: false,
       featured: false,
       source: "Huddl"
@@ -1949,6 +2047,7 @@ const MASTER_COURTS = {
       lng: 125.8111,
       amenities: ["parking"],
       notes: "PPF member club in Tagum City, Davao del Norte.",
+      email: "",
       verified: false,
       featured: false,
       source: "PPF Member Clubs"
@@ -1968,6 +2067,7 @@ const MASTER_COURTS = {
       lng: 124.6472,
       amenities: ["parking", "lights", "wifi", "shower", "lounge", "locker"],
       notes: "New public facility inaugurated June 19, 2026 by Gov. Juliette Uy. High-quality playing surface, night lighting, open-air lounge, Wi-Fi, charging stations, locker & changing rooms, refreshment areas. Fees P50-P150. Also has lawn tennis courts.",
+      email: "unitysports.cdo@gmail.com",
       verified: false,
       featured: false,
       source: "Mindanao Gold Star Daily, Progress Watch CDO"
@@ -1987,6 +2087,7 @@ const MASTER_COURTS = {
       lng: 124.2911,
       amenities: ["parking", "cafe", "shower", "rental", "lights"],
       notes: "LGU-supported multi-purpose facility. 3 pickleball courts doubling as emergency evacuation shelter. 29 toilet bowls, 26 shower rooms, parking for 30 vehicles, on-site café. Rates: P175/hr (6AM-2PM), P250/hr (3PM-10PM). Paddle rental P25/hr. Opened June 2026.",
+      email: "naawantourism@gmail.com",
       verified: false,
       featured: false,
       source: "Progress Watch CDO, Naawan Tourism"
@@ -2006,6 +2107,7 @@ const MASTER_COURTS = {
       lng: 125.3511,
       amenities: ["parking", "rental", "lights", "shower"],
       notes: "12 professional-grade indoor courts. Open play & tournaments. All skill levels welcome. Largest dedicated pickleball facility in Mindanao.",
+      email: "info@pickleballpoint.net",
       verified: false,
       featured: false,
       source: "pickleballpoint.net"
@@ -2025,6 +2127,7 @@ const MASTER_COURTS = {
       lng: 125.6111,
       amenities: ["parking", "lights", "rental"],
       notes: "Pro-grade pickleball & badminton courts. High-performance surfaces. New facility in Buhangin area.",
+      email: "hello@epicentercourts.com",
       verified: false,
       featured: false,
       source: "epicentercourts.com"
@@ -2044,6 +2147,7 @@ const MASTER_COURTS = {
       lng: 123.3411,
       amenities: ["parking", "rental", "lights", "restroom"],
       notes: "P200/hr per court. Indoor courts in Dipolog City. Book via Sparrk app.",
+      email: "athletezone.dipolog@gmail.com",
       verified: false,
       featured: false,
       source: "Sparrk.ph"
