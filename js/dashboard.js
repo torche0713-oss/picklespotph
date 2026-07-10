@@ -1370,7 +1370,14 @@ window.verifyPayment = async function(paymentId, userId) {
   try {
     await PicklePayments.verifyPayment(paymentId);
     await PickleAuth.upgradeToPro(userId);
-    showToast('Payment verified! User upgraded to Pro.');
+    const userCourts = await PickleCourts.getByOwner(userId);
+    const batch = db.batch();
+    userCourts.forEach(court => {
+      const ref = db.collection(COLLECTIONS.COURTS).doc(court.id);
+      batch.update(ref, { ownerPlan: 'pro' });
+    });
+    if (userCourts.length) await batch.commit();
+    showToast(`Payment verified! User + ${userCourts.length} court(s) upgraded to Pro.`);
     loadPayments();
   } catch (err) {
     showToast('Error: ' + err.message, 4000);
