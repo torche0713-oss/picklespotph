@@ -31,10 +31,10 @@ function filterCourts(courts, filters) {
     if (filters.search) {
       const q = filters.search.toLowerCase();
       if (
-        !court.name.toLowerCase().includes(q) &&
-        !court.city.toLowerCase().includes(q) &&
-        !court.province.toLowerCase().includes(q) &&
-        !court.region.toLowerCase().includes(q)
+        !(court.name || '').toLowerCase().includes(q) &&
+        !(court.city || '').toLowerCase().includes(q) &&
+        !(court.province || '').toLowerCase().includes(q) &&
+        !(court.region || '').toLowerCase().includes(q)
       ) return false;
     }
 
@@ -85,11 +85,11 @@ function sortCourts(courts, sortBy) {
     if (!a.featured && b.featured) return 1;
     switch (sortBy) {
       case 'name':
-        return a.name.localeCompare(b.name);
+        return (a.name || '').localeCompare(b.name || '');
       case 'region':
-        return a.region.localeCompare(b.region);
+        return (a.region || '').localeCompare(b.region || '');
       case 'type':
-        return a.type.localeCompare(b.type);
+        return (a.type || '').localeCompare(b.type || '');
       case 'newest':
         return new Date(b.dateAdded) - new Date(a.dateAdded);
       case 'nearest':

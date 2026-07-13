@@ -162,7 +162,7 @@ function loadRecentlyAdded() {
     const isFav = favoriteIds.has(String(c.id));
     return `
     <div class="recent-card" onclick="openCourtModal('${c.id}')">
-      <div class="rc-type">${c.type} · ${c.access}</div>
+      <div class="rc-type">${c.type || 'Outdoor'} · ${c.access || 'Public'}</div>
       <div class="rc-name">${c.name}</div>
       <div class="rc-location"><i class="fas fa-map-marker-alt"></i> ${c.city}, ${c.province}</div>
       <div class="rc-meta">
@@ -1710,9 +1710,9 @@ function setupEventListeners() {
   document.getElementById('listSearchInput')?.addEventListener('input', (e) => {
     const q = e.target.value.toLowerCase();
     const filtered = allCourts.filter(c =>
-      c.name.toLowerCase().includes(q) ||
-      c.city.toLowerCase().includes(q) ||
-      c.province.toLowerCase().includes(q)
+      (c.name || '').toLowerCase().includes(q) ||
+      (c.city || '').toLowerCase().includes(q) ||
+      (c.province || '').toLowerCase().includes(q)
     );
     listPage = 1;
     renderCourtsList(filtered);
