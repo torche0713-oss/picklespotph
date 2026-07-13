@@ -476,11 +476,14 @@ const PickleChat = {
       timestamp: firebase.firestore.FieldValue.serverTimestamp()
     });
     // Update last message on the chat room
-    await db.collection(COLLECTIONS.CHATS).doc(chatId).update({
+    const updateData = {
       lastMessage: text,
       lastSender: senderName,
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-    });
+    };
+    if (senderId === 'customer') updateData.unreadOwner = firebase.firestore.FieldValue.increment(1);
+    else if (senderId === 'owner') updateData.unreadCustomer = firebase.firestore.FieldValue.increment(1);
+    await db.collection(COLLECTIONS.CHATS).doc(chatId).update(updateData);
     return msgRef.id;
   },
 
@@ -598,6 +601,7 @@ function generateCalendarUrl(title, dateStr, timeStr, location) {
 
 const PickleNotifications = {
   async send(toEmail, toName, subject, body) {
+    if (typeof emailjs === 'undefined') return;
     if (!EMAILJS_CONFIG.PUBLIC_KEY || !EMAILJS_CONFIG.SERVICE_ID || !EMAILJS_CONFIG.TEMPLATE_ID) return;
     try {
       await emailjs.send(EMAILJS_CONFIG.SERVICE_ID, EMAILJS_CONFIG.TEMPLATE_ID, {
@@ -617,7 +621,9 @@ const PickleNotifications = {
       if (!owner || !owner.email) return;
       const body = `New booking inquiry at ${courtName}!\n\nCustomer: ${bookingData.name}\nContact: ${bookingData.contact}\nDate: ${bookingData.date}\nTime: ${bookingData.time}\nPlayers: ${bookingData.players}\nMessage: ${bookingData.message || 'None'}`;
       await this.send(owner.email, owner.displayName || 'Owner', `New Booking: ${courtName}`, body);
-    } catch {}
+    } catch (err) {
+      console.error('[PickleSpot] Failed to notify owner of booking:', err);
+    }
   },
 
   async notifyAdminNewPayment(userEmail, userName, paymentData) {

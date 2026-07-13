@@ -1190,11 +1190,14 @@ document.getElementById('bookingForm').addEventListener('submit', async (e) => {
           lastMessage: message || 'Inquiry sent',
           lastSender: customerName
         });
-        if (message) await PickleChat.sendMessage(chatId, 'customer', customerName, message);
+        await PickleChat.sendMessage(chatId, 'customer', customerName, message || 'New booking inquiry');
+      }
+      if (typeof PickleBookings !== 'undefined') {
         await PickleBookings.create({
           courtId, name: customerName, contact: customerContact,
           email: customerEmail, date: dateVal, time: timeRange,
-          players, message, status: 'pending', chatId
+          players, message, status: 'pending', chatId,
+          userId: currentUser?.uid || null
         });
       }
 
