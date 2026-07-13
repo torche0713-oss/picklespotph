@@ -319,6 +319,7 @@ function showView(view) {
   const mapContainer = document.querySelector('.app-container');
   const listView = document.getElementById('listView');
   const aboutView = document.getElementById('aboutView');
+  const footer = document.querySelector('footer');
 
   // Hide all
   mapContainer.style.display = 'none';
@@ -385,7 +386,7 @@ function renderSidebarList(courts) {
         ${court.city}, ${court.region}
       </div>
       <div class="court-item-tags">
-        <span class="tag tag-${court.type.toLowerCase()}">${court.type}</span>
+        <span class="tag tag-${(court.type || 'Outdoor').toLowerCase()}">${court.type}</span>
         <span class="tag ${
           court.access === 'Free' ? 'tag-free' :
           court.access === 'Paid' ? 'tag-paid' : 'tag-members'
@@ -443,7 +444,7 @@ function renderCourtsList(courts) {
 
   container.innerHTML = pageCourts.map((court, idx) => {
     const globalIdx = start + idx + 1;
-    const amenityBadges = court.amenities.map(a => {
+    const amenityBadges = (court.amenities || []).map(a => {
       const info = AMENITY_ICONS[a];
       return info ? `
         <span class="amenity-badge">
@@ -495,7 +496,7 @@ function renderCourtsList(courts) {
           </div>
           ` : ''}
           <div class="court-card-tags">
-            <span class="tag tag-${court.type.toLowerCase()}">${court.type}</span>
+            <span class="tag tag-${(court.type || 'Outdoor').toLowerCase()}">${court.type}</span>
             <span class="tag ${accessClass}">${court.access}</span>
             ${court.verified
               ? '<span class="tag" style="background:#e3f2fd;color:#1565c0">✓ Verified</span>'
@@ -607,7 +608,7 @@ window.openCourtModal = async function(courtId) {
             ${court.city}, ${court.province} · ${court.region}
           </p>
           <div style="display:flex;gap:6px;margin-top:8px">
-            <span class="tag tag-${court.type.toLowerCase()}">${court.type}</span>
+            <span class="tag tag-${(court.type || 'Outdoor').toLowerCase()}">${court.type}</span>
             <span class="tag ${accessClass}">${court.access}</span>
             ${court.verified
               ? '<span class="tag" style="background:rgba(255,255,255,0.2);color:white;border:1px solid rgba(255,255,255,0.4)">✓ Verified</span>'
@@ -629,7 +630,7 @@ window.openCourtModal = async function(courtId) {
     </div>
   ` : '';
 
-  const amenityChips = court.amenities.map(a => {
+  const amenityChips = (court.amenities || []).map(a => {
     const info = AMENITY_ICONS[a];
     return info ? `
       <span class="amenity-chip">

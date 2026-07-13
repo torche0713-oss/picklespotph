@@ -77,12 +77,13 @@ function createCustomIcon(court) {
 }
 
 function createPopupContent(court) {
-  const typeTag = `<span class="tag tag-${court.type.toLowerCase()}">${court.type}</span>`;
+  const courtType = court.type || 'Outdoor';
+  const typeTag = `<span class="tag tag-${courtType.toLowerCase()}">${courtType}</span>`;
   const accessClass = court.access === 'Free' ? 'tag-free' :
                       court.access === 'Paid' ? 'tag-paid' : 'tag-members';
-  const accessTag = `<span class="tag ${accessClass}">${court.access}</span>`;
+  const accessTag = `<span class="tag ${accessClass}">${court.access || 'Public'}</span>`;
 
-  const amenityIcons = court.amenities.map(a => {
+  const amenityIcons = (court.amenities || []).map(a => {
     const info = AMENITY_ICONS[a];
     return info ? `<i class="fas ${info.icon}" title="${info.label}" style="color:#2e7d32;font-size:13px"></i>` : '';
   }).join(' ');
@@ -140,23 +141,27 @@ function renderMarkers(courts) {
   markers = [];
 
   courts.forEach(court => {
-    if (!court.lat || !court.lng) return;
+    try {
+      if (!court.lat || !court.lng) return;
 
-    const icon = createCustomIcon(court);
-    const marker = L.marker([court.lat, court.lng], { icon })
-      .bindPopup(createPopupContent(court), {
-        maxWidth: 280,
-        minWidth: 220
+      const icon = createCustomIcon(court);
+      const marker = L.marker([court.lat, court.lng], { icon })
+        .bindPopup(createPopupContent(court), {
+          maxWidth: 280,
+          minWidth: 220
+        });
+
+      marker.courtId = court.id;
+
+      marker.on('click', () => {
+        highlightSidebarItem(court.id);
       });
 
-    marker.courtId = court.id;
-
-    marker.on('click', () => {
-      highlightSidebarItem(court.id);
-    });
-
-    markerLayer.addLayer(marker);
-    markers.push(marker);
+      markerLayer.addLayer(marker);
+      markers.push(marker);
+    } catch (e) {
+      console.warn('[PickleSpot] Skipping marker for court:', court?.id, court?.name, e.message);
+    }
   });
 }
 
