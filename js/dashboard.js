@@ -2601,9 +2601,13 @@ async function batchImportTournaments() {
 // ============================================================
 async function loadSubscriberCount() {
   try {
-    const subs = await PickleMailing.getAll();
+    const [subs, usersSnap] = await Promise.all([
+      PickleMailing.getAll(),
+      db.collection('users').get()
+    ]);
+    const total = subs.length + usersSnap.size;
     const el = document.getElementById('campaignSubscriberCount');
-    if (el) el.textContent = subs.length + ' subscriber(s) on the mailing list.';
+    if (el) el.textContent = total + ' contact(s) on the mailing list (' + subs.length + ' players, ' + usersSnap.size + ' owners).';
   } catch {}
 }
 

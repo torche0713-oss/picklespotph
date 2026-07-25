@@ -66,27 +66,36 @@ module.exports = async (req, res) => {
   }
 
   try {
-    const result = await firestoreGetAll('subscribers');
-    const docs = Array.isArray(result) ? result.filter(r => r.document) : [];
-    const emails = docs.map(d => d.document?.fields?.email?.stringValue || '').filter(Boolean);
+    const [subscribersResult, usersResult] = await Promise.all([
+      firestoreGetAll('subscribers'),
+      firestoreGetAll('users')
+    ]);
 
-    if (emails.length === 0) {
-      return res.status(200).json({ sent: 0, total: 0, message: 'No subscribers found.' });
+    const subDocs = Array.isArray(subscribersResult) ? subscribersResult.filter(r => r.document) : [];
+    const userDocs = Array.isArray(usersResult) ? usersResult.filter(r => r.document) : [];
+
+    const subEmails = subDocs.map(d => d.document?.fields?.email?.stringValue || '').filter(Boolean);
+    const userEmails = userDocs.map(d => d.document?.fields?.email?.stringValue || '').filter(Boolean);
+
+    const allEmails = [...new Set([...subEmails, ...userEmails])];
+
+    if (allEmails.length === 0) {
+      return res.status(200).json({ sent: 0, total: 0, message: 'No contacts found.' });
     }
 
     const brevoKey = process.env.BREVO_API_KEY;
     if (!brevoKey) {
       return res.status(200).json({
         sent: 0,
-        total: emails.length,
+        total: allEmails.length,
         message: 'Brevo API key not configured. Set BREVO_API_KEY in Vercel environment variables.',
-        emails
+        emails: allEmails
       });
     }
 
     const batch = {
       sender: { name: senderName || 'PickleSpotPH', email: senderEmail },
-      to: emails.map(e => ({ email: e })),
+      to: allEmails.map(e => ({ email: e })),
       subject,
       htmlContent: htmlBody
     };
@@ -95,10 +104,10 @@ module.exports = async (req, res) => {
     const messageId = brevoRes?.messageId || '';
 
     res.status(200).json({
-      sent: emails.length,
-      total: emails.length,
+      sent: allEmails.length,
+      total: allEmails.length,
       messageId,
-      message: `Campaign sent to ${emails.length} subscriber(s) via Brevo.`
+      message: `Campaign sent to ${allEmails.length} contact(s) via Brevo.`
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
