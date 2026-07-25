@@ -111,7 +111,7 @@
       <h1><span class="gradient-text">Discover Pickleball Courts</span><br/>Across the Philippines</h1>
       <div class="hero-sub-badge">🚀 All-in-One Pickleball &amp; Business Automation System</div>
       <p class="hero-sub">Browse indoor and outdoor courts by city, book a slot, read reviews, and join the fastest-growing sport in the country.</p>
-      <div class="hero-launch-notice" style="border-color:var(--accent);background:rgba(243,156,18,0.1);color:var(--text)">
+      <div class="hero-launch-notice" style="border-color:var(--accent);background:rgba(245,158,11,0.08);color:#1e293b">
         <i class="fas fa-bullhorn" style="color:var(--accent)"></i>
         <span style="font-weight:600;font-size:15px">Attention Pickleball Court Owners: <span style="color:var(--accent);font-weight:700">FREE LISTING</span>. ADD YOUR COURTS NOW!</span>
       </div>
@@ -734,7 +734,7 @@
             </div>
           </div>
           <p style="font-size:12px;color:var(--text-muted);margin-bottom:6px">Click the map to pin the court's location:</p>
-          <div id="addCourtMap" style="height:280px;border-radius:8px;border:1px solid #ddd;margin-bottom:16px"></div>
+          <div id="addCourtMap" style="height:280px;border-radius:8px;border:1px solid #e2e8f0;margin-bottom:16px"></div>
 
           <div class="form-group">
             <label>Amenities</label>
@@ -791,15 +791,15 @@
       </div>
       <p class="footer-tagline">Finding pickleball courts made easy 🇵🇭</p>
       <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-bottom:10px;font-size:13px">
-        <a href="about.html" style="color:rgba(255,255,255,0.8);text-decoration:none">About</a>
-        <a href="blog.html" style="color:rgba(255,255,255,0.8);text-decoration:none">News</a>
-        <a href="terms.html" style="color:rgba(255,255,255,0.8);text-decoration:none">Terms</a>
-        <a href="privacy.html" style="color:rgba(255,255,255,0.8);text-decoration:none">Privacy</a>
-        <a href="disclaimer.html" style="color:rgba(255,255,255,0.8);text-decoration:none">Disclaimer</a>
-        <a href="contact.html" style="color:rgba(255,255,255,0.8);text-decoration:none">Contact</a>
+        <a href="about.html" style="color:#64748b;text-decoration:none">About</a>
+        <a href="blog.html" style="color:#64748b;text-decoration:none">News</a>
+        <a href="terms.html" style="color:#64748b;text-decoration:none">Terms</a>
+        <a href="privacy.html" style="color:#64748b;text-decoration:none">Privacy</a>
+        <a href="disclaimer.html" style="color:#64748b;text-decoration:none">Disclaimer</a>
+        <a href="contact.html" style="color:#64748b;text-decoration:none">Contact</a>
       </div>
       <div style="display:flex;gap:10px;justify-content:center;margin-bottom:10px">
-        <span style="font-size:12px;color:rgba(255,255,255,0.6);align-self:center">Share:</span>
+        <span style="font-size:12px;color:#94a3b8;align-self:center">Share:</span>
         <button onclick="window.open('https://www.facebook.com/sharer/sharer.php?u=https://picklespotph.site','_blank')" style="width:32px;height:32px;border-radius:50%;border:none;background:#1877f2;color:white;cursor:pointer;font-size:14px;display:inline-flex;align-items:center;justify-content:center" title="Share on Facebook"><i class="fab fa-facebook"></i></button>
         <button onclick="window.open('https://twitter.com/intent/tweet?text=Find+pickleball+courts+in+the+Philippines+%F0%9F%8F%93&url=https://picklespotph.site','_blank')" style="width:32px;height:32px;border-radius:50%;border:none;background:#000;color:white;cursor:pointer;font-size:14px;display:inline-flex;align-items:center;justify-content:center" title="Share on X"><i class="fab fa-x-twitter"></i></button>
         <button onclick="window.open('https://wa.me/?text=Find+pickleball+courts+in+the+Philippines+%F0%9F%8F%93+https://picklespotph.site','_blank')" style="width:32px;height:32px;border-radius:50%;border:none;background:#25d366;color:white;cursor:pointer;font-size:14px;display:inline-flex;align-items:center;justify-content:center" title="Share on WhatsApp"><i class="fab fa-whatsapp"></i></button>
@@ -820,17 +820,17 @@
   </div>
 
   <!-- Chat Popup -->
-  <div id="chatPopup" style="display:none;position:fixed;bottom:150px;right:20px;width:340px;height:420px;background:var(--card-bg,#1a1a2e);border:1px solid var(--border-color,rgba(255,255,255,0.1));border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,0.4);z-index:9999;overflow:hidden;flex-direction:column">
-    <div style="background:linear-gradient(135deg,#1a1a2e,#0f3460);color:white;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,0.06)">
+  <div id="chatPopup" style="display:none;position:fixed;bottom:150px;right:20px;width:340px;height:420px;background:#ffffff;border:1px solid #e2e8f0;border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,0.4);z-index:9999;overflow:hidden;flex-direction:column">
+    <div style="background:linear-gradient(135deg,#2563eb,#1d4ed8);color:white;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #e2e8f0">
       <div><strong id="chatPopupTitle">Messages</strong></div>
       <button id="chatPopupClose" style="background:none;border:none;color:white;font-size:18px;cursor:pointer"><i class="fas fa-times"></i></button>
     </div>
-    <div id="chatPopupBody" style="flex:1;overflow-y:auto;padding:12px;background:rgba(0,0,0,0.2)">
+    <div id="chatPopupBody" style="flex:1;overflow-y:auto;padding:12px;background:#f8fafc">
       <div id="chatThreadsList"></div>
     </div>
-    <div id="chatPopupInputArea" style="display:none;padding:10px 12px;border-top:1px solid rgba(255,255,255,0.06);background:var(--card-bg,#1a1a2e);flex-shrink:0">
+    <div id="chatPopupInputArea" style="display:none;padding:10px 12px;border-top:1px solid #e2e8f0;background:#ffffff;flex-shrink:0">
       <div style="display:flex;gap:8px">
-        <input type="text" id="chatPopupInput" placeholder="Type a message..." style="flex:1;min-width:0;padding:8px 14px;border:1px solid rgba(255,255,255,0.12);border-radius:20px;font-size:13px;font-family:'Inter',sans-serif;background:var(--input-bg,rgba(255,255,255,0.08));color:white;outline:none"/>
+        <input type="text" id="chatPopupInput" placeholder="Type a message..." style="flex:1;min-width:0;padding:8px 14px;border:1px solid #d1d5db;border-radius:20px;font-size:13px;font-family:'Inter',sans-serif;background:#f8fafc;color:#1e293b;outline:none"/>
         <button id="chatPopupSend" style="background:var(--primary);color:white;border:none;border-radius:50%;width:36px;height:36px;cursor:pointer;font-size:14px"><i class="fas fa-paper-plane"></i></button>
       </div>
     </div>
@@ -839,8 +839,8 @@
   <style>
     #chatThreadsList .cht-thread {
       padding: 10px 14px;
-      background: var(--card-bg, rgba(255,255,255,0.05));
-      border: 1px solid var(--border-color, rgba(255,255,255,0.1));
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
       border-radius: 10px;
       margin-bottom: 8px;
       cursor: pointer;
@@ -851,7 +851,7 @@
     #chatThreadsList .cht-preview { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
     .cmsg { max-width: 80%; padding: 8px 14px; border-radius: 14px; font-size: 13px; line-height: 1.4; }
     .cmsg.customer { align-self: flex-end; background: var(--primary); color: white; border-bottom-right-radius: 4px; }
-    .cmsg.owner { align-self: flex-start; background: rgba(255,255,255,0.1); color: var(--text); border: 1px solid rgba(255,255,255,0.08); border-bottom-left-radius: 4px; }
+    .cmsg.owner { align-self: flex-start; background: #f1f5f9; color: var(--text); border: 1px solid #e2e8f0; border-bottom-left-radius: 4px; }
     .cmsg .ctime { font-size: 9px; opacity: 0.7; margin-top: 2px; }
     .cmsg.owner .ctime { color: var(--text-muted); }
 
