@@ -95,7 +95,6 @@ function generateArticle(post) {
     '      <a href="https://picklespotph.site/about.html" class="nav-link"><i class="fas fa-info-circle"></i> About</a>\n' +
     '      <a href="https://picklespotph.site/contact.html" class="nav-link"><i class="fas fa-envelope"></i> Contact</a>\n' +
     '    </div>\n' +
-    '    <button class="btn-dark-mode" id="darkModeToggle" title="Toggle Dark Mode"><i class="fas fa-moon"></i></button>\n' +
     '  </nav>\n' +
     '  <main>\n' +
     '    <div class="blog-wrap">\n' +
@@ -130,9 +129,6 @@ function generateArticle(post) {
     '  </footer>\n' +
     '  <script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>\n' +
     '  <script>AOS.init({duration:800,once:true,offset:80});</script>\n' +
-    '  <script>\n' +
-    '    (function(){var t=document.getElementById("darkModeToggle");var s=localStorage.getItem("psp_darkMode");if(s==="true"){document.documentElement.setAttribute("data-theme","dark");if(t)t.innerHTML=\'<i class="fas fa-sun"></i>\'}if(t)t.addEventListener("click",function(){var d=document.documentElement.getAttribute("data-theme")==="dark";if(d){document.documentElement.removeAttribute("data-theme");t.innerHTML=\'<i class="fas fa-moon"></i>\';localStorage.setItem("psp_darkMode","false")}else{document.documentElement.setAttribute("data-theme","dark");t.innerHTML=\'<i class="fas fa-sun"></i>\';localStorage.setItem("psp_darkMode","true")}});})();\n' +
-    '  </script>\n' +
     '  <script>\n' +
     '    (function(){var b=document.querySelectorAll(".share-btn");var u=encodeURIComponent(window.location.href);var t=encodeURIComponent(document.title);b.forEach(function(btn){btn.addEventListener("click",function(e){var type=btn.getAttribute("data-share");var url;switch(type){case"whatsapp":url="https://wa.me/?text="+u;break;case"facebook":url="https://www.facebook.com/sharer/sharer.php?u="+u;break;case"linkedin":url="https://www.linkedin.com/sharing/share-offsite/?url="+u;break;case"twitter":url="https://twitter.com/intent/tweet?url="+u+"&text="+t;break;case"copy":navigator.clipboard.writeText(decodeURIComponent(u)).then(function(){var o=btn.innerHTML;btn.innerHTML="Copied!";setTimeout(function(){btn.innerHTML=o},2000)});return;}if(url)window.open(url,"_blank","width=600,height=400");});});})();\n' +
     '  </script>\n</body>\n</html>';

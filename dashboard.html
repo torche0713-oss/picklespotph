@@ -8,7 +8,7 @@
   <meta name="google-site-verification" content="mLVVSeBUGWWNqiD_LwNbWgDR7_D8OyLzviWek_wEeT8"/>
   <link rel="alternate" type="application/rss+xml" title="PickleSpotPH News &amp; Updates" href="https://picklespotph.site/api/rss"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;700;900&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
   <link href="https://unpkg.com/aos@2.3.4/dist/aos.css" rel="stylesheet"/>
   <link rel="stylesheet" href="css/style.css"/>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -49,8 +49,8 @@
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
-    .plan-basic { background: #f5f5f5; color: #757575; }
-    .plan-pro { background: #fff3e0; color: #e65100; }
+    .plan-basic { background: rgba(255,255,255,0.08); color: #aaa; }
+    .plan-pro { background: rgba(243,156,18,0.15); color: #f39c12; }
     .dash-nav-item {
       display: flex;
       align-items: center;
@@ -66,13 +66,13 @@
       background: none;
       width: 100%;
       text-align: left;
-      font-family: 'Poppins', sans-serif;
+      font-family: 'Inter', sans-serif;
     }
-    .dash-nav-item:hover { background: #f5f5f5; color: var(--primary); }
-    .dash-nav-item.active { background: #e8f5e9; color: var(--primary); border-right: 3px solid var(--primary); }
+    .dash-nav-item:hover { background: rgba(255,255,255,0.06); color: var(--primary); }
+    .dash-nav-item.active { background: rgba(78,205,196,0.12); color: var(--primary); border-right: 3px solid var(--primary); }
     .dash-nav-item i { width: 20px; text-align: center; }
     .dash-nav-item.logout { color: #d32f2f; margin-top: auto; }
-    .dash-nav-item.logout:hover { background: #ffebee; }
+    .dash-nav-item.logout:hover { background: rgba(211,47,47,0.1); }
 
     .dashboard-content {
       flex: 1;
@@ -126,7 +126,7 @@
       font-weight: 600;
       cursor: pointer;
       border: none;
-      font-family: 'Poppins', sans-serif;
+      font-family: 'Inter', sans-serif;
       transition: var(--transition);
       display: flex;
       align-items: center;
@@ -147,8 +147,8 @@
       font-size: 11px;
       font-weight: 600;
     }
-    .status-approved { background: #e8f5e9; color: #2e7d32; }
-    .status-pending { background: #fff3e0; color: #e65100; }
+    .status-approved { background: rgba(78,205,196,0.15); color: #4ecdc4; }
+    .status-pending { background: rgba(243,156,18,0.15); color: #f39c12; }
 
     .photo-grid {
       display: grid;
@@ -280,7 +280,7 @@
       border: 1px solid #ddd;
       border-radius: 20px;
       font-size: 13px;
-      font-family: 'Poppins', sans-serif;
+      font-family: 'Inter', sans-serif;
       outline: none;
     }
     .chat-input-area input:focus { border-color: var(--primary-light); }
@@ -306,7 +306,7 @@
       font-size: 14px;
       cursor: pointer;
       padding: 8px 0;
-      font-family: 'Poppins', sans-serif;
+      font-family: 'Inter', sans-serif;
       font-weight: 600;
       display: flex;
       align-items: center;
@@ -350,7 +350,7 @@
       border: 1px solid #ddd;
       border-radius: 6px;
       font-size: 13px;
-      font-family: 'Poppins', sans-serif;
+      font-family: 'Inter', sans-serif;
       outline: none;
     }
     .avail-day .day-time input[type="time"]:focus { border-color: var(--primary-light); }
@@ -362,7 +362,7 @@
       border: 1px solid #ddd;
       border-radius: 8px;
       font-size: 14px;
-      font-family: 'Poppins', sans-serif;
+      font-family: 'Inter', sans-serif;
       outline: none;
       margin-bottom: 16px;
       width: 100%;
@@ -385,7 +385,7 @@
       cursor: pointer;
       font-size: 12px;
       font-weight: 600;
-      font-family: 'Poppins', sans-serif;
+      font-family: 'Inter', sans-serif;
       transition: var(--transition);
       text-align: center;
     }
@@ -1220,7 +1220,7 @@ Click a group to auto-fill the form above.</pre>
         </form>
         <div style="margin:16px 0;text-align:center;color:var(--text-muted);font-size:12px">or</div>
         <div style="display:flex;flex-direction:column;gap:8px">
-          <button id="googleLoginBtn" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;background:white;cursor:pointer;font-size:13px;font-weight:600;font-family:'Poppins',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px">
+          <button id="googleLoginBtn" style="width:100%;padding:10px;border:1px solid rgba(255,255,255,0.12);border-radius:8px;background:rgba(255,255,255,0.08);color:white;cursor:pointer;font-size:13px;font-weight:600;font-family:'Inter',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px">
             <img src="data:image/svg+xml,%3Csvg viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='%234285F4' d='M23.5 12.24c0-.82-.07-1.6-.2-2.36H12v4.47h6.46a5.3 5.3 0 0 1-2.3 3.48v2.9h3.72c2.17-2 3.43-4.94 3.43-8.5z'/%3E%3Cpath fill='%2334A853' d='M12 24c3.1 0 5.7-1.02 7.6-2.77l-3.72-2.89c-1.03.7-2.35 1.1-3.88 1.1-2.98 0-5.5-2.01-6.4-4.72H1.76v2.98C3.66 21.3 7.53 24 12 24z'/%3E%3Cpath fill='%23FBBC05' d='M5.6 14.72a6.9 6.9 0 0 1-.36-2.22c0-.77.13-1.52.36-2.22V7.3H1.76A11.96 11.96 0 0 0 0 12.5c0 1.92.46 3.74 1.76 5.2l3.84-2.98z'/%3E%3Cpath fill='%23EA4335' d='M12 5.18c1.7 0 3.22.58 4.42 1.72l3.3-3.3C17.7 1.44 15.1 0 12 0 7.53 0 3.66 2.7 1.76 6.3l3.84 2.98C6.5 7.2 9.02 5.18 12 5.18z'/%3E%3C/svg%3E" style="width:18px" alt=""/> Sign in with Google
           </button>
         </div>
