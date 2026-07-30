@@ -711,6 +711,7 @@ window.openCourtModal = async function(courtId) {
         <i class="fas fa-star"></i> Write Review
       </button>
     </div>
+    ${typeof getBookingButtonHtml === 'function' ? getBookingButtonHtml(court.id, court.name) : ''}
     <div style="margin-top:12px;padding-top:12px;border-top:1px solid #eee">
       <p style="font-size:11px;color:var(--text-muted);margin-bottom:6px">Share this court</p>
       <div class="share-buttons">
